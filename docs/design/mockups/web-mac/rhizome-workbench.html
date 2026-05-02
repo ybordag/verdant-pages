@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rhizome Workbench - Web / Mac</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@300;400;500;700;800&family=Shantell+Sans:BNCE,wght@20,400;20,700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --inkwell: #1C1814;
+      --vellum: #F2E8C9;
+      --chartreuse: #B8D43A;
+      --pine: #2B5C2F;
+      --clay: #E06B4A;
+      --page-bg: #181510;
+
+      --vellum-light: #F6F0E0;
+      --vellum-pale: #F8F4EC;
+      --vellum-whisper: #FAF7F2;
+      --vellum-white: #FDFCFA;
+
+      --buttercup: #FFC94D;
+      --pale-herb: #B0EAAC;
+      --peony: #F5A0C8;
+      --cornflower: #A0B8F5;
+      --wisteria: #D7A5FF;
+
+      --dark-amber: #2C1E00;
+      --dark-fern: #0C1E0C;
+      --dark-berry: #280C18;
+      --dark-navy: #0A1428;
+
+      --inkwell-rgb: 28 24 20;
+      --vellum-rgb: 242 232 201;
+      --chartreuse-rgb: 184 212 58;
+      --pine-rgb: 43 92 47;
+      --clay-rgb: 224 107 74;
+      --cornflower-rgb: 160 184 245;
+
+      --surface-primary: var(--vellum-light);
+      --surface-secondary: var(--vellum-pale);
+      --surface-quiet: var(--vellum-whisper);
+      --surface-raised: var(--vellum-white);
+      --surface-dark-card: rgb(var(--vellum-rgb) / 0.04);
+      --surface-dark-label: rgb(var(--vellum-rgb) / 0.05);
+      --surface-dark-header: rgb(var(--vellum-rgb) / 0.06);
+      --surface-muted-on-paper: rgb(var(--inkwell-rgb) / 0.07);
+      --terracotta-wash: rgb(var(--clay-rgb) / 0.08);
+      --terracotta-soft: rgb(var(--clay-rgb) / 0.13);
+      --terracotta-line: rgb(var(--clay-rgb) / 0.26);
+      --cornflower-wash: rgb(var(--cornflower-rgb) / 0.55);
+
+      --text-primary: var(--inkwell);
+      --text-secondary: rgb(var(--inkwell-rgb) / 0.84);
+      --text-tertiary: rgb(var(--inkwell-rgb) / 0.68);
+      --text-placeholder: rgb(var(--inkwell-rgb) / 0.52);
+      --text-on-dark-primary: rgb(var(--vellum-rgb) / 0.94);
+      --text-on-dark-secondary: rgb(var(--vellum-rgb) / 0.72);
+      --text-on-dark-tertiary: rgb(var(--vellum-rgb) / 0.42);
+      --text-on-dark-muted: rgb(var(--vellum-rgb) / 0.34);
+      --dark-clay: #7A2F1D;
+      --line-on-paper: rgb(var(--inkwell-rgb) / 0.14);
+      --line-on-paper-strong: rgb(var(--inkwell-rgb) / 0.22);
+      --line-on-dark: rgb(var(--vellum-rgb) / 0.14);
+      --line-on-dark-subtle: rgb(var(--vellum-rgb) / 0.1);
+
+      --font-display: "Shantell Sans", cursive;
+      --font-botanical: "Caveat", cursive;
+      --font-body: "Nunito", system-ui, sans-serif;
+      --font-label: "Montserrat", system-ui, sans-serif;
+      --display-bounce: 20;
+      --display-weight: 700;
+
+      --radius-tight: 6px;
+      --radius-soft: 8px;
+      --radius-journal: 10px;
+      --radius-round: 14px;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      background: var(--page-bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .mockup-note {
+      width: min(1440px, 100%);
+      margin: 0 auto 14px;
+      color: var(--text-on-dark-tertiary);
+      font-family: var(--font-label);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .desktop-scroll {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      overflow-x: auto;
+      border: 1px solid var(--line-on-dark);
+      border-radius: var(--radius-round);
+      background: var(--surface-dark-card);
+    }
+
+    .app-window {
+      display: grid;
+      grid-template-columns: 232px minmax(520px, 1fr) 420px;
+      min-width: 1180px;
+      min-height: 820px;
+      background: var(--page-bg);
+    }
+
+    .nav-collapse-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .app-window:has(.nav-collapse-input:checked) {
+      grid-template-columns: 72px minmax(680px, 1fr) 420px;
+    }
+
+    .app-sidebar {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 16px;
+      padding: 16px 14px;
+      border-right: 1px solid var(--line-on-dark-subtle);
+      background: var(--surface-dark-label);
+    }
+
+    .app-window:has(.nav-collapse-input:checked) .app-sidebar {
+      padding: 16px 10px;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 7px;
+      height: 14px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--text-on-dark-tertiary);
+    }
+
+    .dot.close { background: var(--clay); }
+    .dot.minimize { background: var(--buttercup); }
+    .dot.zoom { background: var(--pale-herb); }
+
+    .brand {
+      display: grid;
+      gap: 12px;
+    }
+
+    .brand-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 10px;
+    }
+
+    .brand-title {
+      color: var(--text-on-dark-primary);
+      font-family: var(--font-display);
+      font-size: 27px;
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1;
+    }
+
+    .brand-subtitle,
+    .label,
+    .nav-item,
+    .status-pill,
+    .card-label,
+    .meta-label,
+    .button,
+    .input-label {
+      font-family: var(--font-label);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .brand-subtitle {
+      color: var(--text-on-dark-tertiary);
+      font-size: 9px;
+      font-weight: 500;
+    }
+
+    .sidebar-toggle {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--line-on-dark);
+      border-radius: var(--radius-soft);
+      color: var(--text-on-dark-secondary);
+      background: var(--surface-dark-header);
+      font-family: var(--font-label);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: default;
+      user-select: none;
+    }
+
+    .app-window:has(.nav-collapse-input:checked) .brand {
+      display: none;
+    }
+
+    .app-window:has(.nav-collapse-input:checked) .brand-row {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+
+    .app-window:has(.nav-collapse-input:checked) .sidebar-toggle {
+      transform: rotate(180deg);
+    }
+
+    .nav-group {
+      display: grid;
+      align-content: start;
+      align-self: start;
+      gap: 5px;
+      grid-auto-rows: 40px;
+    }
+
+    .nav-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      height: 40px;
+      min-height: 0;
+      padding: 0 8px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-soft);
+      color: var(--text-on-dark-secondary);
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .nav-item::before {
+      display: none;
+      content: attr(data-short);
+    }
+
+    .app-window:has(.nav-collapse-input:checked) .nav-item {
+      justify-content: center;
+      height: 40px;
+      min-height: 0;
+      padding: 0;
+      font-size: 11px;
+    }
+
+    .app-window:has(.nav-collapse-input:checked) .nav-item::before {
+      display: block;
+    }
+
+    .app-window:has(.nav-collapse-input:checked) .nav-item > span {
+      display: none;
+    }
+
+    .nav-item.active {
+      border-color: rgb(var(--pine-rgb) / 0.55);
+      border-left: 3px solid var(--pine);
+      color: var(--text-on-dark-primary);
+      background: var(--surface-dark-header);
+    }
+
+    .nav-count {
+      min-width: 17px;
+      padding: 2px 5px 1px;
+      border-radius: 999px;
+      background: var(--chartreuse);
+      color: var(--dark-fern);
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .garden-card {
+      padding: 12px;
+      border: 1px solid var(--line-on-dark);
+      border-radius: var(--radius-journal);
+      background: var(--surface-dark-card);
+    }
+
+    .garden-card h2 {
+      margin: 8px 0 4px;
+      color: var(--text-on-dark-primary);
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .garden-card p {
+      margin: 0;
+      color: var(--text-on-dark-secondary);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .mini-map {
+      display: grid;
+      grid-template-columns: 1.1fr 0.8fr 0.9fr;
+      grid-template-rows: 34px 28px 38px;
+      gap: 5px;
+      margin-top: 12px;
+    }
+
+    .plot {
+      border: 1px solid rgb(var(--pine-rgb) / 0.44);
+      border-radius: 5px;
+      background: rgb(var(--pine-rgb) / 0.2);
+    }
+
+    .plot.light {
+      background: rgb(var(--vellum-rgb) / 0.12);
+    }
+
+    .plot.long {
+      grid-column: span 2;
+    }
+
+    .sidebar-footer {
+      color: var(--text-on-dark-tertiary);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .app-window:has(.nav-collapse-input:checked) .garden-card,
+    .app-window:has(.nav-collapse-input:checked) .sidebar-footer {
+      display: none;
+    }
+
+    .main-workspace {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      min-width: 0;
+      background: var(--surface-primary);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 58px;
+      padding: 10px 22px;
+      border-bottom: 1px solid var(--line-on-paper);
+      background: var(--surface-primary);
+    }
+
+    .title-block {
+      min-width: 0;
+    }
+
+    .title-block h1 {
+      margin: 0;
+      color: var(--text-primary);
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1;
+    }
+
+    .title-block p {
+      margin: 2px 0 0;
+      color: var(--text-tertiary);
+      font-size: 12px;
+      line-height: 1.25;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .button {
+      min-height: 34px;
+      border: 1px solid var(--line-on-paper);
+      border-radius: var(--radius-soft);
+      color: var(--text-secondary);
+      background: var(--surface-secondary);
+      font-size: 9px;
+      font-weight: 700;
+      padding: 0 12px;
+    }
+
+    .button.primary {
+      border-color: rgb(var(--pine-rgb) / 0.55);
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+    }
+
+    .button.secondary {
+      border-color: var(--dark-clay);
+      color: var(--vellum-white);
+      background: var(--clay);
+    }
+
+    .button.tertiary {
+      border-color: var(--dark-clay);
+      color: var(--dark-clay);
+      background: var(--terracotta-wash);
+    }
+
+    .session-strip {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 230px;
+      gap: 12px;
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--line-on-paper);
+      background: var(--surface-secondary);
+    }
+
+    .intake-panel,
+    .status-panel {
+      padding: 12px;
+      border: 1px solid rgb(var(--pine-rgb) / 0.55);
+      border-radius: var(--radius-journal);
+    }
+
+    .intake-panel {
+      display: grid;
+      gap: 10px;
+      border-color: var(--clay);
+      background:
+        linear-gradient(135deg, var(--terracotta-soft) 0%, transparent 72%),
+        var(--surface-primary);
+    }
+
+    .intake-panel .card-label {
+      color: var(--dark-clay);
+    }
+
+    .intake-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .intake-item {
+      min-height: 54px;
+      padding: 10px;
+      border: 1px solid var(--terracotta-line);
+      border-radius: var(--radius-soft);
+      background: var(--surface-raised);
+    }
+
+    .status-panel {
+      display: grid;
+      align-content: start;
+      gap: 8px;
+      background: rgb(var(--chartreuse-rgb) / 0.16);
+    }
+
+    .status-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: start;
+      padding-top: 8px;
+      border-top: 1px solid var(--line-on-paper);
+    }
+
+    .status-row:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .card-label {
+      color: var(--pine);
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .session-value {
+      margin-top: 6px;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .session-note {
+      margin-top: 3px;
+      color: var(--text-tertiary);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .status-value {
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .status-note {
+      margin-top: 2px;
+      color: var(--text-tertiary);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .status-badge {
+      min-width: 24px;
+      padding: 4px 6px;
+      border-radius: 999px;
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+      font-family: var(--font-label);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .chat-thread {
+      min-height: 0;
+      padding: 22px;
+      overflow: auto;
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.09) 1px, transparent 1.2px),
+        linear-gradient(var(--surface-primary), var(--surface-primary));
+      background-size: 24px 24px, auto;
+    }
+
+    .day-label {
+      width: max-content;
+      margin: 0 auto 20px;
+      color: var(--text-tertiary);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .message {
+      display: grid;
+      gap: 7px;
+      max-width: 680px;
+      margin-bottom: 16px;
+    }
+
+    .message.user {
+      margin-left: auto;
+      justify-items: end;
+    }
+
+    .message.user .message-meta {
+      color: var(--text-tertiary);
+    }
+
+    .message.rhizome {
+      margin-right: auto;
+    }
+
+    .message-meta {
+      color: var(--text-tertiary);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .bubble {
+      padding: 14px 16px;
+      border: 1px solid var(--line-on-paper);
+      border-radius: var(--radius-journal);
+      color: var(--text-secondary);
+      background: var(--surface-raised);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .user .bubble {
+      border-color: var(--terracotta-line);
+      border-right: 4px solid var(--clay);
+      background: var(--terracotta-wash);
+    }
+
+    .rhizome .bubble {
+      border-left: 3px solid var(--pine);
+    }
+
+    .inline-card {
+      margin-top: 10px;
+      padding: 14px;
+      border: 1px solid var(--line-on-paper-strong);
+      border-left: 3px solid var(--pine);
+      border-radius: var(--radius-journal);
+      background: var(--surface-secondary);
+    }
+
+    .inline-card h3 {
+      margin: 6px 0 8px;
+      color: var(--text-primary);
+      font-size: 16px;
+    }
+
+    .inline-card p {
+      margin: 0;
+      color: var(--text-tertiary);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      padding: 14px 22px;
+      border-top: 1px solid var(--line-on-paper);
+      background:
+        linear-gradient(135deg, var(--terracotta-soft) 0%, transparent 72%),
+        var(--surface-primary);
+    }
+
+    .input-wrap {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 0 12px;
+      border: 1px solid var(--terracotta-soft);
+      border-radius: var(--radius-journal);
+      background: var(--surface-raised);
+    }
+
+    .input-label {
+      color: var(--pine);
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .fake-input {
+      color: var(--text-placeholder);
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    .interaction-panel {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      min-width: 0;
+      border-left: 1px solid var(--line-on-dark-subtle);
+      border-top: 2px solid var(--chartreuse);
+      background: var(--page-bg);
+    }
+
+    .panel-header {
+      padding: 18px;
+      border-bottom: 1px solid var(--line-on-dark-subtle);
+      background: var(--surface-dark-header);
+    }
+
+    .panel-header .card-label, .garden-card .card-label {
+      color: var(--chartreuse);
+    }
+
+    .panel-header h2 {
+      margin: 5px 0 4px;
+      color: var(--text-on-dark-primary);
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1;
+    }
+
+    .panel-header p {
+      margin: 0;
+      color: var(--text-on-dark-secondary);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .pending-list {
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--line-on-dark-subtle);
+      background: var(--surface-dark-card);
+    }
+
+    .pending-list summary {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 0 10px;
+      border: 1px solid var(--line-on-dark-subtle);
+      border-radius: var(--radius-soft);
+      color: var(--text-on-dark-secondary);
+      background: var(--surface-dark-label);
+      cursor: default;
+      list-style: none;
+    }
+
+    .pending-list summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .pending-summary-title {
+      font-family: var(--font-label);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .pending-summary-meta {
+      color: var(--text-on-dark-tertiary);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .pending-items {
+      display: grid;
+      gap: 8px;
+      padding-top: 10px;
+    }
+
+    .pending-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 11px 12px;
+      border: 1px solid var(--line-on-dark-subtle);
+      border-radius: var(--radius-soft);
+      color: var(--text-on-dark-secondary);
+      background: var(--surface-dark-label);
+    }
+
+    .pending-item.active {
+      border-color: var(--terracotta-line);
+      border-left: 3px solid var(--clay);
+      color: var(--text-on-dark-primary);
+    }
+
+    .pending-title {
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .pending-type {
+      margin-top: 3px;
+      color: var(--text-on-dark-tertiary);
+      font-family: var(--font-label);
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .status-pill {
+      align-self: start;
+      padding: 4px 7px;
+      border-radius: 999px;
+      color: var(--pine);
+      background: var(--chartreuse);
+      border-color: rgb(var(--pine-rgb) / 0.55);
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .interaction-scroll {
+      min-height: 0;
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .review-card {
+      overflow: hidden;
+      border: 3px solid var(--cornflower);
+      border-top: 7px solid var(--cornflower);
+      border-radius: var(--radius-journal);
+      background:
+        linear-gradient(135deg, var(--cornflower-wash) 0%, rgb(var(--chartreuse-rgb) / 0.14) 100%),
+        var(--surface-primary);
+    }
+
+    .review-card-main {
+      padding: 20px;
+    }
+
+    .review-title {
+      margin: 8px 0 4px;
+      color: var(--dark-navy);
+      font-family: var(--font-display);
+      font-size: 34px;
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1;
+    }
+
+    .review-subtitle {
+      color: var(--pine);
+      font-family: var(--font-botanical);
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.05;
+    }
+
+    .review-summary {
+      margin: 16px 0 0;
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .section-card {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line-on-paper);
+      border-radius: var(--radius-soft);
+      background: var(--surface-secondary);
+    }
+
+    .section-card h3 {
+      margin: 0 0 10px;
+      color: var(--pine);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+    }
+
+    .metric {
+      padding: 10px;
+      border-radius: var(--radius-tight);
+      background: var(--surface-raised);
+    }
+
+    .meta-label {
+      color: var(--pine);
+      font-size: 8px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .metric-value {
+      margin-top: 5px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .list li {
+      padding-left: 12px;
+      border-left: 2px solid var(--pine);
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .risk-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      color: var(--dark-fern);
+      background: var(--pale-herb);
+      font-family: var(--font-label);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      line-height: 1;
+      padding: 7px 9px;
+      text-transform: uppercase;
+    }
+
+    .chip.warn {
+      color: var(--dark-amber);
+      background: var(--buttercup);
+    }
+
+    .chip.review {
+      color: var(--dark-clay);
+      background: var(--terracotta-line);
+    }
+
+    .notes-box {
+      width: 100%;
+      min-height: 76px;
+      margin-top: 10px;
+      padding: 11px;
+      border: 1px solid var(--line-on-paper);
+      border-radius: var(--radius-soft);
+      color: var(--text-placeholder);
+      background:
+        linear-gradient(135deg, var(--terracotta-wash), transparent 55%),
+        var(--surface-raised);
+      font-size: 13px;
+      font-style: italic;
+      line-height: 1.45;
+    }
+
+    .review-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 14px;
+      border-top: 1px solid var(--line-on-paper);
+      background: var(--surface-secondary);
+    }
+
+    .review-actions .button {
+      min-height: 40px;
+      background: var(--surface-raised);
+    }
+
+    .review-actions .button.secondary {
+      border-color: var(--dark-clay);
+      color: var(--vellum-white);
+      background: var(--clay);
+    }
+
+    .review-actions .button.tertiary {
+      border-color: var(--dark-clay);
+      color: var(--dark-clay);
+      background: var(--terracotta-wash);
+    }
+
+    .review-actions .button:not(.primary):not(.secondary):not(.tertiary) {
+      border-color: var(--line-on-paper);
+      color: var(--text-secondary);
+      background: var(--surface-raised);
+    }
+
+    .review-actions .button.primary {
+      background: var(--chartreuse);
+    }
+
+    .review-actions .button.full {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 14px;
+      }
+
+      .mockup-note {
+        margin-bottom: 10px;
+      }
+
+      .desktop-scroll {
+        overflow: auto;
+      }
+
+      .app-window {
+        zoom: 0.58;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="mockup-note">Web / Mac mockup - Rhizome chat with structured interaction review</div>
+
+  <div class="desktop-scroll">
+    <div class="app-window">
+      <input class="nav-collapse-input" id="nav-collapsed" type="checkbox" aria-label="Collapse navigation">
+      <aside class="app-sidebar">
+        <div class="window-controls" aria-hidden="true">
+          <span class="dot close"></span>
+          <span class="dot minimize"></span>
+          <span class="dot zoom"></span>
+        </div>
+
+        <div class="brand-row">
+          <div class="brand">
+            <div class="brand-title">Verdant Pages</div>
+            <div class="brand-subtitle">Rhizome workspace</div>
+          </div>
+          <label class="sidebar-toggle" for="nav-collapsed" aria-label="Collapse navigation">‹</label>
+        </div>
+
+        <nav class="nav-group" aria-label="Primary">
+          <div class="nav-item active" data-short="R"><span>Rhizome</span><span class="nav-count">3</span></div>
+          <div class="nav-item" data-short="T"><span>Today</span><span class="nav-count">8</span></div>
+          <div class="nav-item" data-short="✓"><span>Tasks</span><span>24</span></div>
+          <div class="nav-item" data-short="G"><span>Garden</span><span></span></div>
+          <div class="nav-item" data-short="P"><span>Plants</span><span>42</span></div>
+          <div class="nav-item" data-short="Pr"><span>Projects</span><span>5</span></div>
+          <div class="nav-item" data-short="!"><span>Incidents</span><span>2</span></div>
+          <div class="nav-item" data-short="H"><span>History</span><span></span></div>
+        </nav>
+
+        <section class="garden-card">
+          <div class="card-label">Garden profile</div>
+          <h2>Bay Area Zone 9b</h2>
+          <p>Hard clay soil, 8 indoor tray slots, mixed beds and containers.</p>
+          <div class="mini-map" aria-label="Garden layout preview">
+            <div class="plot long"></div>
+            <div class="plot light"></div>
+            <div class="plot"></div>
+            <div class="plot light"></div>
+            <div class="plot"></div>
+            <div class="plot long light"></div>
+          </div>
+        </section>
+
+        <div class="sidebar-footer">
+          Last weather refresh: 8:14 AM<br>
+          Polling pending interactions every 60 seconds.
+        </div>
+      </aside>
+
+      <main class="main-workspace">
+        <header class="topbar">
+          <div class="title-block">
+            <h1>Ask Rhizome</h1>
+            <p>Garden planning, triage, approvals, and day-to-day care decisions.</p>
+          </div>
+          <div class="top-actions">
+            <button class="button tertiary" type="button">Upload Photo</button>
+            <button class="button secondary" type="button">New Incident</button>
+            <button class="button primary" type="button">Run Triage</button>
+          </div>
+        </header>
+
+        <section class="session-strip" aria-label="Session context and status">
+          <div class="intake-panel">
+            <div class="card-label">Startup intake · prompted by Rhizome</div>
+            <div class="intake-row">
+              <div class="intake-item">
+                <div class="card-label">Time today</div>
+                <div class="session-value">45 minutes</div>
+                <div class="session-note">User provided</div>
+              </div>
+              <div class="intake-item">
+                <div class="card-label">Energy</div>
+                <div class="session-value">Medium</div>
+                <div class="session-note">low / medium / high</div>
+              </div>
+              <div class="intake-item">
+                <div class="card-label">Focus</div>
+                <div class="session-value">Seedlings</div>
+                <div class="session-note">Open answer</div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="status-panel" aria-label="System status">
+            <div class="card-label">System status</div>
+            <div class="status-row">
+              <div>
+                <div class="status-value">Cool rain tonight</div>
+                <div class="status-note">Weather snapshot · 8:14 AM</div>
+              </div>
+              <div class="status-badge">WX</div>
+            </div>
+            <div class="status-row">
+              <div>
+                <div class="status-value">3 pending reviews</div>
+                <div class="status-note">Weather, proposal, treatment</div>
+              </div>
+              <div class="status-badge">3</div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="chat-thread" aria-label="Conversation with Rhizome">
+          <div class="day-label">Today - April 29</div>
+
+          <div class="message user">
+            <div class="message-meta">You - 8:23 AM</div>
+            <div class="bubble">I have about 45 minutes this morning. What should I actually do before work?</div>
+          </div>
+
+          <div class="message rhizome">
+            <div class="message-meta">Rhizome - 8:24 AM</div>
+            <div class="bubble">
+              Given tonight's rain, I would avoid routine container watering and use your time on seedlings and inspection. I found one schedule change that needs approval before I rewrite today's task list.
+              <div class="inline-card">
+                <div class="card-label">Structured interaction ready</div>
+                <h3>Weather change review</h3>
+                <p>Rain is likely enough tonight that four watering tasks should be deferred. Review the proposed changes in the panel.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="message user">
+            <div class="message-meta">You - 8:26 AM</div>
+            <div class="bubble">Before I approve that, should I still check the tomatoes?</div>
+          </div>
+
+          <div class="message rhizome">
+            <div class="message-meta">Rhizome - 8:26 AM</div>
+            <div class="bubble">Yes. Check the cherry tomatoes for early aphids and confirm the lower leaves are dry enough. That inspection is more valuable today than watering.</div>
+          </div>
+        </section>
+
+        <footer class="composer">
+          <div class="input-wrap">
+            <div class="input-label">Message</div>
+            <div class="fake-input">Ask Rhizome about tasks, plants, projects, weather, or incidents...</div>
+          </div>
+          <button class="button primary" type="button">Send</button>
+        </footer>
+      </main>
+
+      <aside class="interaction-panel">
+        <header class="panel-header">
+          <div class="card-label">Current interaction</div>
+          <h2>Review Changes</h2>
+          <p>Approval-gated Rhizome actions appear here as structured cards, not hidden inside chat prose.</p>
+        </header>
+
+        <details class="pending-list" aria-label="Pending interactions">
+          <summary>
+            <span class="pending-summary-title">Pending reviews</span>
+            <span class="pending-summary-meta">3 collapsed ▾</span>
+          </summary>
+          <div class="pending-items">
+            <div class="pending-item active">
+              <div>
+                <div class="pending-title">Defer watering tasks</div>
+                <div class="pending-type">Weather change review</div>
+              </div>
+              <div class="status-pill">Now</div>
+            </div>
+            <div class="pending-item">
+              <div>
+                <div class="pending-title">Spring pollinator border</div>
+                <div class="pending-type">Proposal review</div>
+              </div>
+            </div>
+            <div class="pending-item">
+              <div>
+                <div class="pending-title">Treat aphids on kale</div>
+                <div class="pending-type">Treatment plan</div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <section class="interaction-scroll">
+          <article class="review-card">
+            <div class="review-card-main">
+              <div class="card-label">Weather change review</div>
+              <h2 class="review-title">Skip Watering</h2>
+              <div class="review-subtitle">Rain expected tonight</div>
+              <p class="review-summary">Rhizome recommends deferring four routine watering tasks because the forecast now shows a cool overnight rain window. This does not affect seedlings under cover.</p>
+
+              <section class="section-card">
+                <h3>Forecast basis</h3>
+                <div class="metric-grid">
+                  <div class="metric">
+                    <div class="meta-label">Rain chance</div>
+                    <div class="metric-value">78%</div>
+                  </div>
+                  <div class="metric">
+                    <div class="meta-label">Window</div>
+                    <div class="metric-value">9 PM - 2 AM</div>
+                  </div>
+                  <div class="metric">
+                    <div class="meta-label">Low temp</div>
+                    <div class="metric-value">52 F</div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="section-card">
+                <h3>Proposed task changes</h3>
+                <ul class="list">
+                  <li>Defer container watering from today to tomorrow afternoon.</li>
+                  <li>Keep seedling inspection scheduled for this morning.</li>
+                  <li>Add a quick drainage check for the herb containers after rain.</li>
+                </ul>
+              </section>
+
+              <section class="section-card">
+                <h3>Affected subjects</h3>
+                <div class="risk-row">
+                  <span class="chip">Containers</span>
+                  <span class="chip">Herbs</span>
+                  <span class="chip warn">Weather</span>
+                  <span class="chip review">Approval</span>
+                </div>
+              </section>
+
+              <section class="section-card">
+                <h3>Decision notes</h3>
+                <div class="notes-box">Optional note for Rhizome, such as "still water the porch basil" or "defer everything except seedlings."</div>
+              </section>
+            </div>
+
+            <div class="review-actions">
+              <button class="button tertiary" type="button">Request Revision</button>
+              <button class="button secondary" type="button">Reject</button>
+              <button class="button primary full" type="button">Approve Task Changes</button>
+            </div>
+          </article>
+        </section>
+      </aside>
+    </div>
+  </div>
+</body>
+</html>

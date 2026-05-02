@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rhizome Workbench - iPad Mockups</title>
+  <style>
+    :root {
+      --inkwell: #1C1814;
+      --vellum-light: #F6F0E0;
+      --vellum-rgb: 242 232 201;
+      --chartreuse: #B8D43A;
+      --page-bg: #181510;
+      --surface-dark-card: rgb(var(--vellum-rgb) / 0.04);
+      --text-on-dark-primary: rgb(var(--vellum-rgb) / 0.94);
+      --text-on-dark-secondary: rgb(var(--vellum-rgb) / 0.72);
+      --text-on-dark-tertiary: rgb(var(--vellum-rgb) / 0.42);
+      --line-on-dark: rgb(var(--vellum-rgb) / 0.14);
+      --radius-journal: 10px;
+      --radius-round: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      background: var(--page-bg);
+      color: var(--text-on-dark-primary);
+      font-family: Nunito, system-ui, sans-serif;
+    }
+
+    main {
+      display: grid;
+      gap: 36px;
+      width: min(1060px, 100%);
+      margin: 0 auto;
+    }
+
+    .mockup-note,
+    .mockup-title,
+    .open-link {
+      font-family: Montserrat, system-ui, sans-serif;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .mockup-note {
+      color: var(--text-on-dark-tertiary);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .page-header {
+      display: grid;
+      gap: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--text-on-dark-primary);
+      font-size: clamp(34px, 5vw, 54px);
+      line-height: 1;
+    }
+
+    .page-header p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--text-on-dark-secondary);
+      line-height: 1.65;
+    }
+
+    .mockup-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 12px;
+    }
+
+    .mockup-title {
+      margin: 0;
+      color: var(--text-on-dark-secondary);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .open-link {
+      color: var(--chartreuse);
+      font-size: 9px;
+      font-weight: 800;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .iframe-shell {
+      overflow: hidden;
+      border: 1px solid var(--line-on-dark);
+      border-radius: var(--radius-round);
+      background: var(--surface-dark-card);
+    }
+
+    iframe {
+      display: block;
+      width: 100%;
+      border: 0;
+      background: var(--page-bg);
+    }
+
+    .portrait-frame {
+      height: min(1160px, calc(100vw * 1.42));
+    }
+
+    .landscape-frame {
+      height: min(900px, calc(100vw * 0.82));
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 16px; }
+      .mockup-title-row {
+        align-items: start;
+        flex-direction: column;
+      }
+
+      .portrait-frame {
+        height: 1000px;
+      }
+
+      .landscape-frame {
+        height: 760px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="page-header">
+      <div class="mockup-note">iPad mockups - Rhizome workbench</div>
+      <h1>Rhizome Workbench - iPad</h1>
+      <p>One-page review of the two tablet workbench layouts: portrait follows the phone interaction model at tablet scale, while landscape uses the compressed rail with chat and interaction review sharing the workspace.</p>
+    </header>
+
+    <section>
+      <div class="mockup-title-row">
+        <h2 class="mockup-title">iPad portrait - chat with top interaction viewer</h2>
+        <a class="open-link" href="rhizome-workbench-portrait.html">Open standalone</a>
+      </div>
+      <div class="iframe-shell">
+        <iframe class="portrait-frame" src="rhizome-workbench-portrait.html" title="iPad portrait Rhizome workbench mockup"></iframe>
+      </div>
+    </section>
+
+    <section>
+      <div class="mockup-title-row">
+        <h2 class="mockup-title">iPad landscape - compressed rail with 50 / 50 workbench</h2>
+        <a class="open-link" href="rhizome-workbench-landscape.html">Open standalone</a>
+      </div>
+      <div class="iframe-shell">
+        <iframe class="landscape-frame" src="rhizome-workbench-landscape.html" title="iPad landscape Rhizome workbench mockup"></iframe>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

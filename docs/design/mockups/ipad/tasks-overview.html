@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasks Overview - iPad Mockups</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Montserrat:wght@400;500;600;700;800;900&family=Nunito:wght@300;400;500;700;800&family=Shantell+Sans:BNCE,wght@20,400;20,700&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --inkwell: #1C1814;
+      --vellum: #F2E8C9;
+      --chartreuse: #B8D43A;
+      --pine: #2B5C2F;
+      --clay: #E06B4A;
+      --page-bg: #181510;
+      --vellum-light: #F6F0E0;
+      --vellum-pale: #F8F4EC;
+      --vellum-whisper: #FAF7F2;
+      --vellum-white: #FDFCFA;
+      --cornflower: #A0B8F5;
+      --dark-fern: #0C1E0C;
+      --dark-navy: #0A1428;
+      --dark-clay: #7A2F1D;
+      --inkwell-rgb: 28 24 20;
+      --vellum-rgb: 242 232 201;
+      --chartreuse-rgb: 184 212 58;
+      --pine-rgb: 43 92 47;
+      --clay-rgb: 224 107 74;
+      --cornflower-rgb: 160 184 245;
+      --surface-primary: var(--vellum-light);
+      --surface-secondary: var(--vellum-pale);
+      --surface-quiet: var(--vellum-whisper);
+      --surface-raised: var(--vellum-white);
+      --surface-outside-month: color-mix(in srgb, var(--vellum) 92%, var(--inkwell) 8%);
+      --surface-dark-card: rgb(var(--vellum-rgb) / 0.04);
+      --surface-dark-label: rgb(var(--vellum-rgb) / 0.05);
+      --surface-dark-header: rgb(var(--vellum-rgb) / 0.06);
+      --terracotta-wash: rgb(var(--clay-rgb) / 0.08);
+      --terracotta-soft: rgb(var(--clay-rgb) / 0.13);
+      --cornflower-wash: rgb(var(--cornflower-rgb) / 0.5);
+      --text-primary: var(--inkwell);
+      --text-secondary: rgb(var(--inkwell-rgb) / 0.84);
+      --text-tertiary: rgb(var(--inkwell-rgb) / 0.68);
+      --text-on-dark-primary: rgb(var(--vellum-rgb) / 0.94);
+      --text-on-dark-secondary: rgb(var(--vellum-rgb) / 0.72);
+      --text-on-dark-tertiary: rgb(var(--vellum-rgb) / 0.44);
+      --line-on-paper: rgb(var(--inkwell-rgb) / 0.14);
+      --line-on-paper-strong: rgb(var(--inkwell-rgb) / 0.22);
+      --calendar-grid-line: rgb(var(--inkwell-rgb) / 0.32);
+      --calendar-grid-line-soft: rgb(var(--inkwell-rgb) / 0.12);
+      --calendar-micro-line: rgb(var(--pine-rgb) / 0.085);
+      --calendar-date-rule: rgb(var(--inkwell-rgb) / 0.14);
+      --line-on-dark: rgb(var(--vellum-rgb) / 0.14);
+      --line-on-dark-subtle: rgb(var(--vellum-rgb) / 0.1);
+      --font-display: "Shantell Sans", cursive;
+      --font-botanical: "Caveat", cursive;
+      --font-body: "Nunito", system-ui, sans-serif;
+      --font-label: "Montserrat", system-ui, sans-serif;
+      --display-bounce: 20;
+      --display-weight: 700;
+      --radius-tight: 6px;
+      --radius-soft: 8px;
+      --radius-journal: 10px;
+      --radius-round: 14px;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      background: var(--page-bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+    }
+
+    button { font: inherit; }
+
+    .mockup-stack {
+      display: grid;
+      gap: 36px;
+      width: min(1060px, 100%);
+      margin: 0 auto;
+    }
+
+    .mockup-note,
+    .mockup-title,
+    .brand-subtitle,
+    .rail-item,
+    .label,
+    .tab,
+    .entry-source,
+    .entry-time,
+    .section-title,
+    .drawer-summary,
+    .drawer-chip,
+    .calendar-mode,
+    .day-task,
+    .calendar-day-name {
+      font-family: var(--font-label);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .mockup-note {
+      color: var(--text-on-dark-tertiary);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+    }
+
+    .mockup-title {
+      margin: 0 0 12px;
+      color: var(--text-on-dark-secondary);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+    }
+
+    .device-frame {
+      padding: 12px;
+      border: 1px solid var(--line-on-dark);
+      border-radius: 34px;
+      overflow: hidden;
+      background: #0f0d0a;
+      box-shadow: 0 24px 70px rgb(0 0 0 / 0.34);
+    }
+
+    .portrait-frame {
+      width: min(768px, calc((100vw - 48px) * 0.75));
+      aspect-ratio: 768 / 1024;
+      height: min(1024px, calc(100vw - 48px));
+      margin: 0 auto;
+    }
+
+    .landscape-frame {
+      width: min(1024px, calc(100vw - 48px));
+      aspect-ratio: 1024 / 768;
+      height: min(768px, calc((100vw - 48px) * 0.75));
+      margin: 0 auto;
+    }
+
+    .app-shell {
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      border-radius: 24px;
+      background: var(--surface-primary);
+    }
+
+    .portrait-shell {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+    }
+
+    .portrait-shell:has(.drawer) {
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    }
+
+    .landscape-shell {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr);
+    }
+
+    .app-header {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid var(--line-on-dark);
+      background: var(--page-bg);
+    }
+
+    .brand { display: grid; gap: 8px; }
+
+    .brand-title,
+    .screen-title,
+    .panel-title,
+    .drawer-day,
+    .focus-title,
+    .entry-title {
+      font-family: var(--font-display);
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1;
+    }
+
+    .brand-title {
+      color: var(--text-on-dark-primary);
+      font-size: 30px;
+    }
+
+    .brand-subtitle {
+      color: var(--chartreuse);
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .view-toggle {
+      display: inline-grid;
+      place-items: center;
+      width: 46px;
+      height: 40px;
+      padding: 4px;
+      border: 1px solid var(--line-on-paper);
+      border-radius: var(--radius-soft);
+      background: var(--surface-raised);
+      box-shadow: 0 8px 20px rgb(var(--inkwell-rgb) / 0.08);
+    }
+
+    .view-toggle .active {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 28px;
+      border-radius: var(--radius-tight);
+      color: var(--pine);
+      background: var(--chartreuse);
+    }
+
+    .view-toggle svg {
+      display: block;
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .page-intro {
+      display: grid;
+      gap: 7px;
+      padding: 14px 24px 0;
+      background: var(--page-bg);
+    }
+
+    .portrait-shell:has(.drawer) .page-intro {
+      padding-bottom: 12px;
+    }
+
+    .screen-title {
+      margin: 0;
+      color: var(--text-on-dark-primary);
+      font-size: 32px;
+    }
+
+    .page-note {
+      margin: 0;
+      color: var(--chartreuse);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .tab-strip {
+      display: flex;
+      align-items: end;
+      min-width: 0;
+      margin-top: 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .tab-strip::-webkit-scrollbar { display: none; }
+
+    .tab {
+      display: grid;
+      place-items: center;
+      min-width: 150px;
+      height: 38px;
+      padding: 0 18px;
+      border: 1px solid var(--line-on-paper);
+      border-radius: 0;
+      color: var(--text-secondary);
+      background: color-mix(in srgb, var(--chartreuse) 18%, var(--surface-secondary) 82%);
+      font-size: 9px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .tab + .tab { margin-left: -1px; }
+
+    .tab.active {
+      min-width: 170px;
+      color: var(--dark-fern);
+      border-top: 3px solid var(--cornflower);
+      background:
+        linear-gradient(135deg,
+          color-mix(in srgb, var(--cornflower) 52%, var(--surface-secondary) 48%),
+          color-mix(in srgb, var(--chartreuse) 54%, var(--surface-secondary) 46%)
+        );
+      font-size: 11px;
+    }
+
+    .tab.category {
+      color: var(--dark-clay);
+      background: color-mix(in srgb, var(--clay) 18%, var(--surface-secondary) 82%);
+    }
+
+    .tab.area {
+      color: var(--dark-navy);
+      background: color-mix(in srgb, var(--cornflower) 22%, var(--surface-secondary) 78%);
+    }
+
+    .tab.plus {
+      min-width: 58px;
+      color: var(--text-tertiary);
+      background: color-mix(in srgb, var(--inkwell) 8%, var(--surface-secondary) 92%);
+      font-size: 15px;
+    }
+
+    .drawer {
+      border-bottom: 1px solid var(--line-on-dark);
+      background: var(--page-bg);
+    }
+
+    .drawer summary {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 14px;
+      min-height: 54px;
+      padding: 4px 24px 12px;
+      color: var(--chartreuse);
+      cursor: default;
+      list-style: none;
+    }
+
+    .drawer summary::-webkit-details-marker { display: none; }
+
+    .drawer-summary {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .drawer-day {
+      color: var(--text-on-dark-primary);
+      font-size: 38px;
+    }
+
+    .drawer-month {
+      color: var(--chartreuse);
+      font-family: var(--font-botanical);
+      font-size: 25px;
+      font-weight: 700;
+    }
+
+    .drawer-caret {
+      color: var(--chartreuse);
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .drawer-body {
+      display: grid;
+      grid-template-columns: 0.82fr 1fr;
+      gap: 24px;
+      padding: 0 24px 18px;
+      color: var(--text-on-dark-secondary);
+    }
+
+    .drawer-copy {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+    }
+
+    .drawer-copy .label {
+      color: var(--chartreuse);
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .drawer-copy p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .drawer-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .drawer-chip {
+      padding: 8px 10px;
+      border-left: 4px solid var(--cornflower);
+      color: var(--text-on-dark-primary);
+      background: linear-gradient(135deg, rgb(var(--cornflower-rgb) / 0.34), rgb(var(--chartreuse-rgb) / 0.13));
+      font-size: 8px;
+      font-weight: 900;
+    }
+
+    .drawer-chip.time {
+      border-left-color: var(--clay);
+      background: rgb(var(--clay-rgb) / 0.22);
+    }
+
+    .drawer-tasks {
+      display: grid;
+      gap: 0;
+      padding-left: 16px;
+      border-left: 1px solid var(--line-on-dark);
+    }
+
+    .drawer-task {
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 34px;
+      color: var(--text-on-dark-secondary);
+      border-bottom: 0;
+      font-size: 14px;
+    }
+
+    .drawer-check {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--text-on-dark-tertiary);
+    }
+
+    .drawer-task.done .drawer-check {
+      position: relative;
+      border-color: var(--chartreuse);
+    }
+
+    .drawer-task.done .drawer-check::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 0;
+      width: 6px;
+      height: 10px;
+      border: solid var(--chartreuse);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .drawer-task.done .drawer-task-title {
+      text-decoration: line-through;
+      opacity: 0.65;
+    }
+
+    .drawer-task-time {
+      color: var(--text-on-dark-tertiary);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .content-scroll {
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.075) 1px, transparent 1.2px),
+        var(--surface-secondary);
+      background-size: 26px 26px, auto;
+    }
+
+    .ledger-panel {
+      display: grid;
+      grid-template-columns: 1fr;
+      min-height: 100%;
+      background: var(--surface-secondary);
+    }
+
+    .ledger-head {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) 160px 116px 94px;
+      min-height: 38px;
+      border-bottom: 1px solid var(--calendar-grid-line);
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.06) 1px, transparent 1.2px),
+        color-mix(in srgb, var(--chartreuse) 24%, var(--surface-secondary) 76%);
+      background-size: 26px 26px, auto;
+    }
+
+    .ledger-head span {
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      border-right: 1px solid var(--line-on-paper);
+      color: var(--pine);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .ledger-head span:last-child { border-right: 0; }
+
+    .section-title {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      min-height: 50px;
+      padding: 16px 18px 9px 70px;
+      border-top: 1px solid var(--calendar-grid-line);
+      border-bottom: 1px solid var(--calendar-date-rule);
+      color: var(--text-tertiary);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .section-title strong {
+      display: inline-grid;
+      place-items: center;
+      width: fit-content;
+      padding: 0 5px;
+      color: var(--text-primary);
+      background: linear-gradient(transparent 25%, rgb(var(--chartreuse-rgb) / 0.38) 25% 75%, transparent 75%);
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .section-title.weather strong {
+      background: linear-gradient(transparent 25%, rgb(var(--cornflower-rgb) / 0.34) 25% 75%, transparent 75%);
+    }
+
+    .ledger-entry {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) 160px 116px 94px;
+      min-height: 74px;
+      border-bottom: 1px solid var(--calendar-date-rule);
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.055) 1px, transparent 1.2px),
+        transparent;
+      background-size: 26px 26px, auto;
+    }
+
+    .ledger-entry.expanded {
+      grid-template-rows: auto auto;
+      background:
+        linear-gradient(90deg, rgb(var(--chartreuse-rgb) / 0.12), transparent 72%),
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.055) 1px, transparent 1.2px),
+        transparent;
+      background-size: auto, 26px 26px, auto;
+    }
+
+    .ledger-entry > div {
+      display: grid;
+      align-content: center;
+      padding: 10px 12px;
+      border-right: 1px solid var(--calendar-date-rule);
+    }
+
+    .ledger-entry > div:last-child { border-right: 0; }
+
+    .entry-expanded-detail {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) minmax(0, 1fr);
+      align-content: start;
+      gap: 16px;
+      padding: 14px 16px 16px;
+      border-right: 0;
+      border-top: 1px solid var(--calendar-date-rule);
+      color: var(--text-secondary);
+      background: rgb(var(--vellum-rgb) / 0.18);
+    }
+
+    .entry-expanded-detail > div:nth-of-type(2) {
+      padding-left: 16px;
+      border-left: 1px solid var(--calendar-date-rule);
+    }
+
+    .entry-expanded-detail::before {
+      content: "";
+    }
+
+    .entry-expanded-detail p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .entry-expanded-detail .label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--pine);
+      font-size: 8px;
+      font-weight: 900;
+    }
+
+    .entry-expanded-detail ul {
+      display: grid;
+      gap: 5px;
+      margin: 0;
+      padding-left: 17px;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .ledger-check {
+      place-items: center;
+      padding: 0;
+    }
+
+    .check {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgb(var(--inkwell-rgb) / 0.24);
+      background: var(--surface-secondary);
+    }
+
+    .check.checked {
+      position: relative;
+      border-color: rgb(var(--inkwell-rgb) / 0.46);
+    }
+
+    .check.checked::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 1px;
+      width: 6px;
+      height: 11px;
+      border: solid rgb(var(--inkwell-rgb) / 0.62);
+      border-width: 0 3px 3px 0;
+      transform: rotate(45deg);
+    }
+
+    .entry-title {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .entry-title.done {
+      color: var(--text-tertiary);
+      text-decoration: line-through;
+    }
+
+    .entry-note {
+      margin-top: 4px;
+      color: var(--text-tertiary);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .entry-context {
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.16;
+    }
+
+    .entry-source {
+      justify-self: start;
+      padding: 5px 9px 4px;
+      border-left: 4px solid var(--pine);
+      color: var(--dark-fern);
+      background: rgb(var(--chartreuse-rgb) / 0.22);
+      font-size: 9px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .entry-source.user {
+      border-left-color: var(--clay);
+      color: var(--dark-clay);
+      background: var(--terracotta-wash);
+    }
+
+    .entry-source.rain {
+      border-left-color: var(--dark-navy);
+      color: var(--dark-navy);
+      background: linear-gradient(135deg, rgb(var(--cornflower-rgb) / 0.34), rgb(var(--chartreuse-rgb) / 0.16));
+    }
+
+    .entry-time {
+      color: var(--text-tertiary);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .detail-aside {
+      min-height: 0;
+      overflow-y: auto;
+      background: var(--page-bg);
+      color: var(--text-on-dark-secondary);
+      border-left: 1px solid var(--line-on-dark);
+    }
+
+    .aside-head {
+      padding: 28px 26px 22px;
+      border-top: 4px solid var(--chartreuse);
+    }
+
+    .aside-head .label {
+      color: var(--chartreuse);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .focus-title {
+      margin: 12px 0 9px;
+      color: var(--text-on-dark-primary);
+      font-size: 34px;
+    }
+
+    .aside-head p {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.45;
+    }
+
+    .aside-section {
+      padding: 22px 26px;
+      border-top: 1px solid var(--line-on-dark);
+    }
+
+    .aside-section.light-note {
+      border-left: 4px solid var(--cornflower);
+      background: linear-gradient(135deg, rgb(var(--cornflower-rgb) / 0.28), rgb(var(--chartreuse-rgb) / 0.1));
+    }
+
+    .aside-section .label {
+      color: var(--chartreuse);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .aside-facts {
+      display: grid;
+      grid-template-columns: 78px 1fr;
+      gap: 8px 14px;
+      margin-top: 12px;
+      font-size: 15px;
+    }
+
+    .aside-facts dt {
+      color: var(--text-on-dark-tertiary);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .aside-facts dd { margin: 0; }
+
+    .aside-section ul {
+      margin: 12px 0 0;
+      padding-left: 18px;
+      line-height: 1.45;
+    }
+
+    .calendar-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      min-height: 0;
+      height: 100%;
+      background: var(--surface-primary);
+    }
+
+    .calendar-only {
+      min-height: 0;
+      overflow: hidden;
+      background: var(--surface-primary);
+    }
+
+    .calendar-panel-title {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 18px;
+      padding: 16px 20px 12px;
+      background: var(--surface-primary);
+    }
+
+    .panel-title {
+      margin: 0;
+      color: var(--pine);
+      font-family: var(--font-botanical);
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .calendar-mode {
+      color: var(--text-tertiary);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      grid-template-rows: 34px repeat(5, minmax(0, 1fr));
+      height: calc(100% - 66px);
+      border-top: 1px solid var(--calendar-grid-line);
+      border-left: 1px solid var(--calendar-grid-line);
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.075) 1px, transparent 1.2px),
+        var(--surface-secondary);
+      background-size: 24px 24px, auto;
+    }
+
+    .calendar-day-name {
+      display: grid;
+      place-items: center;
+      border-right: 1px solid var(--calendar-grid-line);
+      border-bottom: 1px solid var(--calendar-grid-line);
+      color: var(--pine);
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.055) 1px, transparent 1.2px),
+        color-mix(in srgb, var(--chartreuse) 25%, var(--vellum-pale) 75%);
+      background-size: 24px 24px, auto;
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .day {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 6px;
+      min-width: 0;
+      min-height: 0;
+      padding: 7px 8px;
+      border-right: 1px solid var(--calendar-grid-line);
+      border-bottom: 1px solid var(--calendar-grid-line);
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.075) 1px, transparent 1.2px),
+        var(--surface-secondary);
+      background-size: 24px 24px, auto;
+    }
+
+    .day.outside {
+      color: rgb(var(--inkwell-rgb) / 0.48);
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.07) 1px, transparent 1.2px),
+        var(--surface-outside-month);
+      background-size: 24px 24px, auto;
+    }
+
+    .day.today {
+      border: 2px solid var(--cornflower);
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.065) 1px, transparent 1.2px),
+        linear-gradient(135deg, rgb(var(--cornflower-rgb) / 0.34), rgb(var(--chartreuse-rgb) / 0.13)),
+        var(--surface-secondary);
+      background-size: 24px 24px, auto, auto;
+    }
+
+    .day-number {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 4px;
+      padding-bottom: 3px;
+      border-bottom: 1px solid var(--calendar-date-rule);
+      color: var(--text-primary);
+      font-size: 16px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .day-number span {
+      color: var(--text-tertiary);
+      font-family: var(--font-label);
+      font-size: 7px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .weather-mark {
+      color: var(--clay);
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .weather-mark.cloud { color: color-mix(in srgb, var(--cornflower) 42%, var(--surface-secondary) 58%); }
+    .weather-mark.rain { color: var(--cornflower); }
+
+    .day-tasks {
+      display: grid;
+      align-content: start;
+      gap: 5px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .day-task {
+      justify-self: start;
+      max-width: 100%;
+      padding: 3px 6px 3px 5px;
+      border-left: 3px solid var(--pine);
+      color: var(--text-primary);
+      background: rgb(var(--pine-rgb) / 0.1);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 0;
+      line-height: 1;
+      text-transform: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .day-task.user {
+      border-left-color: var(--clay);
+      background: var(--terracotta-wash);
+    }
+
+    .day-task.rain {
+      border-left-color: var(--cornflower);
+      background: rgb(var(--cornflower-rgb) / 0.18);
+    }
+
+    .calendar-aside {
+      min-height: 0;
+      overflow-y: auto;
+      background: var(--page-bg);
+      color: var(--text-on-dark-secondary);
+    }
+
+    .calendar-aside-head {
+      padding: 28px 24px 16px;
+      border-top: 4px solid var(--chartreuse);
+    }
+
+    .date-lockup {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .date-day {
+      color: var(--text-on-dark-primary);
+      font-family: var(--font-display);
+      font-size: 52px;
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1;
+    }
+
+    .date-month {
+      color: var(--chartreuse);
+      font-family: var(--font-botanical);
+      font-size: 31px;
+      font-weight: 700;
+    }
+
+    .calendar-aside .label {
+      color: var(--chartreuse);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .note-card {
+      margin: 18px 24px 0;
+      padding: 16px;
+      border-left: 4px solid var(--cornflower);
+      background: linear-gradient(135deg, rgb(var(--cornflower-rgb) / 0.28), rgb(var(--chartreuse-rgb) / 0.1));
+    }
+
+    .note-card.clay {
+      border-left-color: var(--clay);
+      background: rgb(var(--clay-rgb) / 0.14);
+    }
+
+    .note-card h3 {
+      margin: 6px 0 6px;
+      color: var(--text-on-dark-primary);
+      font-family: var(--font-botanical);
+      font-size: 27px;
+      line-height: 1;
+    }
+
+    .note-card p {
+      margin: 0;
+      color: var(--text-on-dark-secondary);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .aside-checklist {
+      display: grid;
+      gap: 12px;
+      margin: 20px 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line-on-dark);
+    }
+
+    .aside-checklist li {
+      display: grid;
+      grid-template-columns: 18px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-on-dark-secondary);
+      font-size: 14px;
+      list-style: none;
+    }
+
+    .aside-checklist ul {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .bottom-nav {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      min-height: 74px;
+      padding: 9px 22px 12px;
+      border-top: 1px solid var(--line-on-paper);
+      background: var(--page-bg);
+    }
+
+    .bottom-nav .nav-item {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      margin: 0 auto;
+      border: 1px solid transparent;
+      border-radius: var(--radius-soft);
+      color: var(--text-on-dark-tertiary);
+      background: transparent;
+      font-family: var(--font-label);
+      font-size: 10px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .bottom-nav .nav-item.active {
+      border-color: rgb(var(--pine-rgb) / 0.55);
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+    }
+
+    .nav-spacer { pointer-events: none; }
+
+    .fab {
+      position: absolute;
+      left: 50%;
+      top: -26px;
+      transform: translateX(-50%);
+      display: grid;
+      place-items: center;
+      width: 62px;
+      height: 62px;
+      border: 4px solid var(--page-bg);
+      border-radius: 50%;
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+      box-shadow: 0 10px 24px rgb(0 0 0 / 0.28);
+      font-size: 35px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .rail {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+      padding: 14px 8px;
+      border-right: 1px solid var(--line-on-dark);
+      background: var(--page-bg);
+    }
+
+    .rail-brand {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      margin: 0 auto;
+      border: 1px solid rgb(var(--pine-rgb) / 0.55);
+      border-radius: var(--radius-journal);
+      color: var(--inkwell);
+      background: var(--chartreuse);
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+    }
+
+    .rail-nav {
+      display: grid;
+      align-content: start;
+      gap: 8px;
+    }
+
+    .rail-item {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      margin: 0 auto;
+      border: 1px solid transparent;
+      border-radius: var(--radius-soft);
+      color: var(--text-on-dark-tertiary);
+      background: transparent;
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .rail-item.active {
+      border-color: rgb(var(--pine-rgb) / 0.55);
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+    }
+
+    .rail-add {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      margin: 0 auto;
+      border: 0;
+      border-radius: 999px;
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .landscape-main {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .landscape-topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--line-on-paper);
+      background: var(--surface-primary);
+    }
+
+    .landscape-topbar .screen-title {
+      color: var(--text-primary);
+      font-size: 31px;
+    }
+
+    .landscape-topbar .page-note {
+      color: var(--pine);
+      font-size: 13px;
+    }
+
+    .segmented {
+      display: flex;
+      gap: 3px;
+      padding: 4px;
+      border: 1px solid var(--line-on-paper);
+      border-radius: var(--radius-soft);
+      background: var(--surface-raised);
+    }
+
+    .segmented span {
+      display: grid;
+      place-items: center;
+      min-width: 44px;
+      height: 30px;
+      border-radius: var(--radius-tight);
+      color: var(--text-tertiary);
+    }
+
+    .segmented .active {
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+    }
+
+    .segmented svg {
+      display: block;
+      width: 17px;
+      height: 17px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .landscape-content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      min-height: 0;
+    }
+
+    .landscape-calendar-content {
+      grid-template-columns: minmax(0, 1fr) 300px;
+    }
+
+    .landscape-ledger .ledger-head,
+    .landscape-ledger .ledger-entry {
+      grid-template-columns: 40px minmax(0, 1fr) 148px 110px 86px;
+    }
+
+    .landscape-ledger .entry-title { font-size: 16px; }
+
+    .landscape-calendar-content .calendar-panel-title { padding: 14px 18px 10px; }
+
+    .landscape-calendar-content .calendar-grid {
+      height: calc(100% - 60px);
+    }
+
+    @media (max-width: 820px) {
+      body { padding: 16px; }
+      .portrait-frame,
+      .landscape-frame {
+        width: calc(100vw - 32px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="mockup-stack">
+    <div class="mockup-note">iPad mockups - tasks overview ledger and calendar views</div>
+
+    <section>
+      <h2 class="mockup-title">iPad portrait - ledger view</h2>
+      <div class="device-frame portrait-frame">
+        <div class="app-shell portrait-shell">
+          <header class="app-header">
+            <div class="brand">
+              <div class="brand-title">Verdant Pages</div>
+              <div class="brand-subtitle">Rhizome workspace</div>
+            </div>
+            <div class="view-toggle" aria-label="Task view toggle">
+              <span class="active" aria-label="List view">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10M7 12h10M7 17h10"/></svg>
+              </span>
+            </div>
+          </header>
+
+          <section class="page-intro">
+            <h1 class="screen-title">Tasks</h1>
+            <p class="page-note">Today, weather shifts, and Rhizome-prioritized work.</p>
+            <div class="tab-strip" aria-label="Task filters">
+              <button class="tab active" type="button">Today</button>
+              <button class="tab category" type="button">Category</button>
+              <button class="tab area" type="button">Project / Area</button>
+              <button class="tab plus" type="button">+</button>
+            </div>
+          </section>
+
+          <div class="content-scroll">
+            <section class="ledger-panel">
+              <div class="ledger-head" aria-hidden="true">
+                <span></span><span>Entry</span><span>Context</span><span>Source</span><span>Time</span>
+              </div>
+              <div class="section-title"><strong>Before work</strong><span>3 open</span></div>
+              <article class="ledger-entry expanded">
+                <div class="ledger-check"><span class="check"></span></div>
+                <div><h3 class="entry-title">Inspect cherry tomatoes for aphids</h3><span class="entry-note">Container row · focus while morning light is good</span></div>
+                <div><span class="entry-context">Tomatoes<br>Bay Area Zone 9b</span></div>
+                <div><span class="entry-source">Rhizome</span></div>
+                <div><span class="entry-time">10 min</span></div>
+                <div class="entry-expanded-detail">
+                  <div>
+                    <span class="label">Selected entry</span>
+                    <p>Rhizome put this first because aphids are easiest to spot in bright morning light and the plants should stay dry before rain.</p>
+                  </div>
+                  <div>
+                    <span class="label">Suggested order</span>
+                    <ul>
+                      <li>Inspect undersides of new tomato leaves.</li>
+                      <li>Photograph kale leaf damage while outside.</li>
+                      <li>Check seedling trays before closing the cover halfway.</li>
+                    </ul>
+                  </div>
+                </div>
+              </article>
+              <article class="ledger-entry">
+                <div class="ledger-check"><span class="check"></span></div>
+                <div><h3 class="entry-title">Check seedling tray moisture and airflow</h3><span class="entry-note">Avoid overwatering before the cool night</span></div>
+                <div><span class="entry-context">Seedlings<br>Indoor trays</span></div>
+                <div><span class="entry-source">Rhizome</span></div>
+                <div><span class="entry-time">12 min</span></div>
+              </article>
+              <article class="ledger-entry">
+                <div class="ledger-check"><span class="check"></span></div>
+                <div><h3 class="entry-title">Photograph kale leaf damage</h3><span class="entry-note">Attach photo before Rhizome treatment plan</span></div>
+                <div><span class="entry-context">Kale<br>Incident thread</span></div>
+                <div><span class="entry-source user">User</span></div>
+                <div><span class="entry-time">8 min</span></div>
+              </article>
+
+              <div class="section-title weather"><strong>Rain adjusted</strong><span>4 shifted</span></div>
+              <article class="ledger-entry">
+                <div class="ledger-check"><span class="check"></span></div>
+                <div><h3 class="entry-title">Defer container watering until tomorrow afternoon</h3><span class="entry-note">Rain expected tonight from 9 PM to 2 AM</span></div>
+                <div><span class="entry-context">Watering<br>Containers</span></div>
+                <div><span class="entry-source rain">Rain</span></div>
+                <div><span class="entry-time">Moved</span></div>
+              </article>
+              <article class="ledger-entry">
+                <div class="ledger-check"><span class="check"></span></div>
+                <div><h3 class="entry-title">Add drainage check for herb containers</h3><span class="entry-note">Generated after rain review</span></div>
+                <div><span class="entry-context">Herbs<br>Patio pots</span></div>
+                <div><span class="entry-source rain">Rain</span></div>
+                <div><span class="entry-time">Tomorrow</span></div>
+              </article>
+
+              <div class="section-title"><strong>Done this morning</strong><span>2 complete</span></div>
+              <article class="ledger-entry">
+                <div class="ledger-check"><span class="check checked"></span></div>
+                <div><h3 class="entry-title done">Open greenhouse vent</h3><span class="entry-note">Completed 7:42 AM · logged by user</span></div>
+                <div><span class="entry-context">Greenhouse<br>Ventilation</span></div>
+                <div><span class="entry-source user">User</span></div>
+                <div><span class="entry-time">Done</span></div>
+              </article>
+            </section>
+          </div>
+
+          <nav class="bottom-nav" aria-label="Main navigation">
+            <div class="nav-item">R</div>
+            <div class="nav-item active">T</div>
+            <div class="nav-spacer"></div>
+            <div class="nav-item">G</div>
+            <div class="nav-item">P</div>
+            <button class="fab" type="button" aria-label="Quick action">+</button>
+          </nav>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mockup-title">iPad portrait - calendar view</h2>
+      <div class="device-frame portrait-frame">
+        <div class="app-shell portrait-shell">
+          <header class="app-header">
+            <div class="brand">
+              <div class="brand-title">Verdant Pages</div>
+              <div class="brand-subtitle">Rhizome workspace</div>
+            </div>
+            <div class="view-toggle" aria-label="Task view toggle">
+              <span class="active" aria-label="Calendar view">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>
+              </span>
+            </div>
+          </header>
+
+          <section class="page-intro">
+            <h1 class="screen-title">Tasks</h1>
+            <p class="page-note">Today, weather shifts, and Rhizome-prioritized work.</p>
+          </section>
+
+          <details class="drawer" open>
+            <summary>
+              <span class="drawer-summary"><span class="drawer-day">29th,</span><span class="drawer-month">April</span></span>
+              <span class="drawer-caret">v</span>
+            </summary>
+            <div class="drawer-body">
+              <div class="drawer-copy">
+                <span class="label">Overview</span>
+                <div class="drawer-chips"><span class="drawer-chip">Rain 9p-2a</span><span class="drawer-chip time">45 min allotted</span></div>
+                <p>Inspection stays useful. Routine watering moves to tomorrow afternoon.</p>
+              </div>
+              <div class="drawer-tasks">
+                <div class="drawer-task"><span class="drawer-check"></span><span class="drawer-task-title">Inspect cherry tomatoes for aphids</span><span class="drawer-task-time">10m</span></div>
+                <div class="drawer-task"><span class="drawer-check"></span><span class="drawer-task-title">Photograph kale leaf damage</span><span class="drawer-task-time">8m</span></div>
+                <div class="drawer-task"><span class="drawer-check"></span><span class="drawer-task-title">Skip routine container watering</span><span class="drawer-task-time">Moved</span></div>
+                <div class="drawer-task done"><span class="drawer-check"></span><span class="drawer-task-title">Open greenhouse vent</span><span class="drawer-task-time">Done</span></div>
+              </div>
+            </div>
+          </details>
+
+          <div class="calendar-only">
+            <section class="calendar-panel-title">
+              <h2 class="panel-title">April 2026</h2>
+              <div class="calendar-mode">Month</div>
+            </section>
+            <div class="calendar-grid">
+              <div class="calendar-day-name">Sun</div><div class="calendar-day-name">Mon</div><div class="calendar-day-name">Tue</div><div class="calendar-day-name">Wed</div><div class="calendar-day-name">Thu</div><div class="calendar-day-name">Fri</div><div class="calendar-day-name">Sat</div>
+              <div class="day outside"><div class="day-number">29<span>Mar</span></div><div></div></div>
+              <div class="day outside"><div class="day-number">30<span class="weather-mark">☀</span></div><div></div></div>
+              <div class="day outside"><div class="day-number">31<span>Mar</span></div><div></div></div>
+              <div class="day"><div class="day-number">1<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Seed tray</span></div></div>
+              <div class="day"><div class="day-number">2<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Water</span></div></div>
+              <div class="day"><div class="day-number">3<span class="weather-mark cloud">☁</span></div><div class="day-tasks"><span class="day-task">Aphid trap</span></div></div>
+              <div class="day"><div class="day-number">4<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task user">Pot mix</span></div></div>
+              <div class="day"><div class="day-number">5<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Notes</span></div></div>
+              <div class="day"><div class="day-number">6<span class="weather-mark cloud">☁</span></div><div></div></div>
+              <div class="day"><div class="day-number">7<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Thin basil</span></div></div>
+              <div class="day"><div class="day-number">8<span class="weather-mark">☀</span></div><div></div></div>
+              <div class="day"><div class="day-number">9<span class="weather-mark cloud">☁</span></div><div class="day-tasks"><span class="day-task">Feed</span></div></div>
+              <div class="day"><div class="day-number">10<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Harden</span></div></div>
+              <div class="day"><div class="day-number">11<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Compost</span></div></div>
+              <div class="day"><div class="day-number">12<span class="weather-mark cloud">☁</span></div><div></div></div>
+              <div class="day"><div class="day-number">13<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Layout</span></div></div>
+              <div class="day"><div class="day-number">14<span class="weather-mark">☀</span></div><div></div></div>
+              <div class="day"><div class="day-number">15<span class="weather-mark cloud">☁</span></div><div class="day-tasks"><span class="day-task">Tomatoes</span></div></div>
+              <div class="day"><div class="day-number">16<span class="weather-mark">☀</span></div><div></div></div>
+              <div class="day"><div class="day-number">17<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Up-pot</span></div></div>
+              <div class="day"><div class="day-number">18<span class="weather-mark cloud">☁</span></div><div></div></div>
+              <div class="day"><div class="day-number">19<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Notes</span></div></div>
+              <div class="day"><div class="day-number">20<span class="weather-mark cloud">☁</span></div><div></div></div>
+              <div class="day"><div class="day-number">21<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Irrigation</span></div></div>
+              <div class="day"><div class="day-number">22<span class="weather-mark">☀</span></div><div></div></div>
+              <div class="day"><div class="day-number">23<span class="weather-mark cloud">☁</span></div><div class="day-tasks"><span class="day-task">Prune</span></div></div>
+              <div class="day"><div class="day-number">24<span class="weather-mark">☀</span></div><div></div></div>
+              <div class="day"><div class="day-number">25<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Border</span></div></div>
+              <div class="day"><div class="day-number">26<span class="weather-mark cloud">☁</span></div><div></div></div>
+              <div class="day"><div class="day-number">27<span class="weather-mark">☀</span></div><div></div></div>
+              <div class="day"><div class="day-number">28<span class="weather-mark cloud">☁</span></div><div></div></div>
+              <div class="day today"><div class="day-number">29<span>Today</span></div><div class="day-tasks"><span class="day-task">Tomatoes</span><span class="day-task user">Kale photo</span><span class="day-task rain">Skip water</span></div></div>
+              <div class="day"><div class="day-number">30<span class="weather-mark rain">☂</span></div><div class="day-tasks"><span class="day-task rain">Drainage</span></div></div>
+              <div class="day outside"><div class="day-number">1<span>May</span></div><div class="day-tasks"><span class="day-task">Hardening</span></div></div>
+              <div class="day outside"><div class="day-number">2<span>May</span></div><div></div></div>
+            </div>
+          </div>
+
+          <nav class="bottom-nav" aria-label="Main navigation">
+            <div class="nav-item">R</div>
+            <div class="nav-item active">T</div>
+            <div class="nav-spacer"></div>
+            <div class="nav-item">G</div>
+            <div class="nav-item">P</div>
+            <button class="fab" type="button" aria-label="Quick action">+</button>
+          </nav>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mockup-title">iPad landscape - ledger view</h2>
+      <div class="device-frame landscape-frame">
+        <div class="app-shell landscape-shell">
+          <aside class="rail" aria-label="Compressed navigation">
+            <div class="rail-brand">V</div>
+            <nav class="rail-nav">
+              <div class="rail-item">R</div>
+              <div class="rail-item active">T</div>
+              <div class="rail-item">G</div>
+              <div class="rail-item">P</div>
+              <div class="rail-item">I</div>
+            </nav>
+            <button class="rail-add" type="button" aria-label="Quick action">+</button>
+          </aside>
+
+          <main class="landscape-main">
+            <header class="landscape-topbar">
+              <div>
+                <h1 class="screen-title">Tasks</h1>
+                <p class="page-note">Today, weather shifts, and Rhizome-prioritized work.</p>
+              </div>
+              <div class="segmented" aria-label="Task view toggle">
+                <span class="active" aria-label="List view"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10M7 12h10M7 17h10"/></svg></span>
+                <span aria-label="Calendar view"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg></span>
+              </div>
+            </header>
+
+            <section class="landscape-content">
+              <div class="content-scroll landscape-ledger">
+                <div class="tab-strip" style="margin:0; padding:14px 18px 0; background:var(--page-bg);">
+                  <button class="tab active" type="button">Today</button>
+                  <button class="tab category" type="button">Category</button>
+                  <button class="tab area" type="button">Project / Area</button>
+                  <button class="tab plus" type="button">+</button>
+                </div>
+                <section class="ledger-panel">
+                  <div class="ledger-head" aria-hidden="true"><span></span><span>Entry</span><span>Context</span><span>Source</span><span>Time</span></div>
+                  <div class="section-title"><strong>Before work</strong><span>3 open</span></div>
+                  <article class="ledger-entry">
+                    <div class="ledger-check"><span class="check"></span></div>
+                    <div><h3 class="entry-title">Inspect cherry tomatoes for aphids</h3><span class="entry-note">Container row · focus while morning light is good</span></div>
+                    <div><span class="entry-context">Tomatoes<br>Bay Area Zone 9b</span></div>
+                    <div><span class="entry-source">Rhizome</span></div>
+                    <div><span class="entry-time">10 min</span></div>
+                  </article>
+                  <article class="ledger-entry">
+                    <div class="ledger-check"><span class="check"></span></div>
+                    <div><h3 class="entry-title">Check seedling tray moisture and airflow</h3><span class="entry-note">Avoid overwatering before the cool night</span></div>
+                    <div><span class="entry-context">Seedlings<br>Indoor trays</span></div>
+                    <div><span class="entry-source">Rhizome</span></div>
+                    <div><span class="entry-time">12 min</span></div>
+                  </article>
+                  <article class="ledger-entry">
+                    <div class="ledger-check"><span class="check"></span></div>
+                    <div><h3 class="entry-title">Photograph kale leaf damage</h3><span class="entry-note">Attach photo before treatment plan</span></div>
+                    <div><span class="entry-context">Kale<br>Incident</span></div>
+                    <div><span class="entry-source user">User</span></div>
+                    <div><span class="entry-time">8 min</span></div>
+                  </article>
+                  <div class="section-title weather"><strong>Rain adjusted</strong><span>4 shifted</span></div>
+                  <article class="ledger-entry">
+                    <div class="ledger-check"><span class="check"></span></div>
+                    <div><h3 class="entry-title">Defer container watering until tomorrow afternoon</h3><span class="entry-note">Rain expected tonight from 9 PM to 2 AM</span></div>
+                    <div><span class="entry-context">Watering<br>Containers</span></div>
+                    <div><span class="entry-source rain">Rain</span></div>
+                    <div><span class="entry-time">Moved</span></div>
+                  </article>
+                  <article class="ledger-entry">
+                    <div class="ledger-check"><span class="check checked"></span></div>
+                    <div><h3 class="entry-title done">Open greenhouse vent</h3><span class="entry-note">Completed 7:42 AM · logged by user</span></div>
+                    <div><span class="entry-context">Greenhouse<br>Ventilation</span></div>
+                    <div><span class="entry-source user">User</span></div>
+                    <div><span class="entry-time">Done</span></div>
+                  </article>
+                </section>
+              </div>
+
+              <aside class="detail-aside">
+                <header class="aside-head">
+                  <div class="label">Selected entry</div>
+                  <h2 class="focus-title">Inspect tomatoes</h2>
+                  <p>Rhizome put this first because aphids are easiest to spot in bright morning light and the plants should stay dry before rain.</p>
+                </header>
+                <section class="aside-section">
+                  <div class="label">Ledger facts</div>
+                  <dl class="aside-facts">
+                    <dt>Area</dt><dd>Tomato container row</dd>
+                    <dt>Time</dt><dd>10 minutes</dd>
+                    <dt>Type</dt><dd>Inspection</dd>
+                    <dt>Priority</dt><dd>Rhizome suggested</dd>
+                  </dl>
+                </section>
+                <section class="aside-section light-note">
+                  <div class="label">Weather note</div>
+                  <p>Skip routine watering. Rain is expected tonight, so the useful work is inspection and airflow.</p>
+                </section>
+                <section class="aside-section">
+                  <div class="label">Suggested order</div>
+                  <ul>
+                    <li>Inspect undersides of new tomato leaves.</li>
+                    <li>Photograph kale leaf damage while outside.</li>
+                    <li>Check seedling trays last before closing the cover halfway.</li>
+                  </ul>
+                </section>
+              </aside>
+            </section>
+          </main>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mockup-title">iPad landscape - calendar view</h2>
+      <div class="device-frame landscape-frame">
+        <div class="app-shell landscape-shell">
+          <aside class="rail" aria-label="Compressed navigation">
+            <div class="rail-brand">V</div>
+            <nav class="rail-nav">
+              <div class="rail-item">R</div>
+              <div class="rail-item active">T</div>
+              <div class="rail-item">G</div>
+              <div class="rail-item">P</div>
+              <div class="rail-item">I</div>
+            </nav>
+            <button class="rail-add" type="button" aria-label="Quick action">+</button>
+          </aside>
+
+          <main class="landscape-main">
+            <header class="landscape-topbar">
+              <div>
+                <h1 class="screen-title">Tasks</h1>
+                <p class="page-note">Monthly care rhythm, weather context, and scheduled follow-ups.</p>
+              </div>
+              <div class="segmented" aria-label="Task view toggle">
+                <span aria-label="List view"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10M7 12h10M7 17h10"/></svg></span>
+                <span class="active" aria-label="Calendar view"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg></span>
+              </div>
+            </header>
+
+            <section class="landscape-content landscape-calendar-content">
+              <div class="calendar-only">
+                <section class="calendar-panel-title">
+                  <h2 class="panel-title">April 2026</h2>
+                  <div class="calendar-mode">Month</div>
+                </section>
+                <div class="calendar-grid">
+                  <div class="calendar-day-name">Sun</div><div class="calendar-day-name">Mon</div><div class="calendar-day-name">Tue</div><div class="calendar-day-name">Wed</div><div class="calendar-day-name">Thu</div><div class="calendar-day-name">Fri</div><div class="calendar-day-name">Sat</div>
+                  <div class="day outside"><div class="day-number">29<span>Mar</span></div><div></div></div><div class="day outside"><div class="day-number">30<span class="weather-mark">☀</span></div><div></div></div><div class="day outside"><div class="day-number">31<span>Mar</span></div><div></div></div>
+                  <div class="day"><div class="day-number">1<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Seed tray</span></div></div><div class="day"><div class="day-number">2<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Water</span></div></div><div class="day"><div class="day-number">3<span class="weather-mark cloud">☁</span></div><div class="day-tasks"><span class="day-task">Aphid trap</span></div></div><div class="day"><div class="day-number">4<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task user">Pot mix</span></div></div>
+                  <div class="day"><div class="day-number">5<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Notes</span></div></div><div class="day"><div class="day-number">6<span class="weather-mark cloud">☁</span></div><div></div></div><div class="day"><div class="day-number">7<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Thin basil</span></div></div><div class="day"><div class="day-number">8<span class="weather-mark">☀</span></div><div></div></div><div class="day"><div class="day-number">9<span class="weather-mark cloud">☁</span></div><div class="day-tasks"><span class="day-task">Feed</span></div></div><div class="day"><div class="day-number">10<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Harden</span></div></div><div class="day"><div class="day-number">11<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Compost</span></div></div>
+                  <div class="day"><div class="day-number">12<span class="weather-mark cloud">☁</span></div><div></div></div><div class="day"><div class="day-number">13<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Layout</span></div></div><div class="day"><div class="day-number">14<span class="weather-mark">☀</span></div><div></div></div><div class="day"><div class="day-number">15<span class="weather-mark cloud">☁</span></div><div class="day-tasks"><span class="day-task">Tomatoes</span></div></div><div class="day"><div class="day-number">16<span class="weather-mark">☀</span></div><div></div></div><div class="day"><div class="day-number">17<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Up-pot</span></div></div><div class="day"><div class="day-number">18<span class="weather-mark cloud">☁</span></div><div></div></div>
+                  <div class="day"><div class="day-number">19<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Notes</span></div></div><div class="day"><div class="day-number">20<span class="weather-mark cloud">☁</span></div><div></div></div><div class="day"><div class="day-number">21<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Irrigation</span></div></div><div class="day"><div class="day-number">22<span class="weather-mark">☀</span></div><div></div></div><div class="day"><div class="day-number">23<span class="weather-mark cloud">☁</span></div><div class="day-tasks"><span class="day-task">Prune</span></div></div><div class="day"><div class="day-number">24<span class="weather-mark">☀</span></div><div></div></div><div class="day"><div class="day-number">25<span class="weather-mark">☀</span></div><div class="day-tasks"><span class="day-task">Border</span></div></div>
+                  <div class="day"><div class="day-number">26<span class="weather-mark cloud">☁</span></div><div></div></div><div class="day"><div class="day-number">27<span class="weather-mark">☀</span></div><div></div></div><div class="day"><div class="day-number">28<span class="weather-mark cloud">☁</span></div><div></div></div><div class="day today"><div class="day-number">29<span>Today</span></div><div class="day-tasks"><span class="day-task">Tomatoes</span><span class="day-task user">Kale photo</span><span class="day-task rain">Skip water</span></div></div><div class="day"><div class="day-number">30<span class="weather-mark rain">☂</span></div><div class="day-tasks"><span class="day-task rain">Drainage</span></div></div><div class="day outside"><div class="day-number">1<span>May</span></div><div class="day-tasks"><span class="day-task">Hardening</span></div></div><div class="day outside"><div class="day-number">2<span>May</span></div><div></div></div>
+                </div>
+              </div>
+
+              <aside class="calendar-aside">
+                <header class="calendar-aside-head">
+                  <div class="label">Overview</div>
+                  <div class="date-lockup"><span class="date-day">29th,</span><span class="date-month">April</span></div>
+                </header>
+                <article class="note-card">
+                  <div class="label">Weather changed</div>
+                  <h3>Rain 9p-2a</h3>
+                  <p>Move routine watering. Check trays and tomatoes while light is good.</p>
+                </article>
+                <article class="note-card clay">
+                  <div class="label">Time today</div>
+                  <h3>45 min</h3>
+                  <p>Keep the morning narrow. Seedlings before work.</p>
+                </article>
+                <div class="aside-checklist">
+                  <div class="label">Task list</div>
+                  <ul>
+                    <li><span class="drawer-check"></span><span>Inspect cherry tomatoes</span><span class="drawer-task-time">10m</span></li>
+                    <li><span class="drawer-check"></span><span>Photograph kale leaf damage</span><span class="drawer-task-time">8m</span></li>
+                    <li><span class="drawer-check"></span><span>Skip routine watering</span><span class="drawer-task-time">Moved</span></li>
+                    <li><span class="drawer-check"></span><span style="text-decoration:line-through;opacity:.7;">Open greenhouse vent</span><span class="drawer-task-time">Done</span></li>
+                  </ul>
+                </div>
+              </aside>
+            </section>
+          </main>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

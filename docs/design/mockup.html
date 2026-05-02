@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verdant Pages - Typography and Surface Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Montserrat:ital,wght@0,300;0,400;0,500;1,400&family=Nunito:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Shantell+Sans:BNCE,ital,wght@20,0,400;20,0,700;20,1,400&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --inkwell: #1C1814;
+      --vellum: #F2E8C9;
+      --chartreuse: #B8D43A;
+      --pine: #2B5C2F;
+      --clay: #E06B4A;
+      --page-bg: #181510;
+
+      --vellum-light: #F6F0E0;
+      --vellum-pale: #F8F4EC;
+      --vellum-whisper: #FAF7F2;
+      --vellum-white: #FDFCFA;
+
+      --buttercup: #FFC94D;
+      --pale-herb: #B0EAAC;
+      --peony: #F5A0C8;
+      --cornflower: #A0B8F5;
+      --wisteria: #D7A5FF;
+
+      --dark-amber: #2C1E00;
+      --dark-fern: #0C1E0C;
+      --dark-berry: #280C18;
+      --dark-navy: #0A1428;
+      --dark-plum: #1A0A2C;
+
+      --inkwell-rgb: 28 24 20;
+      --vellum-rgb: 242 232 201;
+      --pine-rgb: 43 92 47;
+
+      --surface-darker: var(--vellum);
+      --surface-primary: var(--vellum-light);
+      --surface-secondary: var(--vellum-pale);
+      --surface-quiet: var(--vellum-whisper);
+      --surface-raised: var(--vellum-white);
+      --surface-dark-card: rgb(var(--vellum-rgb) / 0.04);
+      --surface-dark-label: rgb(var(--vellum-rgb) / 0.05);
+      --surface-dark-header: rgb(var(--vellum-rgb) / 0.06);
+
+      --text-primary: var(--inkwell);
+      --text-secondary: rgb(var(--inkwell-rgb) / 0.84);
+      --text-tertiary: rgb(var(--inkwell-rgb) / 0.78);
+      --text-strong: rgb(var(--inkwell-rgb) / 0.88);
+      --text-placeholder: rgb(var(--inkwell-rgb) / 0.52);
+      --text-on-dark-primary: rgb(var(--vellum-rgb) / 0.94);
+      --text-on-dark-secondary: rgb(var(--vellum-rgb) / 0.72);
+      --text-on-dark-tertiary: rgb(var(--vellum-rgb) / 0.42);
+      --text-on-dark-muted: rgb(var(--vellum-rgb) / 0.38);
+      --line-on-paper: rgb(var(--inkwell-rgb) / 0.14);
+      --line-on-dark: rgb(var(--vellum-rgb) / 0.14);
+      --line-on-dark-subtle: rgb(var(--vellum-rgb) / 0.12);
+      --surface-muted-on-paper: rgb(var(--inkwell-rgb) / 0.07);
+
+      --font-display: "Shantell Sans", cursive;
+      --font-botanical: "Caveat", cursive;
+      --font-body: "Nunito", system-ui, sans-serif;
+      --font-label: "Montserrat", system-ui, sans-serif;
+      --display-bounce: 20;
+      --display-weight: 700;
+
+      --radius-tight: 6px;
+      --radius-soft: 8px;
+      --radius-journal: 10px;
+      --radius-round: 14px;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: clamp(28px, 5vw, 56px);
+      background: var(--page-bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+    }
+
+    .page {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .page-title,
+    .section-label,
+    .eyebrow,
+    .data-label,
+    .footer-tag,
+    .swatch-name,
+    .radius-value,
+    .chip {
+      font-family: var(--font-label);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .page-title {
+      color: var(--text-on-dark-muted);
+      font-size: 11px;
+      font-weight: 400;
+      margin-bottom: 28px;
+    }
+
+    .intro {
+      max-width: 740px;
+      margin-bottom: 34px;
+    }
+
+    .intro h1 {
+      color: var(--vellum);
+      font-family: var(--font-display);
+      font-size: clamp(38px, 8vw, 70px);
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .intro p {
+      color: var(--text-on-dark-secondary);
+      font-size: clamp(15px, 2vw, 18px);
+      line-height: 1.65;
+      max-width: 640px;
+    }
+
+    .palette-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+      gap: 6px;
+      margin-bottom: 44px;
+    }
+
+    .palette-strip-block {
+      height: 7px;
+      border-radius: 999px;
+    }
+
+    .inkwell-bg { background: var(--inkwell); }
+    .vellum-bg { background: var(--vellum); }
+    .vellum-light-bg { background: var(--vellum-light); }
+    .vellum-pale-bg { background: var(--vellum-pale); }
+    .vellum-whisper-bg { background: var(--vellum-whisper); }
+    .vellum-white-bg { background: var(--vellum-white); }
+    .surface-primary-bg { background: var(--surface-primary); }
+    .surface-secondary-bg { background: var(--surface-secondary); }
+    .surface-raised-bg { background: var(--surface-raised); }
+    .chartreuse-bg { background: var(--chartreuse); }
+    .pine-bg { background: var(--pine); }
+    .clay-bg { background: var(--clay); }
+    .buttercup-bg { background: var(--buttercup); }
+    .pale-herb-bg { background: var(--pale-herb); }
+    .peony-bg { background: var(--peony); }
+    .cornflower-bg { background: var(--cornflower); }
+    .wisteria-bg { background: var(--wisteria); }
+
+    .section {
+      margin-top: 46px;
+    }
+
+    .section-label {
+      color: var(--text-on-dark-tertiary);
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-auto {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+
+    .grid-surface {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    }
+
+    .grid-wide {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    }
+
+    .card {
+      border: 1px solid var(--line-on-dark);
+      border-radius: var(--radius-journal);
+      overflow: hidden;
+      background: var(--surface-dark-card);
+    }
+
+    .card-preview {
+      min-height: 100%;
+      padding: clamp(22px, 4vw, 30px);
+      background: var(--surface-primary);
+    }
+
+    .card-preview.vellum { background: var(--surface-darker); }
+    .card-preview.vellum-light { background: var(--surface-primary); }
+    .card-preview.vellum-pale { background: var(--surface-secondary); }
+    .card-preview.vellum-whisper { background: var(--surface-quiet); }
+    .card-preview.vellum-white { background: var(--surface-raised); }
+
+    .eyebrow {
+      color: var(--pine);
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+
+    .spec-title {
+      color: var(--text-primary);
+      font-family: var(--font-display);
+      font-size: clamp(34px, 8vw, 46px);
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1.05;
+    }
+
+    .spec-species {
+      color: var(--pine);
+      font-family: var(--font-botanical);
+      font-size: clamp(24px, 5vw, 31px);
+      font-weight: 700;
+      line-height: 1.05;
+      margin-top: 4px;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--line-on-paper);
+      margin: 18px 0;
+    }
+
+    .body-copy {
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      font-size: 14px;
+      line-height: 1.7;
+      margin-bottom: 18px;
+    }
+
+    .data-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .data-label {
+      color: var(--pine);
+      font-size: 9px;
+      font-weight: 500;
+      line-height: 1.35;
+      margin-bottom: 3px;
+    }
+
+    .data-value {
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      color: var(--dark-fern);
+      background: var(--pale-herb);
+      font-size: 9px;
+      font-weight: 500;
+      line-height: 1;
+      padding: 7px 10px;
+    }
+
+    .chip-season {
+      color: var(--dark-amber);
+      background: var(--buttercup);
+    }
+
+    .chip-alert {
+      color: var(--dark-berry);
+      background: var(--peony);
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--line-on-dark-subtle);
+      background: var(--surface-dark-label);
+    }
+
+    .footer-name {
+      color: var(--text-on-dark-primary);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .footer-tag {
+      color: var(--text-on-dark-tertiary);
+      font-size: 9px;
+      font-weight: 400;
+      text-align: right;
+    }
+
+    .surface-card .card-preview {
+      min-height: 250px;
+    }
+
+    .swatch-name {
+      color: var(--pine);
+      font-size: 9px;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+
+    .sample-note {
+      color: var(--text-tertiary);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .journal-note {
+      color: var(--pine);
+      font-family: var(--font-botanical);
+      font-size: 27px;
+      font-weight: 700;
+      line-height: 1.05;
+      margin-top: 16px;
+    }
+
+    .font-role {
+      display: grid;
+      gap: 14px;
+    }
+
+    .font-role .card-preview {
+      min-height: 224px;
+    }
+
+    .role-display {
+      font-family: var(--font-display);
+      font-size: 38px;
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1.05;
+    }
+
+    .role-botanical {
+      color: var(--pine);
+      font-family: var(--font-botanical);
+      font-size: 34px;
+      font-weight: 700;
+      line-height: 1.05;
+    }
+
+    .role-body {
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .role-label {
+      color: var(--pine);
+      font-family: var(--font-label);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      line-height: 1.6;
+      text-transform: uppercase;
+    }
+
+    .radius-tight { border-radius: var(--radius-tight); }
+    .radius-soft { border-radius: var(--radius-soft); }
+    .radius-journal { border-radius: var(--radius-journal); }
+    .radius-round { border-radius: var(--radius-round); }
+
+    .radius-card .card-preview {
+      min-height: 220px;
+    }
+
+    .radius-value {
+      color: var(--text-on-dark-tertiary);
+      font-size: 9px;
+      font-weight: 400;
+    }
+
+    .chat-shell {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 360px;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 16px;
+      background: var(--surface-dark-header);
+      border-bottom: 1px solid var(--line-on-dark-subtle);
+    }
+
+    .chat-title {
+      color: var(--text-on-dark-primary);
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1;
+    }
+
+    .chat-body {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 16px;
+      background: var(--surface-secondary);
+    }
+
+    .bubble {
+      max-width: min(88%, 520px);
+      padding: 12px 14px;
+      border-radius: var(--radius-soft);
+    }
+
+    .bubble-you {
+      align-self: flex-end;
+      background: var(--surface-muted-on-paper);
+    }
+
+    .bubble-rhizome {
+      align-self: flex-start;
+      background: var(--surface-raised);
+      border-left: 3px solid var(--pine);
+    }
+
+    .bubble-label {
+      color: var(--pine);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      line-height: 1;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+    }
+
+    .bubble-text {
+      color: var(--text-strong);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .chat-input {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--surface-primary);
+      border-top: 1px solid var(--line-on-paper);
+    }
+
+    .chat-placeholder {
+      color: var(--text-placeholder);
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    .chat-button {
+      border: 0;
+      border-radius: 999px;
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      padding: 8px 12px;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 620px) {
+      body {
+        padding: 24px 18px;
+      }
+
+      .card-footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .footer-tag {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <p class="page-title">Verdant Pages · Typography and Surface Mockup</p>
+
+    <section class="intro">
+      <h1>Verdant Pages</h1>
+      <p>A practical gardening workspace with a journal hand, specimen-card structure, and enough operational clarity for Rhizome's tasks, weather decisions, incidents, and proposals.</p>
+    </section>
+
+    <div class="palette-strip" aria-label="Verdant Pages palette">
+      <div class="palette-strip-block inkwell-bg"></div>
+      <div class="palette-strip-block vellum-bg"></div>
+      <div class="palette-strip-block vellum-light-bg"></div>
+      <div class="palette-strip-block vellum-pale-bg"></div>
+      <div class="palette-strip-block vellum-whisper-bg"></div>
+      <div class="palette-strip-block vellum-white-bg"></div>
+      <div class="palette-strip-block chartreuse-bg"></div>
+      <div class="palette-strip-block pine-bg"></div>
+      <div class="palette-strip-block clay-bg"></div>
+      <div class="palette-strip-block buttercup-bg"></div>
+      <div class="palette-strip-block pale-herb-bg"></div>
+      <div class="palette-strip-block peony-bg"></div>
+      <div class="palette-strip-block cornflower-bg"></div>
+      <div class="palette-strip-block wisteria-bg"></div>
+    </div>
+
+    <section class="section">
+      <div class="section-label">Type system · Shantell Sans, Caveat, Nunito, Montserrat</div>
+      <div class="grid grid-auto font-role">
+        <article class="card">
+          <div class="card-preview vellum-light">
+            <div class="eyebrow">Display / plant common names</div>
+            <div class="role-display">Cherry Tomatoes</div>
+            <hr class="divider">
+            <p class="role-body">Shantell Sans stays at 700 weight. The bounce axis is reduced to 20 for a little more structure while we keep the handwritten direction.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Shantell Sans</span><span class="footer-tag">BNCE 20 · 700</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-preview vellum-light">
+            <div class="eyebrow">UI / operational headers</div>
+            <div class="role-display">Skip Watering</div>
+            <hr class="divider">
+            <p class="role-body">Operational headers use the same display settings for now. A future custom display font can solve the charm-versus-seriousness tradeoff more cleanly.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Shantell Sans</span><span class="footer-tag">Temporary display</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-preview vellum-light">
+            <div class="eyebrow">Botanical / journal hand</div>
+            <div class="role-botanical">Solanum lycopersicum</div>
+            <hr class="divider">
+            <p class="role-body">Caveat carries the personal notebook layer, including Latin names and handwritten annotations.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Caveat</span><span class="footer-tag">full opacity · 700</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-preview vellum-light">
+            <div class="eyebrow">Body / product text</div>
+            <p class="role-body">Nunito keeps the dashboard, task details, chat text, and forms readable while still feeling softer than a neutral SaaS font.</p>
+            <hr class="divider">
+            <p class="role-body">Use it for dense operational surfaces where rhythm matters more than personality.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Nunito</span><span class="footer-tag">400 / 500 / 700</span></div>
+        </article>
+
+        <article class="card">
+          <div class="card-preview vellum-light">
+            <div class="role-label">Solanaceae · summer crop</div>
+            <hr class="divider">
+            <p class="role-body">Montserrat in spaced caps gives subtitles and metadata the catalog/specimen label quality.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Montserrat</span><span class="footer-tag">caps · tracked</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Vellum surface comparison · same card on each background</div>
+      <div class="grid grid-surface">
+        <article class="card surface-card">
+          <div class="card-preview vellum">
+            <div class="swatch-name">Vellum</div>
+            <div class="spec-title">Basil</div>
+            <div class="spec-species">Ocimum basilicum</div>
+            <hr class="divider">
+            <p class="sample-note">Original warm page color. Cozy, but slightly heavier for dense screens.</p>
+            <p class="journal-note">Pinch tips weekly.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Base</span><span class="footer-tag">--vellum</span></div>
+        </article>
+
+        <article class="card surface-card">
+          <div class="card-preview vellum-light">
+            <div class="swatch-name">Vellum Light</div>
+            <div class="spec-title">Basil</div>
+            <div class="spec-species">Ocimum basilicum</div>
+            <hr class="divider">
+            <p class="sample-note">Still warm, but easier for body text and repeated cards.</p>
+            <p class="journal-note">Pinch tips weekly.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Locked default</span><span class="footer-tag">--surface-primary</span></div>
+        </article>
+
+        <article class="card surface-card">
+          <div class="card-preview vellum-pale">
+            <div class="swatch-name">Vellum Pale</div>
+            <div class="spec-title">Basil</div>
+            <div class="spec-species">Ocimum basilicum</div>
+            <hr class="divider">
+            <p class="sample-note">Clean and readable while keeping the paper feeling intact.</p>
+            <p class="journal-note">Pinch tips weekly.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Candidate</span><span class="footer-tag">--vellum-pale</span></div>
+        </article>
+
+        <article class="card surface-card">
+          <div class="card-preview vellum-whisper">
+            <div class="swatch-name">Vellum Whisper</div>
+            <div class="spec-title">Basil</div>
+            <div class="spec-species">Ocimum basilicum</div>
+            <hr class="divider">
+            <p class="sample-note">Very light paper. Good for app panels, less obviously journal-like.</p>
+            <p class="journal-note">Pinch tips weekly.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Bright</span><span class="footer-tag">--vellum-whisper</span></div>
+        </article>
+
+        <article class="card surface-card">
+          <div class="card-preview vellum-white">
+            <div class="swatch-name">Vellum White</div>
+            <div class="spec-title">Basil</div>
+            <div class="spec-species">Ocimum basilicum</div>
+            <hr class="divider">
+            <p class="sample-note">Best contrast, but closest to standard product UI.</p>
+            <p class="journal-note">Pinch tips weekly.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Brightest</span><span class="footer-tag">--vellum-white</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Specimen cards · four-font stack in context</div>
+      <div class="grid grid-wide">
+        <article class="card radius-journal">
+          <div class="card-preview vellum-light">
+            <div class="eyebrow">Solanaceae · summer crop</div>
+            <div class="spec-title">Cherry Tomatoes</div>
+            <div class="spec-species">Solanum lycopersicum</div>
+            <hr class="divider">
+            <p class="body-copy">Your cherry tomatoes are entering peak harvest season. Rhizome detected consistent soil moisture over the past week, so no watering is needed today.</p>
+            <div class="data-row">
+              <div><div class="data-label">Last watered</div><div class="data-value">2 days ago</div></div>
+              <div><div class="data-label">Soil moisture</div><div class="data-value">62% · good</div></div>
+              <div><div class="data-label">Next feed</div><div class="data-value">In 4 days</div></div>
+            </div>
+            <div class="chips">
+              <span class="chip">fruiting</span>
+              <span class="chip">full sun</span>
+              <span class="chip chip-season">summer</span>
+            </div>
+          </div>
+          <div class="card-footer"><span class="footer-name">Plant detail</span><span class="footer-tag">10px radius</span></div>
+        </article>
+
+        <article class="card radius-journal">
+          <div class="card-preview vellum-pale">
+            <div class="eyebrow">Weather · irrigation review</div>
+            <div class="spec-title">Skip Watering</div>
+            <div class="spec-species">Rain expected tonight</div>
+            <hr class="divider">
+            <p class="body-copy">Rhizome recommends deferring tomorrow morning's container watering because the forecast now shows a cool overnight rain window.</p>
+            <div class="data-row">
+              <div><div class="data-label">Rain chance</div><div class="data-value">78%</div></div>
+              <div><div class="data-label">Window</div><div class="data-value">9 PM - 2 AM</div></div>
+              <div><div class="data-label">Affected tasks</div><div class="data-value">4 tasks</div></div>
+            </div>
+            <div class="chips">
+              <span class="chip chip-alert">review</span>
+              <span class="chip">containers</span>
+            </div>
+          </div>
+          <div class="card-footer"><span class="footer-name">Approval card</span><span class="footer-tag">Montserrat labels</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Border radius comparison · same density, different feel</div>
+      <div class="grid grid-auto">
+        <article class="card radius-tight radius-card">
+          <div class="card-preview vellum-light">
+            <div class="eyebrow">Task · prune</div>
+            <div class="spec-title">Rose Canes</div>
+            <div class="spec-species">Rosa</div>
+            <hr class="divider">
+            <p class="body-copy">Tighter corners feel more field-guide and operational.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Tight</span><span class="radius-value">6px</span></div>
+        </article>
+
+        <article class="card radius-soft radius-card">
+          <div class="card-preview vellum-light">
+            <div class="eyebrow">Task · prune</div>
+            <div class="spec-title">Rose Canes</div>
+            <div class="spec-species">Rosa</div>
+            <hr class="divider">
+            <p class="body-copy">Soft corners keep the app friendly without feeling too rounded.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Soft</span><span class="radius-value">8px</span></div>
+        </article>
+
+        <article class="card radius-journal radius-card">
+          <div class="card-preview vellum-light">
+            <div class="eyebrow">Task · prune</div>
+            <div class="spec-title">Rose Canes</div>
+            <div class="spec-species">Rosa</div>
+            <hr class="divider">
+            <p class="body-copy">This is the current recommendation for journal cards.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Journal</span><span class="radius-value">10px</span></div>
+        </article>
+
+        <article class="card radius-round radius-card">
+          <div class="card-preview vellum-light">
+            <div class="eyebrow">Task · prune</div>
+            <div class="spec-title">Rose Canes</div>
+            <div class="spec-species">Rosa</div>
+            <hr class="divider">
+            <p class="body-copy">Rounder corners are warm, but lean more modern app than notebook.</p>
+          </div>
+          <div class="card-footer"><span class="footer-name">Round</span><span class="radius-value">14px</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-label">Rhizome chat · agreed typography in app context</div>
+      <article class="card chat-shell radius-journal">
+        <div class="chat-header">
+          <div class="chat-title">Ask Rhizome</div>
+          <div class="footer-tag">Shantell Sans · BNCE 20 · 700</div>
+        </div>
+        <div class="chat-body">
+          <div class="bubble bubble-you">
+            <div class="bubble-label">You</div>
+            <div class="bubble-text">When should I harden off my seedlings?</div>
+          </div>
+          <div class="bubble bubble-rhizome">
+            <div class="bubble-label">Rhizome</div>
+            <div class="bubble-text">Based on your last frost date of April 15th, you have about two weeks. Start with short outdoor exposure on mild days, gradually increasing over 7-10 days.</div>
+          </div>
+        </div>
+        <div class="chat-input">
+          <div class="chat-placeholder">Ask about a plant, project, task, or treatment plan...</div>
+          <button class="chat-button" type="button">Send</button>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

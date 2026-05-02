@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rhizome Workbench - iPad Portrait</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@300;400;500;700;800&family=Shantell+Sans:BNCE,wght@20,400;20,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --inkwell: #1C1814;
+      --vellum: #F2E8C9;
+      --chartreuse: #B8D43A;
+      --pine: #2B5C2F;
+      --clay: #E06B4A;
+      --page-bg: #181510;
+      --vellum-light: #F6F0E0;
+      --vellum-pale: #F8F4EC;
+      --vellum-white: #FDFCFA;
+      --cornflower: #A0B8F5;
+      --dark-fern: #0C1E0C;
+      --dark-navy: #0A1428;
+      --dark-clay: #7A2F1D;
+      --inkwell-rgb: 28 24 20;
+      --vellum-rgb: 242 232 201;
+      --chartreuse-rgb: 184 212 58;
+      --pine-rgb: 43 92 47;
+      --clay-rgb: 224 107 74;
+      --cornflower-rgb: 160 184 245;
+      --surface-primary: var(--vellum-light);
+      --surface-secondary: var(--vellum-pale);
+      --surface-raised: var(--vellum-white);
+      --terracotta-wash: rgb(var(--clay-rgb) / 0.08);
+      --terracotta-soft: rgb(var(--clay-rgb) / 0.13);
+      --terracotta-line: rgb(var(--clay-rgb) / 0.26);
+      --cornflower-wash: rgb(var(--cornflower-rgb) / 0.48);
+      --text-primary: var(--inkwell);
+      --text-secondary: rgb(var(--inkwell-rgb) / 0.84);
+      --text-tertiary: rgb(var(--inkwell-rgb) / 0.68);
+      --text-placeholder: rgb(var(--inkwell-rgb) / 0.52);
+      --text-on-dark-primary: rgb(var(--vellum-rgb) / 0.94);
+      --text-on-dark-tertiary: rgb(var(--vellum-rgb) / 0.42);
+      --line-on-paper: rgb(var(--inkwell-rgb) / 0.14);
+      --line-on-paper-strong: rgb(var(--inkwell-rgb) / 0.22);
+      --line-on-dark: rgb(var(--vellum-rgb) / 0.14);
+      --font-display: "Shantell Sans", cursive;
+      --font-botanical: "Caveat", cursive;
+      --font-body: "Nunito", system-ui, sans-serif;
+      --font-label: "Montserrat", system-ui, sans-serif;
+      --display-bounce: 20;
+      --display-weight: 700;
+      --radius-tight: 6px;
+      --radius-soft: 8px;
+      --radius-journal: 10px;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: start center;
+      padding: 22px;
+      background: var(--page-bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+    }
+
+    button { font: inherit; }
+
+    .mockup-note {
+      width: min(768px, 100%);
+      margin: 0 auto 12px;
+      color: var(--text-on-dark-tertiary);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .ipad-frame {
+      width: min(768px, calc(100vw - 44px));
+      height: 1024px;
+      padding: 12px;
+      border: 1px solid var(--line-on-dark);
+      border-radius: 34px;
+      background: #0f0d0a;
+      box-shadow: 0 24px 70px rgb(0 0 0 / 0.34);
+    }
+
+    .app-shell {
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 24px;
+      background: var(--surface-primary);
+    }
+
+    .app-header,
+    .drawer summary,
+    .composer,
+    .bottom-nav {
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .app-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding-top: 18px;
+      padding-bottom: 13px;
+      border-bottom: 1px solid var(--line-on-dark);
+      background: var(--page-bg);
+    }
+
+    .brand { display: grid; gap: 8px; }
+
+    .brand-title,
+    .screen-title,
+    .review-title,
+    .card-title {
+      font-family: var(--font-display);
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1;
+    }
+
+    .brand-title {
+      color: var(--text-on-dark-primary);
+      font-size: 30px;
+    }
+
+    .brand-subtitle,
+    .card-label,
+    .meta-label,
+    .message-meta,
+    .nav-label,
+    .button,
+    .input-label,
+    .drawer-summary {
+      font-family: var(--font-label);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .brand-subtitle {
+      color: var(--chartreuse);
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .header-chip {
+      display: grid;
+      place-items: center;
+      min-width: 44px;
+      height: 40px;
+      border: 1px solid rgb(var(--pine-rgb) / 0.34);
+      border-radius: var(--radius-journal);
+      color: var(--pine);
+      background: rgb(var(--pine-rgb) / 0.08);
+      font-family: var(--font-label);
+      font-weight: 900;
+    }
+
+    .drawer {
+      border-bottom: 1px solid var(--line-on-paper);
+      background: var(--surface-secondary);
+    }
+
+    .drawer summary {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 48px;
+      color: var(--pine);
+      cursor: default;
+      list-style: none;
+    }
+
+    .drawer summary::-webkit-details-marker { display: none; }
+
+    .drawer-summary {
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .drawer-count {
+      min-width: 28px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .review-card {
+      margin: 0 20px 16px;
+      overflow: hidden;
+      border: 3px solid var(--cornflower);
+      border-top: 7px solid var(--cornflower);
+      border-radius: var(--radius-journal);
+      background:
+        linear-gradient(135deg, var(--cornflower-wash) 0%, rgb(var(--chartreuse-rgb) / 0.14) 100%),
+        var(--surface-primary);
+    }
+
+    .review-body { padding: 15px; }
+
+    .card-label,
+    .meta-label {
+      color: var(--pine);
+      font-size: 8px;
+      font-weight: 900;
+    }
+
+    .review-title {
+      margin: 8px 0 3px;
+      color: var(--dark-navy);
+      font-size: 31px;
+    }
+
+    .review-subtitle {
+      color: var(--pine);
+      font-family: var(--font-botanical);
+      font-size: 25px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .review-text {
+      margin: 13px 0 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .metric {
+      padding: 8px;
+      border-radius: var(--radius-tight);
+      background: var(--surface-raised);
+    }
+
+    .metric-value {
+      margin-top: 6px;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.05;
+    }
+
+    .review-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 10px;
+      border-top: 1px solid var(--line-on-paper);
+      background: var(--surface-primary);
+    }
+
+    .button {
+      min-height: 38px;
+      padding: 0 10px;
+      border: 1px solid var(--line-on-paper);
+      border-radius: var(--radius-soft);
+      color: var(--text-secondary);
+      background: var(--surface-secondary);
+      font-size: 8px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .button.primary {
+      grid-column: 1 / -1;
+      border-color: var(--chartreuse);
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+    }
+
+    .button.secondary {
+      border-color: var(--clay);
+      color: var(--vellum-white);
+      background: var(--clay);
+    }
+
+    .button.tertiary {
+      border-color: var(--dark-clay);
+      color: var(--dark-clay);
+      background: var(--terracotta-wash);
+    }
+
+    .day-context {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--line-on-paper);
+      background: var(--surface-primary);
+    }
+
+    .screen-title {
+      margin: 0 0 12px;
+      font-size: 34px;
+    }
+
+    .context-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .context-card {
+      min-height: 76px;
+      padding: 12px;
+      border: 1px solid var(--line-on-paper);
+      border-radius: var(--radius-journal);
+      background: var(--surface-raised);
+    }
+
+    .context-value {
+      margin-top: 8px;
+      font-size: 20px;
+      font-weight: 900;
+      line-height: 1.05;
+    }
+
+    .chat-thread {
+      padding: 17px 22px 20px;
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.08) 1px, transparent 1.2px),
+        linear-gradient(var(--surface-primary), var(--surface-primary));
+      background-size: 24px 24px, auto;
+    }
+
+    .day-label {
+      width: max-content;
+      margin: 0 auto 18px;
+      color: var(--text-tertiary);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .message {
+      display: grid;
+      gap: 7px;
+      max-width: 520px;
+      margin-bottom: 14px;
+    }
+
+    .message.user {
+      margin-left: auto;
+      justify-items: end;
+    }
+
+    .message-meta {
+      color: var(--text-tertiary);
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .bubble {
+      padding: 13px 14px;
+      border: 1px solid var(--line-on-paper);
+      border-radius: var(--radius-journal);
+      color: var(--text-secondary);
+      background: var(--surface-raised);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .user .bubble {
+      border-color: var(--terracotta-line);
+      border-right: 4px solid var(--clay);
+      background: var(--terracotta-wash);
+    }
+
+    .rhizome .bubble { border-left: 3px solid var(--pine); }
+
+    .inline-card {
+      margin-top: 10px;
+      overflow: hidden;
+      border: 2px solid var(--cornflower);
+      border-top: 6px solid var(--cornflower);
+      border-radius: var(--radius-journal);
+      background:
+        linear-gradient(135deg, var(--cornflower-wash) 0%, rgb(var(--chartreuse-rgb) / 0.12) 100%),
+        var(--surface-primary);
+    }
+
+    .inline-card-body { padding: 12px; }
+
+    .card-title {
+      margin: 8px 0 4px;
+      color: var(--dark-navy);
+      font-size: 24px;
+    }
+
+    .inline-card-note {
+      margin: 9px 0 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .inline-card-footer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 10px;
+      border-top: 1px solid var(--line-on-paper);
+      background: var(--surface-primary);
+    }
+
+    .tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .tag {
+      padding: 5px 7px;
+      border-radius: 999px;
+      color: var(--dark-fern);
+      background: rgb(var(--chartreuse-rgb) / 0.32);
+      font-family: var(--font-label);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .mini-button {
+      min-height: 29px;
+      padding: 0 9px;
+      border: 1px solid var(--pine);
+      border-radius: var(--radius-tight);
+      color: var(--pine);
+      background: var(--surface-raised);
+      font-family: var(--font-label);
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .composer {
+      position: sticky;
+      bottom: 70px;
+      z-index: 4;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      border-top: 1px solid var(--line-on-paper);
+      background:
+        linear-gradient(135deg, var(--terracotta-soft) 0%, transparent 72%),
+        var(--surface-primary);
+    }
+
+    .input-wrap {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 10px;
+      border: 1px solid var(--terracotta-soft);
+      border-radius: var(--radius-journal);
+      background: var(--surface-raised);
+    }
+
+    .input-label {
+      color: var(--pine);
+      font-size: 8px;
+      font-weight: 900;
+    }
+
+    .fake-input {
+      color: var(--text-placeholder);
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    .bottom-nav {
+      position: sticky;
+      bottom: 0;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      min-height: 70px;
+      padding: 8px 16px 10px;
+      border-top: 1px solid var(--line-on-paper);
+      background: var(--page-bg);
+    }
+
+    .nav-item {
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 5px;
+      color: var(--text-on-dark-tertiary);
+      text-align: center;
+    }
+
+    .nav-item.active { color: var(--chartreuse); }
+
+    .nav-icon {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      font-weight: 900;
+    }
+
+    .nav-label {
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 0.1em;
+    }
+
+    .fab {
+      position: absolute;
+      left: 50%;
+      top: -24px;
+      transform: translateX(-50%);
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      border: 3px solid var(--page-bg);
+      border-radius: 50%;
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <div class="mockup-note">iPad portrait mockup - enlarged phone interaction model</div>
+
+    <div class="ipad-frame">
+      <div class="app-shell">
+        <header class="app-header">
+          <div class="brand">
+            <div class="brand-title">Verdant Pages</div>
+            <div class="brand-subtitle">Rhizome workspace</div>
+          </div>
+          <div class="header-chip">3</div>
+        </header>
+
+        <details class="drawer" open>
+          <summary>
+            <span class="drawer-summary">Interaction viewer</span>
+            <span class="drawer-count">3</span>
+            <span>v</span>
+          </summary>
+
+          <article class="review-card">
+            <div class="review-body">
+              <div class="card-label">Weather change review</div>
+              <h2 class="review-title">Skip Watering</h2>
+              <div class="review-subtitle">Rain expected tonight</div>
+              <p class="review-text">Rhizome wants to defer four watering tasks, keep seedling inspection, and add a drainage check after rain.</p>
+              <div class="metric-row">
+                <div class="metric"><div class="meta-label">Rain</div><div class="metric-value">78%</div></div>
+                <div class="metric"><div class="meta-label">Window</div><div class="metric-value">9 PM</div></div>
+                <div class="metric"><div class="meta-label">Low</div><div class="metric-value">52 F</div></div>
+              </div>
+            </div>
+            <div class="review-actions">
+              <button class="button tertiary" type="button">Revise</button>
+              <button class="button secondary" type="button">Reject</button>
+              <button class="button primary" type="button">Approve Changes</button>
+            </div>
+          </article>
+        </details>
+
+        <section class="day-context">
+          <h1 class="screen-title">Ask Rhizome</h1>
+          <div class="context-grid">
+            <div class="context-card"><div class="card-label">Time</div><div class="context-value">45 min</div></div>
+            <div class="context-card"><div class="card-label">Energy</div><div class="context-value">Medium</div></div>
+            <div class="context-card"><div class="card-label">Focus</div><div class="context-value">Seedlings</div></div>
+          </div>
+        </section>
+
+        <main class="chat-thread">
+          <div class="day-label">Today - April 29</div>
+          <article class="message user">
+            <div class="message-meta">You - 8:23 AM</div>
+            <div class="bubble">I have about 45 minutes this morning. What should I actually do before work?</div>
+          </article>
+          <article class="message rhizome">
+            <div class="message-meta">Rhizome - 8:24 AM</div>
+            <div class="bubble">
+              Given tonight's rain, I would avoid routine container watering and use your time on seedlings and inspection.
+              <div class="inline-card">
+                <div class="inline-card-body">
+                  <div class="card-label">Interaction ready</div>
+                  <h3 class="card-title">Weather Review</h3>
+                  <p class="inline-card-note">Four watering tasks can move to tomorrow. Seedling inspection stays on today's plan.</p>
+                </div>
+                <div class="inline-card-footer">
+                  <div class="tag-row"><span class="tag">Weather</span><span class="tag">Tasks</span></div>
+                  <button class="mini-button" type="button">Open</button>
+                </div>
+              </div>
+            </div>
+          </article>
+          <article class="message user">
+            <div class="message-meta">You - 8:26 AM</div>
+            <div class="bubble">Before I approve that, should I still check the tomatoes?</div>
+          </article>
+          <article class="message rhizome">
+            <div class="message-meta">Rhizome - 8:26 AM</div>
+            <div class="bubble">Yes. Check the cherry tomatoes for early aphids and confirm the lower leaves are dry enough. That inspection is more valuable today than watering.</div>
+          </article>
+        </main>
+
+        <section class="composer">
+          <div class="input-wrap">
+            <div class="input-label">Ask</div>
+            <div class="fake-input">Message Rhizome...</div>
+          </div>
+          <button class="button primary" type="button">Send</button>
+        </section>
+
+        <nav class="bottom-nav">
+          <div class="nav-item active"><div class="nav-icon">R</div><div class="nav-label">Rhizome</div></div>
+          <div class="nav-item"><div class="nav-icon">T</div><div class="nav-label">Today</div></div>
+          <div></div>
+          <div class="nav-item"><div class="nav-icon">G</div><div class="nav-label">Garden</div></div>
+          <div class="nav-item"><div class="nav-icon">P</div><div class="nav-label">Plants</div></div>
+          <button class="fab" type="button" aria-label="Add garden item">+</button>
+        </nav>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

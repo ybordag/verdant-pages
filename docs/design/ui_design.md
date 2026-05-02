@@ -55,6 +55,33 @@ The UI should be built around the current Rhizome product loop:
   - recent interactions
   - selected activity summaries
 
+### Cross-platform mockup strategy
+
+Verdant Pages should be designed against four target formats:
+
+- web page
+- mac app
+- iPad
+- phone
+
+Mockups live in `docs/design/mockups/`:
+
+- `base/` for shared concepts and component studies
+- `web-mac/` for wide-screen browser and mac app layouts
+- `ipad/` for tablet split-view layouts
+- `phone/` for focused, truncated mobile flows
+
+The app should share one design system across all formats. The screen structure
+can adapt by format:
+
+- web/mac: persistent navigation, main workspace, optional right context panel
+- iPad: split views, touch-friendly panels, sheets for focused approvals
+- phone: single-focus routes, bottom navigation, review sheets/full-screen
+  structured interactions
+
+Each major screen concept should be mocked in all three format folders before
+implementation decisions are treated as locked.
+
 ### Launch flow
 
 The initial user experience should be:
@@ -165,6 +192,80 @@ The visual hierarchy should prioritize:
 2. what decision is pending
 3. what work is ready to do
 4. what changed recently
+
+### Design tokens
+
+Verdant Pages should use two related material families:
+
+- paper surfaces for content, cards, forms, chat bodies, and review panels
+- dark chrome for app shell, page background, card footers, dark headers, and
+  framing elements
+
+The default paper surface is locked as `vellum-light`. Keep `vellum` as the
+darker paper variant for moments that need more warmth or age.
+
+Core color tokens:
+
+```css
+--inkwell: #1C1814;
+--vellum: #F2E8C9;
+--vellum-light: #F6F0E0;
+--vellum-pale: #F8F4EC;
+--vellum-whisper: #FAF7F2;
+--vellum-white: #FDFCFA;
+--page-bg: #181510;
+```
+
+Semantic surface tokens:
+
+```css
+--surface-darker: var(--vellum);
+--surface-primary: var(--vellum-light);
+--surface-secondary: var(--vellum-pale);
+--surface-quiet: var(--vellum-whisper);
+--surface-raised: var(--vellum-white);
+```
+
+Dark chrome should use vellum-tinted overlays rather than a large
+inkwell-to-vellum ramp. This keeps the app from accumulating too many muddy
+near-neutrals while preserving the dark journal-cover/soil feeling.
+
+```css
+--surface-dark-card: rgb(var(--vellum-rgb) / 0.04);
+--surface-dark-label: rgb(var(--vellum-rgb) / 0.05);
+--surface-dark-header: rgb(var(--vellum-rgb) / 0.06);
+```
+
+Text and rule tokens should be role-based:
+
+```css
+--text-primary: var(--inkwell);
+--text-secondary: rgb(var(--inkwell-rgb) / 0.84);
+--text-tertiary: rgb(var(--inkwell-rgb) / 0.78);
+--text-on-dark-primary: rgb(var(--vellum-rgb) / 0.94);
+--text-on-dark-secondary: rgb(var(--vellum-rgb) / 0.72);
+--text-on-dark-tertiary: rgb(var(--vellum-rgb) / 0.42);
+--line-on-paper: rgb(var(--inkwell-rgb) / 0.14);
+--line-on-dark: rgb(var(--vellum-rgb) / 0.14);
+```
+
+Typography tokens:
+
+```css
+--font-display: "Shantell Sans", cursive;
+--font-botanical: "Caveat", cursive;
+--font-body: "Nunito", system-ui, sans-serif;
+--font-label: "Montserrat", system-ui, sans-serif;
+```
+
+Use `Shantell Sans` at `BNCE 20` and `700` weight for display/common plant
+names and temporary app display headers, `Caveat` for
+botanical names and journal annotations, `Nunito` for product text, and
+letter-spaced uppercase `Montserrat` for subtitles and metadata labels.
+
+Shantell is a temporary display choice. A custom Verdant Pages display font may
+replace it later to keep the handmade journal feeling while giving operational
+headers more structure.
 
 ## Near-term implementation target
 

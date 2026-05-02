@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verdant Pages Mockups</title>
+  <style>
+    :root {
+      --inkwell: #1C1814;
+      --vellum-light: #F6F0E0;
+      --vellum-rgb: 242 232 201;
+      --page-bg: #181510;
+      --pine: #2B5C2F;
+      --surface-primary: var(--vellum-light);
+      --surface-dark-label: rgb(var(--vellum-rgb) / 0.05);
+      --text-on-dark-primary: rgb(var(--vellum-rgb) / 0.94);
+      --text-on-dark-secondary: rgb(var(--vellum-rgb) / 0.72);
+      --text-on-dark-tertiary: rgb(var(--vellum-rgb) / 0.42);
+      --line-on-dark: rgb(var(--vellum-rgb) / 0.14);
+      --radius-journal: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: clamp(28px, 5vw, 56px);
+      background: var(--page-bg);
+      color: var(--text-on-dark-primary);
+      font-family: Nunito, system-ui, sans-serif;
+    }
+
+    main {
+      width: min(960px, 100%);
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(34px, 7vw, 56px);
+      line-height: 1;
+    }
+
+    p {
+      color: var(--text-on-dark-secondary);
+      line-height: 1.65;
+      max-width: 680px;
+    }
+
+    .section-stack {
+      display: grid;
+      gap: 34px;
+      margin-top: 34px;
+    }
+
+    section {
+      display: grid;
+      gap: 14px;
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--text-on-dark-secondary);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+      gap: 16px;
+    }
+
+    a {
+      display: block;
+      min-height: 160px;
+      padding: 22px;
+      border: 1px solid var(--line-on-dark);
+      border-radius: var(--radius-journal);
+      color: var(--inkwell);
+      background: var(--surface-primary);
+      text-decoration: none;
+    }
+
+    span {
+      display: block;
+    }
+
+    .label {
+      color: var(--pine);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .title {
+      margin-top: 16px;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .note {
+      margin-top: 10px;
+      color: rgb(28 24 20 / 0.78);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Verdant Pages Mockups</h1>
+    <p>Format-specific mockups for reviewing how Rhizome and the garden management surfaces translate across web, mac, iPad, and phone.</p>
+
+    <div class="section-stack">
+      <section>
+        <h2>System</h2>
+        <div class="grid">
+          <a href="../mockup.html">
+            <span class="label">Base</span>
+            <span class="title">Typography + Tokens</span>
+            <span class="note">Current visual system study for color, fonts, vellum surfaces, and radii.</span>
+          </a>
+
+          <a href="../mockup_roadmap.md">
+            <span class="label">Planning</span>
+            <span class="title">Mockup Roadmap</span>
+            <span class="note">Completion tracker and design guidance for remaining broader-app mockup sets.</span>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <h2>Web / Mac</h2>
+        <div class="grid">
+          <a href="web-mac/rhizome-workbench.html">
+            <span class="label">Web / Mac</span>
+            <span class="title">Rhizome Workbench</span>
+            <span class="note">Wide-screen chat plus structured interaction panel.</span>
+          </a>
+
+          <a href="web-mac/tasks-overview.html">
+            <span class="label">Web / Mac</span>
+            <span class="title">Tasks Overview</span>
+            <span class="note">List and calendar views for task planning, weather shifts, and Rhizome priorities.</span>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <h2>iPad</h2>
+        <div class="grid">
+          <a href="ipad/rhizome-workbench.html">
+            <span class="label">iPad</span>
+            <span class="title">Rhizome Workbench</span>
+            <span class="note">One-page review of portrait and landscape chat workbench layouts.</span>
+          </a>
+
+          <a href="ipad/tasks-overview.html">
+            <span class="label">iPad</span>
+            <span class="title">Tasks Overview</span>
+            <span class="note">One-page review of portrait and landscape task ledger plus calendar layouts.</span>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <h2>Phone</h2>
+        <div class="grid">
+          <a href="phone/rhizome-workbench.html">
+            <span class="label">Phone</span>
+            <span class="title">Rhizome Workbench</span>
+            <span class="note">Focused phone version with interaction review as the primary task.</span>
+          </a>
+
+          <a href="phone/tasks-overview.html">
+            <span class="label">Phone</span>
+            <span class="title">Tasks Overview</span>
+            <span class="note">Simplified task ledger and calendar views with bottom nav and quick action affordance.</span>
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
