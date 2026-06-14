@@ -12,6 +12,10 @@ Mockups live in `docs/design/mockups/`. The root mockup index is:
 
 - `docs/design/mockups/index.html`
 
+Garden and Plants page architecture is tracked in:
+
+- `docs/design/garden_and_plants_page_design.md`
+
 ## Current Status
 
 ### Completed Mockup Sets
@@ -36,6 +40,9 @@ Mockups live in `docs/design/mockups/`. The root mockup index is:
 ### Remaining Mockup Sets
 
 - [ ] Garden overview
+  - Initial Web/Mac: `docs/design/mockups/web-mac/garden-overview.html`
+  - Initial iPad combined review page: `docs/design/mockups/ipad/garden-overview.html`
+  - Initial Phone: `docs/design/mockups/phone/garden-overview.html`
 - [ ] Plants overview and plant detail
 - [ ] Projects overview and project detail
 - [ ] Task detail
@@ -215,6 +222,10 @@ Carry forward:
 
 Recommended next mockup set.
 
+Detailed Garden and Plants page architecture, including the planned mockup split
+for Garden overview, Garden areas/containers, and Plants, lives in
+`docs/design/garden_and_plants_page_design.md`.
+
 Purpose:
 
 - Show the garden as the user's central operational context.
@@ -222,9 +233,9 @@ Purpose:
 
 Views to mock:
 
-- Web/Mac garden overview
-- iPad portrait and landscape garden overview
-- Phone garden overview
+- Web/Mac garden overview: initial draft exists at `docs/design/mockups/web-mac/garden-overview.html`
+- iPad portrait and landscape garden overview: initial draft exists at `docs/design/mockups/ipad/garden-overview.html`
+- Phone garden overview: initial draft exists at `docs/design/mockups/phone/garden-overview.html`
 
 Core content:
 
@@ -254,13 +265,20 @@ Design approach:
 - Web/Mac:
   - sidebar + garden map/list + right Rhizome context aside
   - avoid decorative map cards; make the garden map functional and scannable
+  - use a generated landscaping-plan sketch as the primary object, with vellum
+    paper, inkwell linework, mapped beds/pots/planters, and a subtle scale grid
+  - show garden profile, constraints, mapped areas, and projects as supporting
+    journal/ledger sections around the map
 - iPad landscape:
   - compressed rail + split garden map/detail
+  - keep the landscape sketch visible alongside profile/constraints
 - iPad portrait:
   - top summary + area list with expandable garden areas
+  - keep map-first hierarchy, then list mapped areas/projects below it
 - Phone:
   - compact garden profile + area list
   - selected area opens inline or in a sheet
+  - use bottom single-letter nav and a compact map with scrollable journal lists
 
 Open design questions:
 
@@ -594,4 +612,3 @@ Each mockup set is complete when:
 - selected-object/detail behavior is represented
 - create/edit or approval behavior is noted if not mocked directly
 - design decisions are summarized in this roadmap or a nearby README
-

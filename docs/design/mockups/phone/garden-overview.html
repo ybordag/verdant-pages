@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Garden Overview - Phone</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;700;800&family=Shantell+Sans:BNCE,wght@20,400;20,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --inkwell: #1C1814;
+      --vellum: #F2E8C9;
+      --chartreuse: #B8D43A;
+      --pine: #2B5C2F;
+      --clay: #E06B4A;
+      --page-bg: #181510;
+      --vellum-light: #F6F0E0;
+      --vellum-pale: #F8F4EC;
+      --vellum-whisper: #FAF7F2;
+      --cornflower: #A0B8F5;
+      --dark-fern: #0C1E0C;
+      --dark-clay: #7A2F1D;
+      --inkwell-rgb: 28 24 20;
+      --vellum-rgb: 242 232 201;
+      --chartreuse-rgb: 184 212 58;
+      --pine-rgb: 43 92 47;
+      --clay-rgb: 224 107 74;
+      --font-display: "Shantell Sans", cursive;
+      --font-botanical: "Caveat", cursive;
+      --font-body: "Nunito", system-ui, sans-serif;
+      --font-label: "Montserrat", system-ui, sans-serif;
+      --display-bounce: 20;
+      --display-weight: 700;
+      --line-on-paper: rgb(var(--inkwell-rgb) / 0.14);
+      --line-on-paper-strong: rgb(var(--inkwell-rgb) / 0.25);
+      --line-on-dark: rgb(var(--vellum-rgb) / 0.14);
+      --text-on-dark-primary: rgb(var(--vellum-rgb) / 0.94);
+      --text-on-dark-secondary: rgb(var(--vellum-rgb) / 0.72);
+      --text-on-dark-tertiary: rgb(var(--vellum-rgb) / 0.42);
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      background: var(--page-bg);
+      color: var(--inkwell);
+      font-family: var(--font-body);
+    }
+
+    .mockup-title {
+      width: min(390px, 100%);
+      margin: 0 auto 12px;
+      color: var(--text-on-dark-secondary);
+      font-family: var(--font-label);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .phone-frame {
+      width: min(390px, 100%);
+      aspect-ratio: 390 / 844;
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid var(--line-on-dark);
+      border-radius: 34px;
+      background: var(--page-bg);
+      box-shadow: 0 0 0 12px rgb(var(--vellum-rgb) / 0.03);
+    }
+
+    .phone-screen {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 28px;
+      background: var(--vellum-light);
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 24px 26px 18px;
+      border-bottom: 1px solid var(--line-on-dark);
+      color: var(--text-on-dark-primary);
+      background: var(--page-bg);
+    }
+
+    .brand-title,
+    .page-title,
+    .map-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1;
+    }
+
+    .brand-title {
+      font-size: 29px;
+    }
+
+    .brand-subtitle,
+    .section-title,
+    .card-label,
+    .tag,
+    .nav-item {
+      font-family: var(--font-label);
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .brand-subtitle {
+      margin-top: 6px;
+      color: var(--chartreuse);
+      font-size: 10px;
+    }
+
+    .mode-button {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      border: 6px solid var(--vellum-whisper);
+      border-radius: 14px;
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+      font-family: var(--font-label);
+      font-weight: 900;
+      letter-spacing: 0.1em;
+    }
+
+    .content {
+      min-height: 0;
+      overflow-y: auto;
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.055) 1.1px, transparent 1.3px),
+        var(--vellum-light);
+      background-size: 24px 24px, auto;
+    }
+
+    .page-intro {
+      padding: 22px 26px 16px;
+      color: var(--text-on-dark-primary);
+      background: var(--page-bg);
+    }
+
+    .page-title {
+      color: var(--text-on-dark-primary);
+      font-size: 40px;
+    }
+
+    .page-intro p {
+      margin: 6px 0 0;
+      color: var(--chartreuse);
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    .map-panel {
+      padding: 16px 16px 18px;
+      border-bottom: 1px solid var(--line-on-paper);
+      background: var(--vellum-pale);
+    }
+
+    .map-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .map-title {
+      color: var(--pine);
+      font-size: 28px;
+    }
+
+    .scale {
+      color: rgb(var(--inkwell-rgb) / 0.62);
+      font-family: var(--font-label);
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .plan-svg {
+      width: 100%;
+      height: 292px;
+      display: block;
+      border: 1px solid var(--line-on-paper-strong);
+      background: var(--vellum-whisper);
+    }
+
+    .plan-svg text {
+      fill: var(--inkwell);
+      font-family: var(--font-botanical);
+      font-weight: 700;
+    }
+
+    .plan-line {
+      fill: none;
+      stroke: var(--inkwell);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .plan-thin {
+      fill: none;
+      stroke: rgb(var(--inkwell-rgb) / 0.68);
+      stroke-width: 1.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .plan-fill {
+      fill: rgb(var(--vellum-rgb) / 0.72);
+      stroke: var(--inkwell);
+      stroke-width: 2;
+    }
+
+    .mapped-bed {
+      fill: rgb(var(--pine-rgb) / 0.1);
+      stroke: var(--pine);
+      stroke-width: 2.2;
+    }
+
+    .mapped-pot {
+      fill: rgb(var(--clay-rgb) / 0.12);
+      stroke: var(--dark-clay);
+      stroke-width: 1.8;
+    }
+
+    .water-zone {
+      fill: none;
+      stroke: var(--cornflower);
+      stroke-width: 2.4;
+      stroke-dasharray: 8 5;
+    }
+
+    .overview-drop {
+      padding: 18px 26px;
+      border-bottom: 1px solid var(--line-on-dark);
+      color: var(--text-on-dark-primary);
+      background: var(--page-bg);
+    }
+
+    .card-label {
+      color: var(--chartreuse);
+      font-size: 10px;
+    }
+
+    .overview-drop h3 {
+      margin: 8px 0;
+      color: var(--text-on-dark-primary);
+      font-family: var(--font-botanical);
+      font-size: 32px;
+      line-height: 1;
+    }
+
+    .overview-drop p {
+      margin: 0;
+      color: var(--text-on-dark-secondary);
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .tag {
+      padding: 4px 7px 3px;
+      color: var(--dark-fern);
+      background: rgb(var(--chartreuse-rgb) / 0.5);
+      font-size: 8px;
+    }
+
+    .tag.weather {
+      background: linear-gradient(100deg, rgb(160 184 245 / 0.5), rgb(184 212 58 / 0.3));
+    }
+
+    .journal-list {
+      display: grid;
+      gap: 0;
+      margin: 0;
+      padding: 0 24px 24px;
+      list-style: none;
+      background: var(--vellum-light);
+    }
+
+    .section-title {
+      display: inline-block;
+      margin: 24px 24px 8px;
+      color: var(--inkwell);
+      font-size: 13px;
+      background: linear-gradient(to top, rgb(var(--chartreuse-rgb) / 0.42) 50%, transparent 50%);
+    }
+
+    .journal-list li {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 12px 0;
+      border-top: 1px solid var(--line-on-paper);
+    }
+
+    .journal-list strong {
+      display: block;
+      color: var(--inkwell);
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .journal-list span {
+      display: block;
+      margin-top: 3px;
+      color: rgb(var(--inkwell-rgb) / 0.68);
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .bottom-nav {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr) 76px repeat(2, 1fr);
+      align-items: center;
+      justify-items: center;
+      min-height: 82px;
+      padding: 10px 24px 12px;
+      background: var(--page-bg);
+    }
+
+    .nav-item {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgb(var(--vellum-rgb) / 0.42);
+      border-radius: 50%;
+      color: var(--text-on-dark-tertiary);
+      font-size: 13px;
+    }
+
+    .nav-item.active {
+      border-color: var(--chartreuse);
+      color: var(--chartreuse);
+    }
+
+    .fab {
+      display: grid;
+      place-items: center;
+      width: 70px;
+      height: 70px;
+      border: 6px solid var(--page-bg);
+      border-radius: 50%;
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+      font-size: 34px;
+      font-weight: 900;
+      transform: translateY(-18px);
+    }
+  </style>
+</head>
+<body>
+  <div class="mockup-title">Phone Mockup - Garden Overview</div>
+
+  <div class="phone-frame">
+    <div class="phone-screen">
+      <header class="app-header">
+        <div>
+          <h1 class="brand-title">Verdant Pages</h1>
+          <div class="brand-subtitle">Rhizome workspace</div>
+        </div>
+        <button class="mode-button" type="button" aria-label="Garden mode">G</button>
+      </header>
+
+      <main class="content">
+        <section class="page-intro">
+          <h2 class="page-title">Garden</h2>
+          <p>Mapped beds, constraints, and active garden context.</p>
+        </section>
+
+        <section class="overview-drop">
+          <div class="card-label">Garden profile</div>
+          <h3>Zone 9b backyard</h3>
+          <p>Clay soil, mixed sun, patio containers, seed trays, and one low drainage strip near the gate.</p>
+          <div class="stats">
+            <span class="tag">7 areas</span>
+            <span class="tag weather">Rain tonight</span>
+            <span class="tag">42 plants</span>
+          </div>
+        </section>
+
+        <article class="map-panel">
+          <div class="map-head">
+            <h3 class="map-title">Back Garden Plan</h3>
+            <div class="scale">4 ft grid</div>
+          </div>
+          <svg class="plan-svg" viewBox="0 0 390 360" preserveAspectRatio="xMidYMin meet" aria-label="Generated garden landscape sketch">
+            <defs>
+              <pattern id="phone-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                <path d="M20 0H0v20" fill="none" stroke="rgba(28,24,20,.1)" stroke-width=".8"/>
+              </pattern>
+              <pattern id="phone-dot" width="16" height="16" patternUnits="userSpaceOnUse">
+                <circle cx="2" cy="2" r="1" fill="rgba(28,24,20,.08)"/>
+              </pattern>
+            </defs>
+            <rect width="390" height="360" fill="var(--vellum-whisper)"/>
+            <rect width="390" height="360" fill="url(#phone-grid)"/>
+            <rect width="390" height="360" fill="url(#phone-dot)"/>
+            <rect x="18" y="18" width="354" height="322" class="plan-thin" stroke-dasharray="7 6"/>
+            <rect x="138" y="88" width="114" height="86" class="plan-fill"/>
+            <text x="168" y="134" font-size="22">house</text>
+            <path d="M252 104H332V154H252" class="plan-line"/>
+            <text x="270" y="96" font-size="18">patio</text>
+            <rect x="42" y="62" width="70" height="34" rx="3" class="mapped-bed"/>
+            <text x="52" y="84" font-size="17">herbs</text>
+            <path d="M42 132 C78 120 112 128 134 150 L122 190 C90 174 66 178 34 196 Z" class="mapped-bed"/>
+            <text x="56" y="158" font-size="17">tomatoes</text>
+            <rect x="230" y="202" width="110" height="44" rx="5" class="mapped-bed"/>
+            <text x="242" y="228" font-size="17">pollinator</text>
+            <rect x="238" y="272" width="84" height="36" rx="5" class="mapped-bed"/>
+            <text x="250" y="295" font-size="16">trays</text>
+            <circle cx="286" cy="76" r="12" class="mapped-pot"/>
+            <circle cx="318" cy="76" r="12" class="mapped-pot"/>
+            <circle cx="350" cy="76" r="12" class="mapped-pot"/>
+            <path d="M72 42 C92 76 86 112 104 144 C116 166 138 172 158 174" class="water-zone"/>
+            <text x="38" y="42" font-size="18">water</text>
+            <path d="M32 306 C64 294 98 310 132 302 C164 296 198 314 232 302" class="plan-line"/>
+            <text x="42" y="326" font-size="18">low drainage strip</text>
+          </svg>
+        </article>
+
+        <div class="section-title">Beds, planters, and pots</div>
+        <ul class="journal-list">
+          <li><div><strong>Tomato container row</strong><span>6 containers · aphid watch · morning light</span></div><span class="tag">2 tasks</span></li>
+          <li><div><strong>Patio herb bed</strong><span>Basil, thyme, parsley · drainage trial</span></div><span class="tag">Active</span></li>
+          <li><div><strong>Pollinator border</strong><span>Layout project · edge still flexible</span></div><span class="tag">Project</span></li>
+          <li><div><strong>Low drainage strip</strong><span>Check after rain before moving containers back</span></div><span class="tag weather">Rain</span></li>
+        </ul>
+
+        <div class="section-title">Planned projects</div>
+        <ul class="journal-list">
+          <li><div><strong>Pollinator border layout</strong><span>Choose starts and mark transplant window.</span></div><span class="tag">Plan</span></li>
+          <li><div><strong>Herb drainage test</strong><span>Raise pots and compare amended mix.</span></div><span class="tag">Active</span></li>
+        </ul>
+      </main>
+
+      <nav class="bottom-nav" aria-label="Primary">
+        <div class="nav-item">R</div>
+        <div class="nav-item">T</div>
+        <button class="fab" type="button" aria-label="Add garden item">+</button>
+        <div class="nav-item active">G</div>
+        <div class="nav-item">P</div>
+      </nav>
+    </div>
+  </div>
+</body>
+</html>

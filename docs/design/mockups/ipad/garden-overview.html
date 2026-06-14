@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Garden Overview - iPad</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@300;400;500;700;800&family=Shantell+Sans:BNCE,wght@20,400;20,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --inkwell: #1C1814;
+      --vellum: #F2E8C9;
+      --chartreuse: #B8D43A;
+      --pine: #2B5C2F;
+      --clay: #E06B4A;
+      --page-bg: #181510;
+      --vellum-light: #F6F0E0;
+      --vellum-pale: #F8F4EC;
+      --vellum-whisper: #FAF7F2;
+      --vellum-white: #FDFCFA;
+      --cornflower: #A0B8F5;
+      --dark-fern: #0C1E0C;
+      --dark-clay: #7A2F1D;
+      --inkwell-rgb: 28 24 20;
+      --vellum-rgb: 242 232 201;
+      --chartreuse-rgb: 184 212 58;
+      --pine-rgb: 43 92 47;
+      --clay-rgb: 224 107 74;
+      --cornflower-rgb: 160 184 245;
+      --surface-primary: var(--vellum-light);
+      --surface-secondary: var(--vellum-pale);
+      --surface-quiet: var(--vellum-whisper);
+      --text-primary: var(--inkwell);
+      --text-secondary: rgb(var(--inkwell-rgb) / 0.82);
+      --text-tertiary: rgb(var(--inkwell-rgb) / 0.62);
+      --text-on-dark-primary: rgb(var(--vellum-rgb) / 0.94);
+      --text-on-dark-secondary: rgb(var(--vellum-rgb) / 0.72);
+      --text-on-dark-tertiary: rgb(var(--vellum-rgb) / 0.42);
+      --line-on-paper: rgb(var(--inkwell-rgb) / 0.14);
+      --line-on-paper-strong: rgb(var(--inkwell-rgb) / 0.25);
+      --line-on-dark: rgb(var(--vellum-rgb) / 0.14);
+      --font-display: "Shantell Sans", cursive;
+      --font-botanical: "Caveat", cursive;
+      --font-body: "Nunito", system-ui, sans-serif;
+      --font-label: "Montserrat", system-ui, sans-serif;
+      --display-bounce: 20;
+      --display-weight: 700;
+      --radius-journal: 10px;
+      --radius-round: 24px;
+    }
+
+    body {
+      margin: 0;
+      padding: 28px;
+      background: var(--page-bg);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+    }
+
+    .mockup-stack {
+      display: grid;
+      gap: 36px;
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .mockup-title {
+      margin: 0 0 12px;
+      color: var(--text-on-dark-secondary);
+      font-family: var(--font-label);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .device {
+      overflow: hidden;
+      border: 1px solid var(--line-on-dark);
+      border-radius: var(--radius-round);
+      background: var(--page-bg);
+      box-shadow: 0 0 0 16px rgb(var(--vellum-rgb) / 0.03);
+    }
+
+    .landscape {
+      display: grid;
+      grid-template-columns: 76px 1fr;
+      width: min(1024px, 100%);
+      aspect-ratio: 1024 / 768;
+    }
+
+    .portrait {
+      width: min(768px, 100%);
+      aspect-ratio: 768 / 1024;
+      margin: 0 auto;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+
+    .rail {
+      display: grid;
+      grid-template-rows: auto repeat(5, 58px) 1fr auto;
+      justify-items: center;
+      gap: 12px;
+      padding: 14px 10px;
+      border-right: 1px solid var(--line-on-dark);
+      background: var(--page-bg);
+    }
+
+    .rail-item,
+    .bottom-item {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      color: var(--text-on-dark-tertiary);
+      font-family: var(--font-label);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+    }
+
+    .rail-item.brand,
+    .rail-item.active,
+    .bottom-item.active {
+      border-color: rgb(var(--pine-rgb) / 0.7);
+      color: var(--inkwell);
+      background: var(--chartreuse);
+    }
+
+    .rail-add,
+    .fab {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border: 0;
+      border-radius: 50%;
+      color: var(--dark-fern);
+      background: var(--chartreuse);
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .app {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-width: 0;
+      background: var(--surface-primary);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--line-on-paper);
+      background: var(--surface-primary);
+    }
+
+    .portrait .topbar {
+      display: grid;
+      gap: 8px;
+      padding: 26px 32px;
+      color: var(--text-on-dark-primary);
+      background: var(--page-bg);
+    }
+
+    .page-title,
+    .brand-title,
+    .map-title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-variation-settings: "BNCE" var(--display-bounce);
+      font-weight: var(--display-weight);
+      line-height: 1;
+    }
+
+    .page-title {
+      font-size: 36px;
+    }
+
+    .portrait .page-title,
+    .brand-title {
+      color: var(--text-on-dark-primary);
+      font-size: 42px;
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--text-secondary);
+      font-size: 16px;
+      line-height: 1.3;
+    }
+
+    .portrait .subtitle,
+    .brand-subtitle {
+      color: var(--chartreuse);
+    }
+
+    .brand-subtitle,
+    .label,
+    .card-label,
+    .section-title,
+    .tag {
+      font-family: var(--font-label);
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+    }
+
+    .mode-button {
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 40px;
+      border: 1px solid var(--line-on-paper);
+      border-radius: 10px;
+      color: var(--pine);
+      background: var(--surface-quiet);
+      font-family: var(--font-label);
+      font-weight: 900;
+    }
+
+    .mode-button.active {
+      background: var(--chartreuse);
+      color: var(--dark-fern);
+    }
+
+    .landscape-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 310px;
+      min-height: 0;
+    }
+
+    .portrait-body {
+      min-height: 0;
+      overflow: auto;
+      background: var(--surface-primary);
+    }
+
+    .map-shell {
+      min-height: 0;
+      padding: 18px;
+      border-right: 1px solid var(--line-on-paper);
+      background:
+        radial-gradient(circle, rgb(var(--inkwell-rgb) / 0.045) 1.2px, transparent 1.4px),
+        var(--surface-secondary);
+      background-size: 26px 26px, auto;
+    }
+
+    .portrait .map-shell {
+      border-right: 0;
+      border-bottom: 1px solid var(--line-on-paper);
+    }
+
+    .map-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .map-title {
+      color: var(--pine);
+      font-size: 30px;
+    }
+
+    .scale {
+      color: var(--text-tertiary);
+      font-family: var(--font-label);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .plan-svg {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 720 / 470;
+      display: block;
+      border: 1px solid var(--line-on-paper-strong);
+      background: var(--surface-quiet);
+    }
+
+    .portrait .plan-svg {
+      height: auto;
+    }
+
+    .plan-svg text {
+      fill: var(--inkwell);
+      font-family: var(--font-botanical);
+      font-weight: 700;
+    }
+
+    .plan-label {
+      font-family: var(--font-label) !important;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .plan-line {
+      fill: none;
+      stroke: var(--inkwell);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .plan-thin {
+      fill: none;
+      stroke: rgb(var(--inkwell-rgb) / 0.68);
+      stroke-width: 1.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .plan-fill {
+      fill: rgb(var(--vellum-rgb) / 0.72);
+      stroke: var(--inkwell);
+      stroke-width: 2;
+    }
+
+    .mapped-bed {
+      fill: rgb(var(--pine-rgb) / 0.1);
+      stroke: var(--pine);
+      stroke-width: 2.2;
+    }
+
+    .mapped-pot {
+      fill: rgb(var(--clay-rgb) / 0.12);
+      stroke: var(--dark-clay);
+      stroke-width: 1.8;
+    }
+
+    .water-zone {
+      fill: none;
+      stroke: var(--cornflower);
+      stroke-width: 2.3;
+      stroke-dasharray: 8 5;
+    }
+
+    .aside {
+      min-height: 0;
+      overflow: auto;
+      background: var(--page-bg);
+      color: var(--text-on-dark-primary);
+    }
+
+    .aside-section {
+      padding: 20px;
+      border-bottom: 1px solid var(--line-on-dark);
+    }
+
+    .aside-section h2 {
+      margin: 8px 0;
+      font-size: 30px;
+      font-family: var(--font-botanical);
+      line-height: 1;
+    }
+
+    .aside-section p,
+    .aside-section li {
+      color: var(--text-on-dark-secondary);
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .card-label {
+      color: var(--chartreuse);
+      font-size: 10px;
+    }
+
+    .note-card {
+      border-left: 4px solid var(--pine);
+      background: rgb(var(--vellum-rgb) / 0.04);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .info-cell {
+      padding: 9px;
+      background: rgb(var(--vellum-rgb) / 0.06);
+    }
+
+    .info-cell span {
+      display: block;
+      color: var(--text-on-dark-tertiary);
+      font-family: var(--font-label);
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .info-cell strong {
+      display: block;
+      margin-top: 3px;
+      color: var(--text-on-dark-primary);
+      font-size: 15px;
+    }
+
+    .journal-list {
+      display: grid;
+      gap: 0;
+      margin: 0;
+      padding: 0 28px 28px;
+      list-style: none;
+      background: var(--surface-primary);
+    }
+
+    .journal-list li {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      padding: 15px 0;
+      border-top: 1px solid var(--line-on-paper);
+    }
+
+    .journal-list strong {
+      display: block;
+      font-size: 20px;
+    }
+
+    .journal-list span {
+      display: block;
+      margin-top: 3px;
+      color: var(--text-tertiary);
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .tag {
+      align-self: start;
+      padding: 4px 8px;
+      color: var(--dark-fern);
+      background: rgb(var(--chartreuse-rgb) / 0.42);
+      font-size: 9px;
+      white-space: nowrap;
+    }
+
+    .bottom-nav {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr) 78px repeat(2, 1fr);
+      align-items: center;
+      justify-items: center;
+      min-height: 92px;
+      padding: 12px 52px;
+      background: var(--page-bg);
+    }
+
+    .bottom-item {
+      border-radius: 50%;
+      color: var(--text-on-dark-tertiary);
+    }
+
+    .bottom-item.active {
+      color: var(--chartreuse);
+      background: transparent;
+      border-color: var(--chartreuse);
+    }
+  </style>
+</head>
+<body>
+  <main class="mockup-stack">
+    <section>
+      <h1 class="mockup-title">iPad Landscape - Garden Overview</h1>
+      <div class="device landscape">
+        <nav class="rail" aria-label="Primary">
+          <div class="rail-item brand">V</div>
+          <div class="rail-item">R</div>
+          <div class="rail-item">T</div>
+          <div class="rail-item active">G</div>
+          <div class="rail-item">P</div>
+          <div class="rail-item">I</div>
+          <div></div>
+          <button class="rail-add" type="button" aria-label="Add garden item">+</button>
+        </nav>
+
+        <div class="app">
+          <header class="topbar">
+            <div>
+              <h2 class="page-title">Garden</h2>
+              <p class="subtitle">Mapped areas, constraints, and active garden context.</p>
+            </div>
+            <button class="mode-button active" type="button" aria-label="Map view">G</button>
+          </header>
+
+          <section class="landscape-body">
+            <article class="map-shell">
+              <div class="map-header">
+                <h3 class="map-title">Back Garden Plan</h3>
+                <div class="scale">Scale grid - 4 ft</div>
+              </div>
+              <svg class="plan-svg" viewBox="0 0 720 470" preserveAspectRatio="xMidYMin meet" aria-label="Generated garden landscape sketch">
+                <defs>
+                  <pattern id="ipad-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                    <path d="M24 0H0v24" fill="none" stroke="rgba(28,24,20,.1)" stroke-width=".8"/>
+                  </pattern>
+                  <pattern id="ipad-dot" width="18" height="18" patternUnits="userSpaceOnUse">
+                    <circle cx="2" cy="2" r="1.1" fill="rgba(28,24,20,.08)"/>
+                  </pattern>
+                </defs>
+                <rect width="720" height="470" fill="var(--surface-quiet)"/>
+                <rect width="720" height="470" fill="url(#ipad-grid)"/>
+                <rect width="720" height="470" fill="url(#ipad-dot)"/>
+                <rect x="28" y="30" width="664" height="404" class="plan-thin" stroke-dasharray="8 7"/>
+                <path d="M404 44 C486 68 566 70 650 56" fill="none" stroke="rgba(43,92,47,.45)" stroke-width="1.4" stroke-dasharray="7 6"/>
+                <rect x="238" y="116" width="184" height="134" class="plan-fill"/>
+                <rect x="302" y="250" width="100" height="68" class="plan-fill"/>
+                <text x="290" y="186" font-size="28">house</text>
+                <text x="322" y="292" font-size="22">garage</text>
+                <path d="M422 144H550V218H422" class="plan-line"/>
+                <text x="458" y="136" font-size="22">patio pots</text>
+                <rect x="76" y="88" width="108" height="44" rx="3" class="mapped-bed"/>
+                <text x="94" y="116" font-size="20">herbs</text>
+                <path d="M74 178 C134 160 188 174 222 204 L204 254 C154 232 116 236 64 260 Z" class="mapped-bed"/>
+                <text x="96" y="211" font-size="21">tomato row</text>
+                <rect x="470" y="254" width="172" height="60" rx="5" class="mapped-bed"/>
+                <text x="488" y="288" font-size="21">pollinator edge</text>
+                <rect x="496" y="348" width="126" height="48" rx="5" class="mapped-bed"/>
+                <text x="514" y="378" font-size="20">seed trays</text>
+                <circle cx="568" cy="116" r="16" class="mapped-pot"/>
+                <circle cx="606" cy="116" r="16" class="mapped-pot"/>
+                <circle cx="644" cy="116" r="16" class="mapped-pot"/>
+                <path d="M118 64 C150 112 138 162 164 204 C180 234 214 244 246 246" class="water-zone"/>
+                <text x="70" y="74" font-size="22">water line</text>
+                <path d="M48 396 C94 382 144 402 196 392 C242 384 288 408 340 392" class="plan-line"/>
+                <text x="58" y="422" font-size="22">low drainage strip</text>
+                <text x="536" y="426" class="plan-label">scale 1 square = 4 ft</text>
+              </svg>
+            </article>
+
+            <aside class="aside">
+              <section class="aside-section">
+                <div class="card-label">Garden profile</div>
+                <h2>Zone 9b backyard</h2>
+                <p>Clay soil, mixed sun, patio containers, seed trays, and a narrow drainage edge near the gate.</p>
+                <div class="info-grid">
+                  <div class="info-cell"><span>Areas</span><strong>7 mapped</strong></div>
+                  <div class="info-cell"><span>Water</span><strong>Hose line</strong></div>
+                  <div class="info-cell"><span>Soil</span><strong>Hard clay</strong></div>
+                  <div class="info-cell"><span>Sun</span><strong>Mixed</strong></div>
+                </div>
+              </section>
+              <section class="aside-section note-card">
+                <div class="card-label">Rhizome note</div>
+                <h2>Drainage first</h2>
+                <p>Rain tonight means the tomato row and low strip should be checked before container watering resumes.</p>
+              </section>
+              <section class="aside-section">
+                <div class="card-label">Constraints</div>
+                <p>Power line clearance, compacting clay, afternoon patio heat, and uneven water access.</p>
+              </section>
+            </aside>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h1 class="mockup-title">iPad Portrait - Garden Overview</h1>
+      <div class="device portrait">
+        <header class="topbar">
+          <div>
+            <h2 class="brand-title">Verdant Pages</h2>
+            <div class="brand-subtitle">Rhizome workspace</div>
+          </div>
+          <button class="mode-button active" type="button" aria-label="Garden map">G</button>
+        </header>
+
+        <main class="portrait-body">
+          <section class="topbar">
+            <div>
+              <h2 class="page-title">Garden</h2>
+              <p class="subtitle">Mapped areas, constraints, and active projects.</p>
+            </div>
+          </section>
+
+          <article class="map-shell">
+            <div class="map-header">
+              <h3 class="map-title">Back Garden Plan</h3>
+              <div class="scale">4 ft grid</div>
+            </div>
+            <svg class="plan-svg" viewBox="0 0 720 470" preserveAspectRatio="xMidYMin meet" aria-label="Generated garden landscape sketch">
+              <defs>
+                <pattern id="portrait-grid" width="24" height="24" patternUnits="userSpaceOnUse">
+                  <path d="M24 0H0v24" fill="none" stroke="rgba(28,24,20,.1)" stroke-width=".8"/>
+                </pattern>
+                <pattern id="portrait-dot" width="18" height="18" patternUnits="userSpaceOnUse">
+                  <circle cx="2" cy="2" r="1.1" fill="rgba(28,24,20,.08)"/>
+                </pattern>
+              </defs>
+              <rect width="720" height="470" fill="var(--surface-quiet)"/>
+              <rect width="720" height="470" fill="url(#portrait-grid)"/>
+              <rect width="720" height="470" fill="url(#portrait-dot)"/>
+              <rect x="28" y="30" width="664" height="404" class="plan-thin" stroke-dasharray="8 7"/>
+              <rect x="238" y="116" width="184" height="134" class="plan-fill"/>
+              <text x="290" y="186" font-size="28">house</text>
+              <rect x="76" y="88" width="108" height="44" rx="3" class="mapped-bed"/>
+              <text x="94" y="116" font-size="20">herbs</text>
+              <path d="M74 178 C134 160 188 174 222 204 L204 254 C154 232 116 236 64 260 Z" class="mapped-bed"/>
+              <text x="96" y="211" font-size="21">tomatoes</text>
+              <rect x="470" y="254" width="172" height="60" rx="5" class="mapped-bed"/>
+              <text x="488" y="288" font-size="21">pollinator edge</text>
+              <rect x="496" y="348" width="126" height="48" rx="5" class="mapped-bed"/>
+              <text x="514" y="378" font-size="20">seed trays</text>
+              <circle cx="568" cy="116" r="16" class="mapped-pot"/>
+              <circle cx="606" cy="116" r="16" class="mapped-pot"/>
+              <circle cx="644" cy="116" r="16" class="mapped-pot"/>
+              <path d="M118 64 C150 112 138 162 164 204 C180 234 214 244 246 246" class="water-zone"/>
+              <path d="M48 396 C94 382 144 402 196 392 C242 384 288 408 340 392" class="plan-line"/>
+              <text x="58" y="422" font-size="22">low drainage strip</text>
+            </svg>
+          </article>
+
+          <ul class="journal-list">
+            <li><div><strong>Tomato container row</strong><span>6 containers · aphid watch · morning light</span></div><span class="tag">2 tasks</span></li>
+            <li><div><strong>Patio herb bed</strong><span>Basil, thyme, parsley · drainage mix trial</span></div><span class="tag">Active</span></li>
+            <li><div><strong>Pollinator border</strong><span>Layout project · edge still flexible</span></div><span class="tag">Project</span></li>
+            <li><div><strong>Low drainage strip</strong><span>Check after rain before moving containers back</span></div><span class="tag">Rain</span></li>
+          </ul>
+        </main>
+
+        <nav class="bottom-nav" aria-label="Primary">
+          <div class="bottom-item">R</div>
+          <div class="bottom-item">T</div>
+          <button class="fab" type="button" aria-label="Add garden item">+</button>
+          <div class="bottom-item active">G</div>
+          <div class="bottom-item">P</div>
+        </nav>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
