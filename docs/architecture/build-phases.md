@@ -337,16 +337,44 @@ Each item below is independent. Build in any order once the backend issue is clo
 
 ## Phase 8 — Polish + Deploy
 
-**Deliverable:** Production-ready app.
+**Deliverable:** Production-ready app running on spark-thor.
 
-- Write `CLAUDE.md` to repo root (copy from `docs/architecture/claude-md.md`, verify all invariants still accurate)
+**Deploy target:** Cambium serves the built static files directly on spark-thor. Same-origin — no CORS, no `VITE_CAMBIUM_URL` needed in production.
+
+**Cambium changes needed:**
+Add a static file handler to Cambium that serves the `dist/` output for all non-API routes. Any path not matched by `/api/v1/*` or `/auth/*` should serve `index.html` (required for client-side routing — React Router handles the URL, not the server).
+
+```go
+// In Cambium routes.go (approximate)
+fs := http.FileServer(http.Dir("./dist"))
+mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    // Serve index.html for all unknown paths (client-side routing)
+    if _, err := os.Stat("./dist" + r.URL.Path); os.IsNotExist(err) {
+        http.ServeFile(w, r, "./dist/index.html")
+        return
+    }
+    fs.ServeHTTP(w, r)
+}))
+```
+
+**Build process:**
+```bash
+# In verdant-pages/
+npm run build          # produces dist/
+cp -r dist/ ../cambium/dist/   # or configure STATIC_DIR env var
+```
+
+**Alternative — separate Dockerfile:** add a `Dockerfile` to verdant-pages that builds with Node, copies `dist/` as a build artifact, then passes it to the Cambium Docker image. Cleaner for CI.
+
+**Raise a Cambium issue** for the static file handler when ready to deploy.
+
+**Other polish tasks:**
+- Write `CLAUDE.md` to repo root (copy from `docs/architecture/claude-md.md`, verify all invariants)
 - Code splitting — lazy load all page components via `React.lazy` + `Suspense`
 - Accessibility audit — keyboard navigation, focus management in Modal/Drawer, ARIA labels on nav
 - Performance baseline — Lighthouse on Today, Tasks, Calendar pages
-- Self-hosted fonts — download Google Fonts, serve from `/public/fonts/`, update `tokens.css` (see [design-tokens.md](design-tokens.md))
+- Self-hosted fonts — download Google Fonts, serve from `/public/fonts/`, update `index.html` (see [design-tokens.md](design-tokens.md))
 - Visual QA — compare all pages against prototype and mockups
-- Configure deploy target (see [open-questions.md](open-questions.md) Q8)
-- Set `VITE_CAMBIUM_URL` in production environment
 
 ---
 
