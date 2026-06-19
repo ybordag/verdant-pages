@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Verdant Pages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Montserrat:wght@300;400;500;600&family=Nunito:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Shantell+Sans:BNCE,ital,wght@20,0,400;20,0,700;20,1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --chartreuse:#B8D43A;--pine:#2B5C2F;--clay:#E06B4A;
+  --buttercup:#FFC94D;--pale-herb:#B0EAAC;--peony:#F5A0C8;
+  --cornflower:#A0B8F5;--wisteria:#D7A5FF;
+  --font-display:"Shantell Sans",cursive;
+  --font-botanical:"Caveat",cursive;
+  --font-body:"Nunito",system-ui,sans-serif;
+  --font-label:"Montserrat",system-ui,sans-serif;
+}
+[data-theme="dark"]{
+  --bg:#181510;--bg-nav:#201C17;--bg-raised:rgba(242,232,201,.05);--bg-card:rgba(242,232,201,.04);
+  --text-p:rgba(242,232,201,.94);--text-s:rgba(242,232,201,.70);
+  --text-t:rgba(242,232,201,.48);--text-m:rgba(242,232,201,.34);
+  --line:rgba(242,232,201,.10);--line-s:rgba(242,232,201,.18);
+  --dot:rgba(242,232,201,.14);--gc:rgba(43,92,47,.22);--gcb:rgba(43,92,47,.38);
+  --nav-accent:var(--chartreuse);--nav-active-bg:rgba(184,212,58,0.10);
+  --input-bg:rgba(242,232,201,.06);
+}
+[data-theme="light"]{
+  --bg:#FAF6EE;--bg-nav:#EDE8D4;--bg-raised:rgba(28,24,20,.05);--bg-card:rgba(28,24,20,.03);
+  --text-p:rgba(28,24,20,.92);--text-s:rgba(28,24,20,.80);
+  --text-t:rgba(28,24,20,.62);--text-m:rgba(28,24,20,.55);
+  --line:rgba(28,24,20,.13);--line-s:rgba(28,24,20,.24);
+  --dot:rgba(28,24,20,.12);--gc:rgba(43,92,47,.18);--gcb:rgba(43,92,47,.32);
+  --nav-accent:var(--pine);--nav-active-bg:rgba(184,212,58,.28);
+  --input-bg:rgba(28,24,20,.06);
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text-p);font-family:var(--font-body);transition:background .35s,color .2s}
+#root{display:flex;height:100vh;overflow:hidden}
+.cw{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.bc{padding:8px 24px;border-bottom:1px solid var(--line);font-family:var(--font-label);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-m);display:flex;align-items:center;gap:6px;flex-shrink:0;background:var(--bg-nav)}
+.bc-link{cursor:pointer;color:var(--text-t)}
+.bc-link:hover{color:var(--text-s)}
+.cm{flex:1;overflow:hidden;position:relative}
+.pi{height:100%;animation:pIn .22s ease}
+@keyframes pIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.vs{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--pine),var(--chartreuse));transform-origin:left;animation:vsA .5s ease forwards;z-index:999;pointer-events:none}
+@keyframes vsA{0%{transform:scaleX(0);opacity:1}70%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
+@keyframes acceptGlow{0%{box-shadow:0 0 0 0 rgba(184,212,58,0)}35%{box-shadow:0 0 0 6px rgba(184,212,58,.3)}100%{box-shadow:0 0 0 0 rgba(184,212,58,0)}}
+.af{animation:acceptGlow .7s ease}
+.dg{background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);background-size:18px 18px}
+.gg{background-image:linear-gradient(var(--gc) 1px,transparent 1px),linear-gradient(90deg,var(--gc) 1px,transparent 1px);background-size:20px 20px}
+.nb{width:100%;display:flex;align-items:center;background:none;border:none;cursor:pointer;font-family:var(--font-label);font-size:11px;letter-spacing:.12em;text-transform:uppercase;transition:background .12s,color .12s;white-space:nowrap}
+.nb:hover{background:var(--bg-raised)}
+.hr{transition:background .1s}.hr:hover{background:var(--bg-raised)}
+.cd{cursor:pointer;transition:background .1s;border-radius:3px}.cd:hover{background:var(--bg-raised)}
+.chip{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;font-family:var(--font-label);font-size:9px;font-weight:500;letter-spacing:.11em;text-transform:uppercase}
+.pp{width:0;overflow:hidden;border-left:0 solid var(--line);flex-shrink:0;transition:width .3s,border-left-width .3s;display:flex;flex-direction:column}
+.pp.open{width:272px;border-left-width:1px}
+textarea{width:100%;background:transparent;border:none;outline:none;color:var(--text-p);font-family:var(--font-body);font-size:14px;line-height:1.65;resize:none;caret-color:var(--chartreuse)}
+textarea::placeholder{color:var(--text-m);font-style:italic}
+input,select{background:var(--input-bg);border:1px solid var(--line);border-radius:6px;color:var(--text-p);font-family:var(--font-body);font-size:14px;padding:8px 11px;width:100%;outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--chartreuse)}
+select option{background:var(--bg-nav)}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--line-s);border-radius:3px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script>
+// vp/data.js — Verdant Pages prototype data
+
+const VP_PLANTS = [
+  {
+    id:'tomato', name:'Cherry Tomatoes', species:'Solanum lycopersicum', variety:'Sungold F1',
+    family:'Solanaceae', category:'Summer Crop', location:'Courtyard · Growbag A', locationId:'growbag-a',
+    status:'fruiting', projectId:'summer-veg',
+    sun:'Full sun', water:'Every 2–3 days', zone:'9b — excellent',
+    sowDate:'Apr 3', redCupDate:'May 1', transplantDate:'May 22', harvestExpected:'Jun 28',
+    facts:[['Last watered','2 days ago'],['Soil moisture','48% · low'],['Next feed','In 4 days'],
+           ['Days to harvest','~14 days'],['Location','Courtyard · Growbag A'],['Status','Fruiting'],
+           ['Sun','Full sun'],['Water','Every 2–3 days'],['Zone suitability','9b — excellent']],
+    chips:['Fruiting','Full Sun','Summer','Annual','Edible','Warm season'],
+    careNotes:'Sungold cherry tomatoes produce prolifically from midsummer through fall in zone 9b. Consistent watering every 2–3 days prevents blossom-end rot and cracking. Shift fertilizer toward phosphorus and potassium once fruiting begins. Pinch suckers weekly.',
+    history:'Started from seed in tray 2 on April 3. Moved to red cup May 1. Transplanted to courtyard growbag May 22. First flower cluster June 2. Aphids on lower leaves June 10 — treated with neem oil, no recurrence since.',
+    suggestions:[
+      {text:"Water today — soil moisture is at 48% and afternoon temps will reach 76°F. Tomatoes are sensitive to stress during fruit set.",urgency:'urgent'},
+      {text:"First harvest window estimated June 28–July 4. Pick daily once fruit turns orange-gold; ripe fruit left on the vine reduces yield.",urgency:'info'},
+      {text:"Consider staking the main stem — some lean observed in the courtyard bed.",urgency:'info'},
+    ]
+  },
+  {
+    id:'peppers', name:'Peppers', species:'Capsicum annuum', variety:'California Wonder',
+    family:'Solanaceae', category:'Summer Crop', location:'Courtyard · Growbag B', locationId:'growbag-b',
+    status:'growing', projectId:'summer-veg',
+    sun:'Full sun', water:'Every 2–3 days', zone:'9b — good',
+    sowDate:'Apr 3', redCupDate:'May 8', transplantDate:'May 22', harvestExpected:'Aug 1',
+    facts:[['Location','Courtyard · Growbag B'],['Status','Growing'],['Sun','Full sun'],
+           ['Water','Every 2–3 days'],['Zone','9b — good'],['Started','Apr 3'],['Transplanted','May 22']],
+    chips:['Growing','Full Sun','Summer','Annual','Edible'],
+    careNotes:'Consistent moisture and warm nights. Above 90°F, afternoon shade cloth helps. Morning misting during hot spells supports fruit set. Low-nitrogen feed once flowering begins.',
+    history:'Started Apr 3. Some yellowing in early June — treated with fish emulsion Jun 8. Transplanted May 22.',
+    suggestions:[{text:"Fruit set is slow — consider potassium sulfate this week to support flowering.",urgency:'info'}]
+  },
+  {
+    id:'basil', name:'Basil', species:'Ocimum basilicum', variety:'Genovese',
+    family:'Lamiaceae', category:'Herb', location:'Courtyard Bed', locationId:'court-main',
+    status:'growing', projectId:'summer-veg',
+    sun:'Full sun', water:'Every 1–2 days', zone:'9b — excellent',
+    sowDate:'Apr 15', transplantDate:'May 25',
+    facts:[['Location','Courtyard Bed'],['Status','Growing'],['Sun','Full sun'],
+           ['Water','Every 1–2 days'],['Zone','9b — excellent'],['Tray','Tray 3']],
+    chips:['Growing','Full Sun','Annual','Herb','Edible','Companion'],
+    careNotes:'Pinch flower heads to extend harvest. Bolts quickly in heat — pinch tips weekly. Harvest in morning for best flavor. Excellent companion with tomatoes.',
+    history:'Tray 3 sown Apr 15. Transplanted to courtyard bed May 25. Some crowding — thinning recommended.',
+    suggestions:[{text:"Tray 3 is getting crowded — good time to thin or pot up the strongest seedlings.",urgency:'urgent'}]
+  },
+  {
+    id:'marigolds', name:'Marigolds', species:'Tagetes patula', variety:'French Mixed',
+    family:'Asteraceae', category:'Companion', location:'Courtyard Bed', locationId:'court-main',
+    status:'seedling', projectId:'summer-veg',
+    sun:'Full sun', water:'Weekly', zone:'9b — excellent',
+    sowDate:'May 1', transplantDate:'Jun 1',
+    facts:[['Location','Courtyard Bed'],['Status','Seedling'],['Sun','Full sun'],['Water','Weekly'],['Zone','9b — excellent']],
+    chips:['Seedling','Full Sun','Annual','Companion','Pollinator'],
+    careNotes:'French marigolds deter aphids and nematodes when interplanted with vegetables. Deadhead regularly for continuous bloom through frost.',
+    history:'Sown May 1. Companion planted with tomatoes and basil per Rhizome suggestion.',
+    suggestions:[]
+  },
+  {
+    id:'lavender', name:'Lavender', species:'Lavandula angustifolia', variety:'Hidcote',
+    family:'Lamiaceae', category:'Perennial', location:'Front Bed North', locationId:'front-n',
+    status:'established', projectId:null,
+    sun:'Full sun', water:'Monthly', zone:'9b — excellent',
+    facts:[['Location','Front Bed North'],['Status','Established'],['Sun','Full sun'],['Water','Monthly'],['Zone','9b — excellent']],
+    chips:['Established','Full Sun','Perennial','Pollinator','Fragrant','Drought-tolerant'],
+    careNotes:'Cut back by one-third after first bloom for a second flush. Avoid cutting into old wood. Well-drained soil essential.',
+    history:'Established plant, pre-existing in bed. Very healthy.',
+    suggestions:[]
+  },
+  {
+    id:'salvia', name:'Salvia', species:'Salvia nemorosa', variety:'May Night',
+    family:'Lamiaceae', category:'Perennial', location:'Front Bed North', locationId:'front-n',
+    status:'established', projectId:null,
+    sun:'Full sun', water:'Monthly', zone:'9b — good',
+    facts:[['Location','Front Bed North'],['Status','Established'],['Sun','Full sun'],['Water','Monthly'],['Zone','9b — good']],
+    chips:['Established','Full Sun','Perennial','Pollinator'],
+    careNotes:'Cut back after first bloom for second flush. Drought tolerant once established. Pairs well with lavender and catmint.',
+    history:'Established plant, pre-existing.',
+    suggestions:[]
+  },
+  {
+    id:'rosemary', name:'Rosemary', species:'Salvia rosmarinus', variety:'Tuscan Blue',
+    family:'Lamiaceae', category:'Herb / Perennial', location:'Back Slope Upper', locationId:'back-upper',
+    status:'established', projectId:null,
+    sun:'Full sun', water:'Monthly', zone:'9b — excellent',
+    facts:[['Location','Back Slope Upper'],['Status','Established'],['Sun','Full sun'],['Water','Monthly (drought-tolerant)'],['Zone','9b — excellent']],
+    chips:['Established','Full Sun','Perennial','Herb','Edible','Drought-tolerant'],
+    careNotes:'Extremely drought tolerant once established. Light annual pruning after bloom. Good for slope stability.',
+    history:'Established plant, pre-existing. Very healthy.',
+    suggestions:[]
+  },
+];
+
+const VP_PROJECTS = [
+  {
+    id:'summer-veg', name:'Summer Veg. Beds', status:'active',
+    goal:'Grow tomatoes, peppers, and basil in the courtyard containers for summer harvest using the two-step transplant process, with marigolds as companion plants.',
+    beds:['Courtyard Bed'], containers:['Growbag A','Growbag B','Ceramic Pot A'],
+    traySlots:4, budget:150, budgetSpent:87,
+    startDate:'Mar 15, 2026', targetDate:'Oct 31, 2026',
+    taskCount:7, completedTasks:2,
+    seedSchedule:[
+      {plant:'Cherry Tomatoes', status:'fruiting', events:[
+        {label:'Sow',pct:1,color:'#2B5C2F',date:'Apr 3'},
+        {label:'Red Cup',pct:14,color:'#B8D43A',date:'May 1'},
+        {label:'Final',pct:24,color:'#B0EAAC',date:'May 22'},
+        {label:'Harvest',pct:41,color:'#FFC94D',date:'Jun 28'},
+      ]},
+      {plant:'Peppers', status:'growing', events:[
+        {label:'Sow',pct:1,color:'#2B5C2F',date:'Apr 3'},
+        {label:'Red Cup',pct:18,color:'#B8D43A',date:'May 8'},
+        {label:'Final',pct:24,color:'#B0EAAC',date:'May 22'},
+        {label:'Harvest',pct:57,color:'#FFC94D',date:'Aug 1'},
+      ]},
+      {plant:'Basil', status:'growing', events:[
+        {label:'Sow',pct:7,color:'#2B5C2F',date:'Apr 15'},
+        {label:'Final',pct:25,color:'#B0EAAC',date:'May 25'},
+        {label:'Harvest',pct:37,color:'#FFC94D',date:'Jun 20'},
+      ]},
+      {plant:'Marigolds', status:'seedling', events:[
+        {label:'Sow',pct:14,color:'#2B5C2F',date:'May 1'},
+        {label:'Final',pct:28,color:'#B0EAAC',date:'Jun 1'},
+        {label:'Bloom',pct:33,color:'#E06B4A',date:'Jun 15'},
+      ]},
+    ],
+    iterations:[
+      {date:'May 15',note:'Added marigolds as companion plants per Rhizome suggestion. Tray 4 allocated.'},
+      {date:'Jun 10',note:'Aphid treatment on cherry tomatoes. Added weekly inspection to maintenance schedule.'},
+    ],
+    tasks:[
+      {id:'t1',text:'Water tomatoes & peppers',urgency:'time_sensitive',type:'maintenance',dl:'Today',done:false},
+      {id:'t2',text:'Check tray 3 — basil crowding',urgency:'time_sensitive',type:'maintenance',dl:'Today',done:false},
+      {id:'t3',text:'Thin crowded basil starts',urgency:'scheduled',type:'milestone',dl:'Jun 16',done:false},
+      {id:'t4',text:'Transplant seedlings to red cups',urgency:'scheduled',type:'milestone',dl:'Jun 15',done:false},
+      {id:'t5',text:'Weekly aphid inspection',urgency:'scheduled',type:'maintenance',dl:'Jun 17',done:false},
+      {id:'t6',text:'Apply fish emulsion',urgency:'backlog',type:'maintenance',dl:null,done:true},
+      {id:'t7',text:'Stake tomato main stem',urgency:'backlog',type:'opportunistic',dl:null,done:false},
+    ],
+  },
+  {
+    id:'cottage-front', name:'Cottage Front Bed', status:'planning',
+    goal:'Establish a cottage garden aesthetic in the front beds with drought-tolerant perennials, self-seeding annuals, and climbing plants for the fence.',
+    beds:['Front Bed North','Front Bed South'], containers:[], traySlots:2,
+    budget:200, budgetSpent:0, startDate:null, targetDate:'Sep 1, 2026',
+    taskCount:3, completedTasks:0, seedSchedule:[], iterations:[],
+    tasks:[
+      {id:'t1',text:'Order seeds for fall succession planting',urgency:'scheduled',type:'milestone',dl:'Jun 21',done:false},
+      {id:'t2',text:'Amend courtyard bed with compost',urgency:'backlog',type:'opportunistic',dl:null,done:false},
+      {id:'t3',text:'Research companion planting layout',urgency:'backlog',type:'milestone',dl:null,done:false},
+    ],
+  },
+  {
+    id:'rose-pruning', name:'Rose Cane Pruning', status:'maintaining',
+    goal:'Annual rose care — winter prune, spring feed, and ongoing deadheading and pest monitoring through the bloom season.',
+    beds:[], containers:[], traySlots:0, budget:30, budgetSpent:12,
+    startDate:'Jan 20, 2026', targetDate:'Dec 31, 2026',
+    taskCount:2, completedTasks:0, seedSchedule:[],
+    iterations:[
+      {date:'Jan 20',note:'Winter prune completed. Removed dead canes, shaped for summer flush.'},
+      {date:'Mar 10',note:'Spring feed with rose fertilizer applied.'},
+    ],
+    tasks:[
+      {id:'t1',text:'Feed roses with fish emulsion',urgency:'scheduled',type:'maintenance',dl:'Jun 20',done:false},
+      {id:'t2',text:'Deadhead spent blooms',urgency:'backlog',type:'maintenance',dl:null,done:false},
+    ],
+  },
+];
+
+// Calendar events for June 2026 — keyed by day of month
+const VP_CAL_EVENTS = {
+  3:  [{type:'seed',     label:'Basil batch 2 sow',       color:'#2B5C2F', project:'summer-veg'}],
+  14: [{type:'task',     label:'Water tomatoes',           color:'#E06B4A', project:'summer-veg'},
+       {type:'task',     label:'Frost protect seedlings',  color:'#E06B4A', project:'summer-veg'}],
+  15: [{type:'transplant',label:'Transplant → red cups',  color:'#B8D43A', project:'summer-veg'}],
+  18: [{type:'seed',     label:'Sow basil batch 2',        color:'#2B5C2F', project:'summer-veg'}],
+  20: [{type:'task',     label:'Feed roses',               color:'#B0EAAC', project:'rose-pruning'}],
+  21: [{type:'task',     label:'Order fall seeds',         color:'#FFC94D', project:'cottage-front'}],
+  25: [{type:'weather',  label:'Heat spike forecast',      color:'#A0B8F5', project:null}],
+  28: [{type:'harvest',  label:'Tomato harvest window',    color:'#FFC94D', project:'summer-veg'}],
+  29: [{type:'harvest',  label:'Tomato harvest',           color:'#FFC94D', project:'summer-veg'}],
+  30: [{type:'harvest',  label:'Tomato harvest',           color:'#FFC94D', project:'summer-veg'}],
+};
+
+Object.assign(window, { VP_PLANTS, VP_PROJECTS, VP_CAL_EVENTS });
+
+</script>
+<script type="text/babel">
+
+const NAV_ITEMS = [
+  {id:'today',   label:'Today',
+   icon:<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="1.5" y="3" width="13" height="11" rx="1.5"/><path d="M5 1v3M11 1v3M1.5 7h13"/></svg>},
+  {id:'rhizome', label:'Rhizome',
+   icon:<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 14C8 14 3.5 10 3.5 6c0-2.5 2-4.5 4.5-4.5S12.5 3.5 12.5 6c0 4-4.5 8-4.5 8Z"/><line x1="8" y1="14" x2="8" y2="8"/></svg>},
+  {id:'tasks',   label:'Tasks',
+   icon:<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M2 4h12M2 8h9M2 12h7"/></svg>},
+  {id:'calendar',label:'Calendar',
+   icon:<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="1.5" y="2.5" width="13" height="12" rx="1.5"/><path d="M5 1v3M11 1v3M1.5 6.5h13"/><circle cx="5" cy="10" r=".8" fill="currentColor" stroke="none"/><circle cx="8" cy="10" r=".8" fill="currentColor" stroke="none"/><circle cx="11" cy="10" r=".8" fill="currentColor" stroke="none"/></svg>},
+  {id:'garden',  label:'Garden',
+   icon:<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="1.5" y="1.5" width="13" height="13" rx="1"/><path d="M1.5 8h13M8 1.5v13"/></svg>},
+  {id:'plants',  label:'Plants',
+   icon:<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="14" x2="8" y2="6"/><path d="M8 9C8 9 5.5 7.5 5 4.5c2.2 0 3.5 2.2 3 4.5Z"/><path d="M8 11.5C8 11.5 10.5 10 11 7c-2.2 0-3.5 2.2-3 4.5Z"/><path d="M5.5 13C5.5 13 8 12 8 9.5"/></svg>},
+  {id:'projects',label:'Projects',
+   icon:<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1.5 5.5v7a1 1 0 001 1h11a1 1 0 001-1v-6a1 1 0 00-1-1H8L6.5 4h-4a1 1 0 00-1 1.5Z"/></svg>},
+];
+
+function VPNav({page, setPage, theme, setTheme, collapsed, setCollapsed}) {
+  return (
+    <nav style={{width:collapsed?52:210,minWidth:collapsed?52:210,height:'100vh',background:'var(--bg-nav)',borderRight:'1px solid var(--line)',display:'flex',flexDirection:'column',transition:'width .26s,min-width .26s,background .35s',overflow:'hidden',flexShrink:0}}>
+      <div style={{padding:collapsed?'17px 0':'18px 16px 14px',display:'flex',alignItems:'center',justifyContent:collapsed?'center':'space-between',borderBottom:'1px solid var(--line)',flexShrink:0,gap:8}}>
+        {collapsed
+          ? <span onClick={()=>setCollapsed(false)} style={{fontFamily:'var(--font-display)',fontVariationSettings:'"BNCE" 20',fontWeight:700,color:'var(--nav-accent)',fontSize:22,cursor:'pointer',lineHeight:1,userSelect:'none',display:'block',textAlign:'center'}}>V</span>
+          : <><span style={{fontFamily:'var(--font-display)',fontSize:16,fontVariationSettings:'"BNCE" 20',fontWeight:700,color:'var(--nav-accent)',lineHeight:1,whiteSpace:'nowrap'}}>Verdant Pages</span>
+            <button onClick={()=>setCollapsed(true)} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-m)',padding:4,display:'flex',alignItems:'center',flexShrink:0}}>
+              <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M10 2L4 7l6 5"/></svg>
+            </button></>}
+      </div>
+      <div style={{flex:1,padding:'8px 0',overflowY:'auto'}}>
+        {NAV_ITEMS.map(item => {
+          const a = page === item.id;
+          return (
+            <button key={item.id} className="nb" onClick={()=>setPage(item.id)} title={collapsed ? item.label : ''}
+              style={{padding:collapsed?'10px 0':'9px 16px',justifyContent:collapsed?'center':'flex-start',gap:9,color:a?'var(--nav-accent)':'var(--text-s)',fontWeight:a?600:400,borderLeft:a&&!collapsed?'2px solid var(--nav-accent)':'2px solid transparent',paddingLeft:collapsed?0:a?14:16,background:a?'var(--nav-active-bg)':'transparent',fontSize:10}}>
+              <span style={{flexShrink:0,opacity:a?1:.72}}>{item.icon}</span>
+              {!collapsed && <span>{item.label}</span>}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{padding:collapsed?'12px 0':'10px 16px',borderTop:'1px solid var(--line)',display:'flex',alignItems:'center',justifyContent:collapsed?'center':'space-between',flexShrink:0}}>
+        {!collapsed && <span style={{fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.14em',textTransform:'uppercase',color:'var(--text-m)'}}>{theme==='dark'?'Dark':'Light'}</span>}
+        <button onClick={()=>setTheme(theme==='dark'?'light':'dark')} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-s)',padding:4,display:'flex',alignItems:'center'}}>
+          {theme==='dark'
+            ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="7" cy="7" r="2.5"/><path d="M7 1.5v1.7M7 10.8v1.7M1.5 7h1.7M10.8 7h1.7M3.3 3.3l1.2 1.2M9.5 9.5l1.2 1.2M10.7 3.3l-1.2 1.2M4.5 9.5l-1.2 1.2"/></svg>
+            : <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M11.5 8.5C10.4 10.5 8 11.8 5.5 11 2.8 10.2 1.4 7.3 2 4.7 2.4 2.8 3.5 1.7 4 1.2 1.5 3.2 1 6.8 3.5 9.3c2.5 2.5 6.5 2 8-.8Z"/></svg>}
+        </button>
+      </div>
+    </nav>
+  );
+}
+Object.assign(window, {VPNav});
+
+</script>
+<script type="text/babel">
+
+const LBL={fontFamily:'var(--font-label)',fontSize:10,fontWeight:500,letterSpacing:'.18em',textTransform:'uppercase',color:'var(--pine)',marginBottom:12};
+const SMLL={fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase'};
+const DABB=['Su','Mo','Tu','We','Th','Fr','Sa'];
+const TDAYS=[14,15,18,20,21,25,28,29,30];
+const WEEK_DATA={8:{events:[]},9:{events:['Check seedlings']},10:{events:['Neem oil treatment']},11:{events:[]},12:{events:['Order fall seeds']},13:{events:['Prune tomato suckers']},14:{events:['Water tomatoes & peppers','Thin basil tray 3']}};
+
+function TodayPage({setPage}) {
+  const [tasks,setTasks]=React.useState([
+    {id:1,text:'Water tomatoes & peppers',done:false,urgency:'time_sensitive',proj:'Summer Beds'},
+    {id:2,text:'Check tray 3 seedlings',done:false,urgency:'scheduled',proj:'Summer Beds'},
+    {id:3,text:'Thin crowded basil starts',done:false,urgency:'scheduled',proj:'Summer Beds'},
+    {id:4,text:'Morning light check',done:true,urgency:'maintenance',proj:null},
+    {id:5,text:'Aphid inspection — front bed',done:true,urgency:'maintenance',proj:null},
+  ]);
+  const toggle=id=>setTasks(t=>t.map(tk=>tk.id===id?{...tk,done:!tk.done}:tk));
+  const done=tasks.filter(t=>t.done).length;
+  const cells=Array.from({length:30},(_,i)=>i+1);
+  const weekDays=Array.from({length:7},(_,i)=>8+i);
+  return(
+    <div style={{height:'100%',overflowY:'auto'}}>
+    <div style={{padding:'20px 28px 48px'}}>
+      <div style={{marginBottom:22}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:9}}>
+          <span style={{fontFamily:'var(--font-display)',fontSize:28,fontVariationSettings:'"BNCE" 20',fontWeight:700,color:'var(--text-p)',lineHeight:1}}>Today's Overview</span>
+          <span style={{fontFamily:'var(--font-botanical)',fontSize:22,color:'var(--text-s)'}}>Saturday, June 14</span>
+        </div>
+        <div style={{borderTop:'2px solid var(--line-s)',marginTop:22}}/>
+      </div>
+      {/* ROW 1 */}
+      <div style={{display:'grid',gridTemplateColumns:'1fr 2fr 1fr',marginBottom:28}}>
+        <div style={{paddingRight:24,borderRight:'1px solid var(--line)'}}>
+          <div style={LBL}>Today's Conditions</div>
+          {[['Temp','72°F'],['Wind','8 mph SW'],['Humidity','68%'],['Rain tonight','20%'],['UV Index','6 · High'],['Frost risk','None']].map(([l,v])=>(
+            <div key={l} style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',padding:'6px 0',borderBottom:'1px solid var(--line)'}}>
+              <span style={{...SMLL,fontSize:9,color:'var(--text-m)'}}>{l}</span>
+              <span style={{fontSize:13,color:'var(--text-s)',fontWeight:500}}>{v}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{padding:'0 24px',borderRight:'1px solid var(--line)'}}>
+          <div style={{fontFamily:'var(--font-display)',fontSize:20,fontVariationSettings:'"BNCE" 20',fontWeight:700,color:'var(--text-p)',lineHeight:1,marginBottom:14}}>Rhizome</div>
+          <p style={{fontSize:14,color:'var(--text-s)',lineHeight:1.7,marginBottom:12}}>Your cherry tomatoes haven't been watered in two days — soil moisture is reading low and it'll hit 76°F this afternoon. Tray 3 is getting crowded too; good time to thin the basil.</p>
+          <p style={{fontSize:14,color:'var(--text-s)',lineHeight:1.7,marginBottom:16}}>Tonight's forecast shows a chance of rain. I've put together a proposal for skipping tomorrow's container watering.</p>
+          <button onClick={()=>setPage('rhizome')} style={{background:'none',border:'1px solid var(--line-s)',borderRadius:5,padding:'7px 13px',cursor:'pointer',...SMLL,color:'var(--nav-accent)'}}>Open today's journal entry →</button>
+        </div>
+        <div style={{paddingLeft:24}}>
+          <div style={LBL}>Active Projects</div>
+          {[{n:'Summer Veg. Beds',s:'active',t:7,id:'summer-veg'},{n:'Cottage Front Bed',s:'planning',t:3,id:'cottage-front'},{n:'Rose Cane Pruning',s:'maintaining',t:2,id:'rose-pruning'}].map(p=>(
+            <div key={p.n} className="hr cd" onClick={()=>setPage('projects')} style={{display:'flex',alignItems:'flex-start',gap:9,padding:'7px 4px',borderBottom:'1px solid var(--line)'}}>
+              <span style={{color:{active:'var(--pine)',planning:'var(--buttercup)',maintaining:'var(--chartreuse)'}[p.s],fontSize:11,marginTop:2,flexShrink:0}}>{{active:'●',planning:'◎',maintaining:'○'}[p.s]}</span>
+              <div>
+                <div style={{fontSize:13,color:'var(--text-s)',lineHeight:1.3}}>{p.n}</div>
+                <div style={{...SMLL,fontSize:9,color:'var(--text-m)',marginTop:2}}>{p.t} tasks · {p.s}</div>
+              </div>
+            </div>
+          ))}
+          <button onClick={()=>setPage('projects')} style={{background:'none',border:'none',cursor:'pointer',...SMLL,color:'var(--pine)',marginTop:9,padding:0}}>All projects →</button>
+        </div>
+      </div>
+      <div style={{borderTop:'1px solid var(--line-s)',marginBottom:28}}/>
+      {/* ROW 2 */}
+      <div style={{display:'grid',gridTemplateColumns:'3fr 2fr',marginBottom:28}}>
+        <div style={{paddingRight:36,borderRight:'1px solid var(--line)'}}>
+          <div style={{fontFamily:'var(--font-display)',fontSize:22,fontVariationSettings:'"BNCE" 20',fontWeight:700,color:'var(--text-p)',lineHeight:1,marginBottom:16}}>Today's Tasks</div>
+          {tasks.map(t=>(
+            <div key={t.id} className="hr" onClick={()=>toggle(t.id)} style={{display:'flex',alignItems:'flex-start',gap:10,padding:'8px 5px',borderBottom:'1px solid var(--line)',cursor:'pointer',borderRadius:4}}>
+              <div style={{width:14,height:14,borderRadius:3,flexShrink:0,marginTop:2,border:`1.5px solid ${t.done?'var(--pine)':'var(--line-s)'}`,background:t.done?'var(--pine)':'transparent',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .15s'}}>
+                {t.done&&<svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M1.5 4l2 2 3-3"/></svg>}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,color:t.done?'var(--text-m)':'var(--text-p)',textDecoration:t.done?'line-through':'none',lineHeight:1.4}}>{t.text}</div>
+                {t.proj&&!t.done&&<div style={{...SMLL,fontSize:9,color:'var(--pine)',marginTop:1}}>{t.proj}</div>}
+              </div>
+              {t.urgency==='time_sensitive'&&!t.done&&<span style={{...SMLL,fontSize:8,color:'var(--clay)',marginTop:3,flexShrink:0}}>Urgent</span>}
+            </div>
+          ))}
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:10}}>
+            <span style={{...SMLL,fontSize:9,color:'var(--text-m)'}}>{done} / {tasks.length} complete</span>
+            <button onClick={()=>setPage('tasks')} style={{background:'none',border:'none',cursor:'pointer',...SMLL,color:'var(--pine)',padding:0}}>All tasks →</button>
+          </div>
+        </div>
+        <div style={{paddingLeft:32}}>
+          <div style={LBL}>June 2026</div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'2px 3px',marginBottom:6}}>
+            {DABB.map(d=><div key={d} style={{...SMLL,fontSize:7,color:'var(--text-m)',textAlign:'center',paddingBottom:3}}>{d}</div>)}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'2px 3px'}}>
+            {cells.map(day=>{const iT=day===14,hT=TDAYS.includes(day);return(
+              <div key={day} className="cd" onClick={()=>setPage('calendar')} style={{textAlign:'center',padding:'3px 1px',background:iT?'var(--chartreuse)':'transparent',borderRadius:3}}>
+                <div style={{fontSize:11,fontWeight:iT?700:400,color:iT?'#0C1E0C':'var(--text-s)'}}>{day}</div>
+                {hT&&!iT&&<div style={{width:3,height:3,borderRadius:'50%',background:'var(--clay)',margin:'1px auto 0'}}/>}
+              </div>
+            );})}
+          </div>
+          <button onClick={()=>setPage('calendar')} style={{background:'none',border:'none',cursor:'pointer',...SMLL,color:'var(--pine)',marginTop:10,padding:0}}>Full calendar →</button>
+        </div>
+      </div>
+      <div style={{borderTop:'1px solid var(--line-s)',marginBottom:28}}/>
+      {/* ROW 3 */}
+      <div style={{marginBottom:40}}>
+        <div style={{fontFamily:'var(--font-display)',fontSize:22,fontVariationSettings:'"BNCE" 20',fontWeight:700,color:'var(--text-p)',lineHeight:1,marginBottom:16}}>This Week</div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',border:'1px solid var(--line)',borderRadius:6,overflow:'hidden'}}>
+          {weekDays.map((day,idx)=>{
+            const isT=day===14;const evts=WEEK_DATA[day]?.events||[];
+            return(
+              <div key={day} style={{borderRight:idx<6?'1px solid var(--line)':'none',padding:'12px 14px',minHeight:110,background:isT?'rgba(184,212,58,0.07)':'transparent'}}>
+                <div style={{...SMLL,fontSize:8,color:'var(--text-m)',marginBottom:4}}>{DABB[idx]}</div>
+                <div style={{fontFamily:isT?'var(--font-display)':'var(--font-body)',fontVariationSettings:isT?'"BNCE" 20':undefined,fontSize:isT?20:16,fontWeight:isT?700:400,color:isT?'var(--chartreuse)':'var(--text-s)',lineHeight:1,marginBottom:8}}>{day}</div>
+                {evts.map((e,i)=>(
+                  <div key={i} style={{display:'flex',alignItems:'flex-start',gap:5,marginBottom:4}}>
+                    <div style={{width:3,height:3,borderRadius:'50%',background:'var(--pine)',flexShrink:0,marginTop:5}}/>
+                    <span style={{fontSize:11,color:'var(--text-s)',lineHeight:1.4}}>{e}</span>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+    </div>
+  );
+}
+Object.assign(window,{TodayPage});
+
+</script>
+<script type="text/babel">
+
+function RhizomePage() {
+  const [msgs,setMsgs]=React.useState([
+    {id:1,role:'rhizome',text:"Good morning. Your cherry tomatoes haven't been watered in two days — soil moisture is at 48% and it'll hit 76°F this afternoon. I'd plan on watering them before it gets warm.",time:'8:41 AM'},
+    {id:2,role:'user',text:"Got it, I'll water them after work. Anything else on my plate today?",time:'8:44 AM'},
+    {id:3,role:'rhizome',text:"Three things: water the tomatoes and peppers, check tray 3 (basil starts look crowded), and I've put together a proposal about tomorrow's container watering based on tonight's forecast.",time:'8:44 AM'},
+  ]);
+  const [props,setProps]=React.useState([{id:'p1',title:"Skip tomorrow's container watering",body:"Tonight's forecast shows a cool overnight rain window (9 PM – 2 AM, 78% confidence). I recommend deferring tomorrow morning's container watering and letting the rain cover it.",dp:[{l:'Rain chance',v:'78%'},{l:'Window',v:'9 PM – 2 AM'},{l:'Containers',v:'4 affected'}],status:'pending',time:'8:42 AM'}]);
+  const [input,setInput]=React.useState('');
+  const [aflash,setAflash]=React.useState(null);
+  const scrollRef=React.useRef(null);
+  const hasOpen=props.some(p=>p.status!=='dismissed');
+
+  React.useEffect(()=>{if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight;},[msgs]);
+
+  const send=()=>{
+    const txt=input.trim();if(!txt)return;
+    setMsgs(m=>[...m,{id:m.length+1,role:'user',text:txt,time:'Now'}]);
+    setInput('');
+    setTimeout(()=>setMsgs(m=>[...m,{id:m.length+1,role:'rhizome',text:"Got it. I'll add this to the log and factor it into your task view.",time:'Now'}]),1100);
+  };
+  const accept=id=>{
+    setAflash(id);
+    setTimeout(()=>{
+      setProps(p=>p.map(pr=>pr.id===id?{...pr,status:'accepted'}:pr));
+      setMsgs(m=>[...m,{id:m.length+1,role:'rhizome',text:"Done — I've removed tomorrow's container watering from your task list. I'll remind you to check soil moisture Monday morning.",time:'Now'}]);
+      setAflash(null);
+    },750);
+  };
+
+  return(
+    <div style={{height:'100%',display:'flex',flexDirection:'column',overflow:'hidden'}}>
+      <div style={{padding:'18px 32px 14px',borderBottom:'1px solid var(--line)',flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'baseline',gap:14}}>
+          <span style={{fontFamily:'var(--font-botanical)',fontSize:34,color:'var(--text-p)',lineHeight:1}}>June 14, 2026</span>
+          <span style={{fontFamily:'var(--font-label)',fontSize:10,letterSpacing:'.20em',textTransform:'uppercase',color:'var(--text-m)'}}>Saturday</span>
+        </div>
+        <div style={{fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--pine)',marginTop:5}}>Rhizome · Garden Log</div>
+      </div>
+      <div style={{flex:1,display:'flex',overflow:'hidden'}}>
+        <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minWidth:0}}>
+          <div ref={scrollRef} className="dg" style={{flex:1,overflowY:'auto',padding:'20px 32px',display:'flex',flexDirection:'column',gap:14}}>
+            {msgs.map(msg=>{const isR=msg.role==='rhizome';return(
+              <div key={msg.id} style={{maxWidth:'72%',alignSelf:isR?'flex-start':'flex-end'}}>
+                <div style={{fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.14em',textTransform:'uppercase',color:isR?'var(--pine)':'var(--clay)',marginBottom:5}}>{isR?'Rhizome':'You'} · {msg.time}</div>
+                <div style={{padding:'10px 14px',borderRadius:8,background:isR?'var(--bg-nav)':'var(--bg)',border:'1px solid var(--line)',borderLeft:isR?'3px solid var(--pine)':'1px solid var(--line)',fontSize:14,color:'var(--text-s)',lineHeight:1.65}}>{msg.text}</div>
+              </div>
+            );})}
+          </div>
+          <div style={{flexShrink:0,padding:'14px 32px 18px',borderTop:'1px solid var(--line)'}}>
+            <textarea value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}} placeholder="What's on your mind today…  (Enter to send)" rows={3}/>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:8}}>
+              <span style={{fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--text-m)'}}>Zone 9b · Rhizome is listening</span>
+              <button onClick={send} disabled={!input.trim()} style={{background:input.trim()?'var(--chartreuse)':'transparent',border:`1px solid ${input.trim()?'var(--nav-accent)':'var(--line-s)'}`,borderRadius:5,padding:'6px 13px',cursor:input.trim()?'pointer':'default',fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.14em',textTransform:'uppercase',color:input.trim()?'#0C1E0C':'var(--text-m)',transition:'all .2s'}}>Send</button>
+            </div>
+          </div>
+        </div>
+        <div className={`pp${hasOpen?' open':''}`}>
+          <div style={{width:272,display:'flex',flexDirection:'column',height:'100%'}}>
+            <div style={{padding:'16px 18px 12px',borderBottom:'1px solid var(--line)',flexShrink:0}}>
+              <div style={{fontFamily:'var(--font-label)',fontSize:10,letterSpacing:'.18em',textTransform:'uppercase',color:'var(--pine)'}}>Proposals</div>
+            </div>
+            <div style={{flex:1,overflowY:'auto',padding:'14px 18px',display:'flex',flexDirection:'column',gap:10}}>
+              {props.filter(p=>p.status!=='dismissed').map(p=>(
+                <div key={p.id} className={`pc${aflash===p.id?' af':''}`} style={{border:'1px solid var(--line)',borderRadius:8,padding:14,transition:'border-color .4s,opacity .25s',borderColor:p.status==='accepted'?'var(--chartreuse)':'var(--line)',opacity:p.status==='deferred'?.45:1}}>
+                  <div style={{fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase',color:{accepted:'var(--nav-accent)',deferred:'var(--text-m)',pending:'var(--pine)'}[p.status],marginBottom:7}}>{p.status==='accepted'?'✓ Accepted':p.status==='deferred'?'Deferred':'Proposal'} · {p.time}</div>
+                  <div style={{fontSize:13,fontWeight:600,color:'var(--text-p)',lineHeight:1.35,marginBottom:8}}>{p.title}</div>
+                  <div style={{fontSize:12,color:'var(--text-s)',lineHeight:1.55,marginBottom:10}}>{p.body}</div>
+                  {p.dp&&<div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6,padding:'8px 0',borderTop:'1px solid var(--line)',borderBottom:'1px solid var(--line)',marginBottom:11}}>
+                    {p.dp.map(d=><div key={d.l}><div style={{fontFamily:'var(--font-label)',fontSize:8,letterSpacing:'.11em',textTransform:'uppercase',color:'var(--pine)',marginBottom:2}}>{d.l}</div><div style={{fontSize:12,fontWeight:700,color:'var(--text-p)'}}>{d.v}</div></div>)}
+                  </div>}
+                  {p.status==='pending'&&<div style={{display:'flex',gap:6}}>
+                    <button onClick={()=>accept(p.id)} style={{flex:1,background:'var(--chartreuse)',border:'none',borderRadius:4,padding:'7px 0',cursor:'pointer',fontFamily:'var(--font-label)',fontSize:8,letterSpacing:'.12em',textTransform:'uppercase',color:'#0C1E0C',fontWeight:600}}>Accept</button>
+                    <button onClick={()=>setProps(pr=>pr.map(x=>x.id===p.id?{...x,status:'deferred'}:x))} style={{flex:1,background:'transparent',border:'1px solid var(--line-s)',borderRadius:4,padding:'7px 0',cursor:'pointer',fontFamily:'var(--font-label)',fontSize:8,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--text-m)'}}>Defer</button>
+                  </div>}
+                  {p.status==='accepted'&&<div style={{fontFamily:'var(--font-label)',fontSize:8,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--nav-accent)',textAlign:'center',padding:'4px 0'}}>Task removed from queue</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+Object.assign(window,{RhizomePage});
+
+</script>
+<script type="text/babel">
+
+const TASK_DATA=[
+  {id:1,type:'emergency',   urgency:'blocker',        text:'Frost-protect tender seedlings (unexpected low tonight)',  proj:'Summer Veg. Beds',dl:'Today',  mins:30,rev:false},
+  {id:2,type:'milestone',   urgency:'time_sensitive', text:'Transplant tomato seedlings to red cups',                  proj:'Summer Veg. Beds',dl:'Jun 15', mins:45,rev:true},
+  {id:3,type:'maintenance', urgency:'time_sensitive', text:'Water tomatoes & peppers',                                 proj:'Summer Veg. Beds',dl:'Today',  mins:15,rev:true},
+  {id:4,type:'milestone',   urgency:'scheduled',      text:'Sow second basil batch in tray 3',                        proj:'Summer Veg. Beds',dl:'Jun 18', mins:30,rev:true},
+  {id:5,type:'maintenance', urgency:'scheduled',      text:'Feed roses with fish emulsion',                           proj:'Rose Cane Pruning',dl:'Jun 20', mins:20,rev:true},
+  {id:6,type:'milestone',   urgency:'scheduled',      text:'Order seeds for fall succession planting',                proj:'Cottage Front Bed',dl:'Jun 21', mins:10,rev:true},
+  {id:7,type:'opportunistic',urgency:'backlog',       text:'Amend courtyard bed with compost',                       proj:'Cottage Front Bed',dl:null,     mins:90,rev:true},
+  {id:8,type:'opportunistic',urgency:'backlog',       text:'Take lavender cuttings for propagation',                 proj:null,              dl:null,     mins:20,rev:true},
+  {id:9,type:'maintenance', urgency:'backlog',        text:'Mulch front bed to retain moisture',                     proj:'Cottage Front Bed',dl:null,     mins:40,rev:true},
+];
+const CAL_EVTS={14:[{c:'var(--clay)',l:'Frost protect'},{c:'var(--clay)',l:'Water tomatoes'}],15:[{c:'var(--chartreuse)',l:'Transplant to red cups'}],18:[{c:'var(--buttercup)',l:'Sow basil batch 2'}],20:[{c:'var(--pale-herb)',l:'Feed roses'}],21:[{c:'var(--pale-herb)',l:'Order fall seeds'}],25:[{c:'var(--cornflower)',l:'Heat spike'}],28:[{c:'var(--buttercup)',l:'Harvest window'}]};
+const UGS=[{k:'blocker',lbl:'Blockers',ac:'var(--clay)',dot:'#E06B4A'},{k:'time_sensitive',lbl:'Time-Sensitive',ac:'var(--buttercup)',dot:'#FFC94D'},{k:'scheduled',lbl:'This Week',ac:'var(--pine)',dot:'#2B5C2F'},{k:'backlog',lbl:'Backlog',ac:'var(--text-m)',dot:'rgba(242,232,201,.34)'}];
+const DABB2=['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+function TasksPage({openEdit}) {
+  const [tasks,setTasks]=React.useState(TASK_DATA);
+  const [selDay,setSelDay]=React.useState(14);
+  const [view,setView]=React.useState('week');
+  const toggle=id=>setTasks(t=>t.map(tk=>tk.id===id?{...tk,done:!tk.done}:tk));
+  const weekDays=Array.from({length:7},(_,i)=>8+i);
+  const montCells=Array.from({length:30},(_,i)=>i+1);
+  const SML={fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase'};
+
+  const mkMarker=(task,ac)=>{
+    if(task.done)return<div style={{width:14,height:14,borderRadius:3,flexShrink:0,marginTop:2,background:'var(--pine)',border:'1.5px solid var(--pine)',display:'flex',alignItems:'center',justifyContent:'center'}}><svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M1.5 4l2 2 3-3"/></svg></div>;
+    if(task.type==='maintenance')return<div style={{width:14,height:14,borderRadius:'50%',flexShrink:0,marginTop:2,border:`1.5px solid ${ac}`,background:'transparent'}}/>;
+    if(task.type==='opportunistic')return<div style={{width:14,height:14,flexShrink:0,marginTop:2,display:'flex',alignItems:'center',justifyContent:'center'}}><div style={{width:9,height:9,border:`1.5px solid ${ac}`,transform:'rotate(45deg)'}}/></div>;
+    return<div style={{width:14,height:14,borderRadius:3,flexShrink:0,marginTop:2,border:`1.5px solid ${ac}`,background:'transparent'}}/>;
+  };
+
+  return(
+    <div style={{height:'100%',display:'flex',overflow:'hidden'}}>
+      <div style={{flex:'0 0 55%',borderRight:'1px solid var(--line)',overflowY:'auto',padding:'22px 28px 48px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:22}}>
+          <span style={{fontFamily:'var(--font-display)',fontSize:24,fontVariationSettings:'"BNCE" 20',fontWeight:700,color:'var(--text-p)'}}>Tasks</span>
+          {openEdit&&<button onClick={()=>openEdit('task',null)} style={{background:'var(--chartreuse)',border:'none',borderRadius:5,padding:'6px 12px',cursor:'pointer',fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase',color:'#0C1E0C',fontWeight:600}}>+ New Task</button>}
+        </div>
+        {UGS.map(g=>{
+          const grp=tasks.filter(t=>t.urgency===g.k&&!t.done);
+          if(!grp.length)return null;
+          return(
+            <div key={g.k} style={{marginBottom:26}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,paddingBottom:6,borderBottom:'1px solid var(--line)'}}>
+                <div style={{width:7,height:7,borderRadius:'50%',background:g.dot,flexShrink:0}}/>
+                <span style={{fontFamily:'var(--font-label)',fontSize:10,letterSpacing:'.18em',textTransform:'uppercase',color:g.ac,fontWeight:600}}>{g.lbl}</span>
+              </div>
+              {grp.map(task=>(
+                <div key={task.id} className="hr" style={{display:'flex',alignItems:'flex-start',gap:10,padding:'7px 6px',borderBottom:'1px solid var(--line)',cursor:'pointer',borderRadius:4}}>
+                  <div onClick={()=>toggle(task.id)} style={{display:'contents'}}>{mkMarker(task,g.ac)}</div>
+                  <div style={{flex:1,minWidth:0}} onClick={()=>toggle(task.id)}>
+                    <div style={{fontSize:13,color:task.done?'var(--text-m)':'var(--text-p)',textDecoration:task.done?'line-through':'none',lineHeight:1.4}}>{task.text}</div>
+                    <div style={{display:'flex',gap:10,marginTop:2}}>
+                      {task.proj&&<span style={{...SML,color:'var(--pine)'}}>{task.proj}</span>}
+                      {task.mins&&<span style={{...SML,color:'var(--text-m)'}}>~{task.mins}m</span>}
+                    </div>
+                  </div>
+                  <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3,flexShrink:0}}>
+                    {task.dl&&!task.done&&<span style={{...SML,color:task.urgency==='blocker'?'var(--clay)':'var(--text-m)'}}>{task.dl}</span>}
+                    {!task.rev&&!task.done&&<span style={{...SML,fontSize:8,color:'var(--clay)',opacity:.65}}>irreversible</span>}
+                    {openEdit&&<button onClick={e=>{e.stopPropagation();openEdit('task',task);}} style={{background:'none',border:'none',cursor:'pointer',color:'var(--text-m)',padding:'2px 4px',fontSize:11,opacity:.5}}
+                      title="Edit">✎</button>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })}
+        {tasks.filter(t=>t.done).length>0&&(
+          <div>
+            <div style={{fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--text-m)',paddingBottom:6,borderBottom:'1px solid var(--line)',marginBottom:8}}>Completed</div>
+            {tasks.filter(t=>t.done).map(task=>(
+              <div key={task.id} className="hr" onClick={()=>toggle(task.id)} style={{display:'flex',alignItems:'flex-start',gap:10,padding:'7px 6px',borderBottom:'1px solid var(--line)',cursor:'pointer',borderRadius:4}}>
+                {mkMarker(task,'var(--pine)')}
+                <div style={{flex:1}}><div style={{fontSize:13,color:'var(--text-m)',textDecoration:'line-through',lineHeight:1.4}}>{task.text}</div></div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div style={{flex:1,overflowY:'auto',padding:'22px 24px 40px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18}}>
+          <span style={{fontFamily:'var(--font-display)',fontSize:20,fontVariationSettings:'"BNCE" 20',fontWeight:700,color:'var(--text-p)'}}>June 2026</span>
+          <div style={{display:'flex',gap:4}}>
+            {['week','month'].map(v=><button key={v} onClick={()=>setView(v)} style={{background:view===v?'var(--pine)':'transparent',border:`1px solid ${view===v?'var(--pine)':'var(--line-s)'}`,borderRadius:4,padding:'4px 9px',cursor:'pointer',fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase',color:view===v?'rgba(255,255,255,.9)':'var(--text-m)',transition:'all .15s'}}>{v}</button>)}
+          </div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:view==='week'?4:'2px 3px',marginBottom:6}}>
+          {DABB2.map(d=><div key={d} style={{fontFamily:'var(--font-label)',fontSize:8,letterSpacing:'.10em',textTransform:'uppercase',color:'var(--text-m)',textAlign:'center',paddingBottom:view==='week'?7:4}}>{d}</div>)}
+        </div>
+        {view==='week'?(
+          <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4}}>
+            {weekDays.map(day=>{const iT=day===14,evts=CAL_EVTS[day]||[];return(
+              <div key={day} className="cd" onClick={()=>setSelDay(day)} style={{textAlign:'center',padding:'10px 3px',background:iT?'var(--chartreuse)':day===selDay?'var(--bg-raised)':'transparent',borderRadius:4,outline:day===selDay&&!iT?'1px solid var(--line-s)':'none'}}>
+                <div style={{fontSize:15,fontWeight:iT?700:400,color:iT?'#0C1E0C':'var(--text-s)',marginBottom:5}}>{day}</div>
+                <div style={{display:'flex',justifyContent:'center',gap:2,flexWrap:'wrap'}}>
+                  {evts.slice(0,3).map((e,i)=><div key={i} style={{width:5,height:5,borderRadius:'50%',background:e.c}}/>)}
+                </div>
+              </div>
+            );})}
+          </div>
+        ):(
+          <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'2px 3px'}}>
+            {montCells.map(day=>{const iT=day===14,evts=CAL_EVTS[day]||[];return(
+              <div key={day} className="cd" onClick={()=>setSelDay(day)} style={{textAlign:'center',padding:'5px 2px',background:iT?'var(--chartreuse)':day===selDay?'var(--bg-raised)':'transparent',borderRadius:3}}>
+                <div style={{fontSize:12,fontWeight:iT?700:400,color:iT?'#0C1E0C':'var(--text-s)'}}>{day}</div>
+                {evts.length>0&&<div style={{display:'flex',justifyContent:'center',gap:1,marginTop:1}}>{evts.slice(0,2).map((e,i)=><div key={i} style={{width:3,height:3,borderRadius:'50%',background:e.c}}/>)}</div>}
+              </div>
+            );})}
+          </div>
+        )}
+        {CAL_EVTS[selDay]&&(
+          <div style={{marginTop:20,paddingTop:16,borderTop:'1px solid var(--line)'}}>
+            <div style={{fontFamily:'var(--font-label)',fontSize:10,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--pine)',marginBottom:10}}>June {selDay}</div>
+            {CAL_EVTS[selDay].map((e,i)=>(
+              <div key={i} style={{display:'flex',alignItems:'center',gap:9,padding:'6px 0',borderBottom:'1px solid var(--line)'}}>
+                <div style={{width:8,height:8,borderRadius:'50%',background:e.c,flexShrink:0}}/><span style={{fontSize:13,color:'var(--text-s)'}}>{e.l}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+Object.assign(window,{TasksPage});
+
+</script>
+<script type="text/babel">
+
+const GBEDS=[
+  {id:'front-n',name:'Front Bed North',sun:'Full sun',size:'8 × 6 ft',soil:'Amended clay',plants:['Lavender','Salvia','Catmint']},
+  {id:'front-s',name:'Front Bed South',sun:'Part sun',size:'6 × 5 ft',soil:'Amended clay',plants:['Agapanthus','Alstroemeria']},
+  {id:'court-main',name:'Courtyard Bed',sun:'Morning sun',size:'5 × 10 ft',soil:'Raised mix',plants:['Cherry Tomatoes','Basil','Marigolds']},
+  {id:'back-upper',name:'Back Slope Upper',sun:'Filtered shade',size:'12 × 8 ft',soil:'Hard clay',plants:['Rosemary','Cistus','Native Grasses']},
+  {id:'back-lower',name:'Back Slope Lower',sun:'Dappled shade',size:'8 × 6 ft',soil:'Hard clay',plants:['Native Grasses','Ferns']},
+];
+const GAREAS=[
+  {name:'Front Yard',sqft:'~300 sqft',sun:'Full to part sun',beds:'2 beds',notes:'South and west facing. Good sun exposure. Includes a small lawn strip along the front boundary.'},
+  {name:'Courtyard',sqft:'~200 sqft',sun:'Morning sun',beds:'1 bed + containers',notes:'Central gathering space. Primary container growing area. Afternoon shade from the house structure.'},
+  {name:'Backyard',sqft:'~500 sqft',sun:'Filtered to dappled',beds:'2 slope beds',notes:'Mostly slope with established beds and plants. Three large mature trees create significant shade across most of the space.'},
+];
+const GCONTAINERS=[
+  {name:'Growbag A',type:'10 gal growbag',location:'Courtyard',plant:'Cherry Tomatoes',status:'active'},
+  {name:'Growbag B',type:'10 gal growbag',location:'Courtyard',plant:'Peppers',status:'active'},
+  {name:'Pot A',type:'8" ceramic',location:'Courtyard',plant:'Herbs mix',status:'active'},
+  {name:'Pot B',type:'6" ceramic',location:'Courtyard',plant:'—',status:'empty'},
+  {name:'Growbag C',type:'10 gal growbag',location:'Backyard',plant:'Native grasses',status:'active'},
+  {name:'Pot C',type:'6" terracotta',location:'Backyard',plant:'—',status:'empty'},
+];
+const GCONSTRAINTS=['No toxic plants (dogs + children)','Organic methods only — no synthetic pesticides','Significant shade from 3 large trees in back','Hard clay soil requires containers or amended beds','Budget-conscious — prioritize seed starting and propagation'];
+const GPREFS=['Cottage garden aesthetic as long-term goal','Growing from seed wherever possible','Both flowers and vegetables in the same space','Protect beneficial insects and wildlife','Two-step transplant: seed tray → red cup → final location'];
+const PFACTS=[['USDA Zone','9b'],['Location','SF Bay Area, CA'],['Lot Size','~7,000 sqft'],['Garden Area','~1,000 sqft'],['Native Soil','Hard clay'],['Last Frost','Mar 10'],['First Frost','Dec 1'],['Indoor Trays','8 (under lights)']];
+const GTABS=['constraints','areas','beds','containers'];
+
+function GardenPage({setPage,openEdit}) {
+  const [tab,setTab]=React.useState('constraints');
+  const SML={fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase'};
+
+  return(
+    <div style={{height:'100%',display:'flex',flexDirection:'column',overflow:'hidden'}}>
+      <div style={{padding:'20px 28px 12px',borderBottom:'1px solid var(--line)',flexShrink:0}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+          <div>
+            <div style={{fontFamily:'var(--font-display)',fontSize:22,fontVariationSettings:'"BNCE" 20',fontWeight:700,color:'var(--text-p)',lineHeight:1}}>Garden Overview</div>
+            <div style={{fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.16em',textTransform:'uppercase',color:'var(--pine)',marginTop:5}}>Zone 9b · ~1,000 sqft active · San Francisco Bay Area</div>
+          </div>
+          {openEdit&&<button onClick={()=>openEdit('garden',null)} style={{background:'none',border:'1px solid var(--line-s)',borderRadius:5,padding:'6px 12px',cursor:'pointer',fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--text-m)'}}>Edit Profile</button>}
+        </div>
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'3fr 2fr',borderBottom:'1px solid var(--line)',flexShrink:0,height:220}}>
+        <div className="gg" style={{borderRight:'1px solid var(--line)',display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <div style={{textAlign:'center'}}>
+            <div style={{fontFamily:'var(--font-botanical)',fontSize:34,color:'var(--text-m)',lineHeight:1,marginBottom:7}}>Garden Map</div>
+            <div style={{fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.18em',textTransform:'uppercase',color:'var(--text-m)',opacity:.65}}>Architectural drawing · Coming soon</div>
+          </div>
+        </div>
+        <div style={{overflowY:'auto',padding:'14px 20px'}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0 14px'}}>
+            {PFACTS.map(([l,v])=>(
+              <div key={l} style={{padding:'5px 0',borderBottom:'1px solid var(--line)'}}>
+                <div style={{fontFamily:'var(--font-label)',fontSize:8,letterSpacing:'.13em',textTransform:'uppercase',color:'var(--pine)',marginBottom:1}}>{l}</div>
+                <div style={{fontSize:13,color:'var(--text-s)',fontWeight:500}}>{v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div style={{display:'flex',borderBottom:'1px solid var(--line)',flexShrink:0,padding:'10px 28px 0'}}>
+        {GTABS.map(t=>(
+          <button key={t} onClick={()=>setTab(t)} style={{background:'none',border:'none',cursor:'pointer',fontFamily:'var(--font-label)',fontSize:10,letterSpacing:'.14em',textTransform:'uppercase',color:tab===t?'var(--pine)':'var(--text-m)',fontWeight:tab===t?600:400,padding:'10px 16px 9px',borderBottom:tab===t?'2px solid var(--pine)':'2px solid transparent',transition:'all .15s',marginBottom:-1}}>{t}</button>
+        ))}
+      </div>
+      <div style={{flex:1,overflowY:'auto',padding:'22px 28px 48px'}}>
+        {tab==='constraints'&&<div>
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,paddingBottom:6,borderBottom:'1px solid var(--line)'}}>
+            <div style={{width:7,height:7,borderRadius:'50%',background:'var(--clay)',flexShrink:0}}/>
+            <span style={{fontFamily:'var(--font-label)',fontSize:10,letterSpacing:'.18em',textTransform:'uppercase',color:'var(--clay)',fontWeight:600}}>Hard Constraints</span>
+          </div>
+          {GCONSTRAINTS.map((c,i)=>(
+            <div key={i} style={{display:'flex',gap:12,padding:'9px 0',borderBottom:'1px solid var(--line)'}}>
+              <span style={{color:'var(--clay)',fontWeight:600,flexShrink:0}}>—</span>
+              <span style={{fontSize:13,color:'var(--text-s)',lineHeight:1.55}}>{c}</span>
+            </div>
+          ))}
+          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,paddingBottom:6,borderBottom:'1px solid var(--line)',marginTop:28}}>
+            <div style={{width:7,height:7,borderRadius:'50%',background:'var(--pine)',flexShrink:0}}/>
+            <span style={{fontFamily:'var(--font-label)',fontSize:10,letterSpacing:'.18em',textTransform:'uppercase',color:'var(--pine)',fontWeight:600}}>Preferences</span>
+          </div>
+          {GPREFS.map((p,i)=>(
+            <div key={i} style={{display:'flex',gap:12,padding:'9px 0',borderBottom:'1px solid var(--line)'}}>
+              <span style={{color:'var(--pine)',fontWeight:600,flexShrink:0}}>—</span>
+              <span style={{fontSize:13,color:'var(--text-s)',lineHeight:1.55}}>{p}</span>
+            </div>
+          ))}
+        </div>}
+        {tab==='areas'&&<div>
+          {GAREAS.map((a,i)=>(
+            <div key={i} style={{padding:'14px 0',borderBottom:'1px solid var(--line)'}}>
+              <div style={{display:'flex',alignItems:'baseline',gap:14,marginBottom:6,flexWrap:'wrap'}}>
+                <span style={{fontSize:15,fontWeight:600,color:'var(--text-p)'}}>{a.name}</span>
+                <span style={{...SML,fontSize:9,color:'var(--pine)'}}>{a.sqft}</span>
+                <span style={{...SML,fontSize:9,color:'var(--text-m)'}}>{a.sun}</span>
+                <span style={{...SML,fontSize:9,color:'var(--text-m)'}}>{a.beds}</span>
+              </div>
+              <p style={{fontSize:13,color:'var(--text-t)',lineHeight:1.6}}>{a.notes}</p>
+            </div>
+          ))}
+        </div>}
+        {tab==='beds'&&<div>
+          <div style={{display:'grid',gridTemplateColumns:'1.4fr .8fr 1fr 1fr 1.8fr',gap:'0 16px',paddingBottom:7,borderBottom:'1px solid var(--line)',marginBottom:2}}>
+            {['Name','Size','Sun','Soil','Current Plants'].map(h=><div key={h} style={{...SML,fontSize:9,color:'var(--text-m)'}}>{h}</div>)}
+          </div>
+          {GBEDS.map(b=>(
+            <div key={b.id} style={{display:'grid',gridTemplateColumns:'1.4fr .8fr 1fr 1fr 1.8fr',gap:'0 16px',padding:'9px 0',borderBottom:'1px solid var(--line)',alignItems:'start'}}>
+              <span style={{fontSize:13,fontWeight:600,color:'var(--text-p)'}}>{b.name}</span>
+              <span style={{fontSize:13,color:'var(--text-s)'}}>{b.size}</span>
+              <span style={{fontSize:13,color:'var(--text-s)'}}>{b.sun}</span>
+              <span style={{fontSize:13,color:'var(--text-s)'}}>{b.soil}</span>
+              <span style={{fontSize:12,color:'var(--text-t)'}}>{b.plants.join(', ')}</span>
+            </div>
+          ))}
+        </div>}
+        {tab==='containers'&&<div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr .8fr',gap:'0 16px',paddingBottom:7,borderBottom:'1px solid var(--line)',marginBottom:2}}>
+            {['Name','Type','Location','Plant','Status'].map(h=><div key={h} style={{...SML,fontSize:9,color:'var(--text-m)'}}>{h}</div>)}
+          </div>
+          {GCONTAINERS.map((c,i)=>(
+            <div key={i} style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr .8fr',gap:'0 16px',padding:'9px 0',borderBottom:'1px solid var(--line)',alignItems:'center'}}>
+              <span style={{fontSize:13,fontWeight:600,color:'var(--text-p)'}}>{c.name}</span>
+              <span style={{fontSize:13,color:'var(--text-s)'}}>{c.type}</span>
+              <span style={{fontSize:13,color:'var(--text-s)'}}>{c.location}</span>
+              <span style={{fontSize:13,color:c.plant==='—'?'var(--text-m)':'var(--text-s)'}}>{c.plant}</span>
+              <span style={{...SML,fontSize:9,color:c.status==='active'?'var(--pine)':'var(--text-m)'}}>{c.status}</span>
+            </div>
+          ))}
+        </div>}
+      </div>
+    </div>
+  );
+}
+Object.assign(window,{GardenPage});
+
+</script>
+<script type="text/babel">
+
+const STATUS_CFG = {
+  seedling:    {bg:'var(--pale-herb)',  color:'#0C1E0C', label:'Seedling'},
+  growing:     {bg:'var(--chartreuse)',color:'#0C1E0C', label:'Growing'},
+  fruiting:    {bg:'var(--buttercup)', color:'#2C1E00', label:'Fruiting'},
+  established: {bg:'rgba(242,232,201,.18)',color:'var(--text-s)', label:'Established'},
+  removed:     {bg:'var(--bg-raised)', color:'var(--text-m)', label:'Removed'},
+};
+const SML={fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase'};
+
+/* ── Plants Overview ── */
+function PlantsOverviewPage({setPage, plants, openEdit}) {
+  const [filter, setFilter] = React.useState('all');
+  const [locFilter, setLocFilter] = React.useState('all');
+  const statuses = ['all','seedling','growing','fruiting','established'];
+  const locs = ['all','Courtyard','Front Bed','Back Slope'];
+
+  const filtered = plants.filter(p => {
+    const sf = filter === 'all' || p.status === filter;
+    const lf = locFilter === 'all' || p.location.toLowerCase().includes(locFilter.toLowerCase());
+    return sf && lf;
+  });
+
+  return (
+    <div style={{height:'100%', display:'flex', flexDirection:'column', overflow:'hidden'}}>
+      <div style={{padding:'20px 28px 14px', borderBottom:'1px solid var(--line)', flexShrink:0}}>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16}}>
+          <div>
+            <div style={{fontFamily:'var(--font-display)', fontSize:22, fontVariationSettings:'"BNCE" 20', fontWeight:700, color:'var(--text-p)', lineHeight:1}}>Plant Inventory</div>
+            <div style={{fontFamily:'var(--font-label)', fontSize:9, letterSpacing:'.16em', textTransform:'uppercase', color:'var(--pine)', marginTop:5}}>{plants.length} plants · Zone 9b</div>
+          </div>
+          {openEdit && <button onClick={()=>openEdit('plant',null)} style={{background:'var(--chartreuse)', border:'none', borderRadius:5, padding:'7px 14px', cursor:'pointer', fontFamily:'var(--font-label)', fontSize:9, letterSpacing:'.12em', textTransform:'uppercase', color:'#0C1E0C', fontWeight:600}}>+ Add Plant</button>}
+        </div>
+        <div style={{display:'flex', gap:16, flexWrap:'wrap'}}>
+          <div style={{display:'flex', gap:4}}>
+            {statuses.map(s => (
+              <button key={s} onClick={()=>setFilter(s)} style={{background:filter===s?'var(--pine)':'transparent', border:`1px solid ${filter===s?'var(--pine)':'var(--line-s)'}`, borderRadius:4, padding:'4px 10px', cursor:'pointer', ...SML, color:filter===s?'rgba(255,255,255,.9)':'var(--text-m)', transition:'all .15s'}}>
+                {s==='all'?'All':STATUS_CFG[s]?.label||s}
+              </button>
+            ))}
+          </div>
+          <div style={{display:'flex', gap:4, borderLeft:'1px solid var(--line)', paddingLeft:16}}>
+            {locs.map(l => (
+              <button key={l} onClick={()=>setLocFilter(l)} style={{background:locFilter===l?'var(--bg-raised)':'transparent', border:`1px solid ${locFilter===l?'var(--line-s)':'transparent'}`, borderRadius:4, padding:'4px 10px', cursor:'pointer', ...SML, color:locFilter===l?'var(--text-s)':'var(--text-m)', transition:'all .15s'}}>
+                {l==='all'?'All Locations':l}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div style={{flex:1, overflowY:'auto', padding:'24px 28px 48px'}}>
+        {filtered.length === 0 ? (
+          <div style={{textAlign:'center', padding:'48px 0', color:'var(--text-m)', fontFamily:'var(--font-label)', fontSize:10, letterSpacing:'.16em', textTransform:'uppercase'}}>No plants match filter</div>
+        ) : (
+          <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))', gap:16}}>
+            {filtered.map(plant => (
+              <article key={plant.id} className="hr" onClick={()=>setPage('plant',{plantId:plant.id})}
+                style={{background:'var(--bg-nav)', border:'1px solid var(--line)', borderRadius:10, overflow:'hidden', cursor:'pointer', transition:'border-color .15s, transform .1s'}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor='var(--line-s)';e.currentTarget.style.transform='translateY(-1px)'}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--line)';e.currentTarget.style.transform='none'}}>
+                {/* Specimen area */}
+                <div style={{height:76, background:'repeating-linear-gradient(45deg, var(--gc), var(--gc) 1px, transparent 1px, transparent 10px)', borderBottom:'1px solid var(--line)', display:'flex', alignItems:'center', justifyContent:'center', position:'relative'}}>
+                  <div style={{fontFamily:'var(--font-botanical)', fontSize:13, color:'var(--text-m)', opacity:.55, textAlign:'center', padding:'0 12px', lineHeight:1.3}}>{plant.species}</div>
+                  {plant.projectId && (
+                    <div style={{position:'absolute', top:8, right:8, width:7, height:7, borderRadius:'50%', background:'var(--pine)', opacity:.8}} title="Part of active project"/>
+                  )}
+                </div>
+                <div style={{padding:'12px 14px'}}>
+                  <div style={{fontFamily:'var(--font-label)', fontSize:9, letterSpacing:'.18em', textTransform:'uppercase', color:'var(--pine)', marginBottom:5, lineHeight:1.4}}>{plant.family} · {plant.category}</div>
+                  <div style={{fontFamily:'var(--font-display)', fontSize:17, fontVariationSettings:'"BNCE" 20', fontWeight:700, color:'var(--text-p)', lineHeight:1.1, marginBottom:4}}>{plant.name}</div>
+                  <div style={{fontFamily:'var(--font-botanical)', fontSize:14, color:'var(--pine)', lineHeight:1, marginBottom:10}}>{plant.variety || plant.species}</div>
+                  <div style={{display:'flex', gap:5, marginBottom:8, flexWrap:'wrap'}}>
+                    <span className="chip" style={{background:STATUS_CFG[plant.status]?.bg, color:STATUS_CFG[plant.status]?.color, fontSize:8}}>
+                      {STATUS_CFG[plant.status]?.label || plant.status}
+                    </span>
+                    <span className="chip" style={{background:'transparent', border:'1px solid var(--line)', color:'var(--text-t)', fontSize:8}}>
+                      {plant.sun}
+                    </span>
+                  </div>
+                  <div style={{...SML, fontSize:9, color:'var(--text-m)'}}>{plant.location}</div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ── Plant Detail ── */
+function PlantDetailPage({plantId, setPage, plants, openEdit}) {
+  const plant = plants.find(p => p.id === plantId) || plants[0];
+  if (!plant) return <div style={{padding:40, color:'var(--text-m)'}}>Plant not found.</div>;
+
+  const cfg = STATUS_CFG[plant.status] || STATUS_CFG.growing;
+
+  return (
+    <div style={{height:'100%', overflowY:'auto'}}>
+      <div style={{padding:'20px 28px 48px'}}>
+        {/* Back + actions */}
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:22}}>
+          <button onClick={()=>setPage('plants')} style={{background:'none', border:'none', cursor:'pointer', ...SML, color:'var(--text-m)', display:'flex', alignItems:'center', gap:6, padding:0}}>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M8 2L4 6l4 4"/></svg>
+            Plants
+          </button>
+          {openEdit && <button onClick={()=>openEdit('plant',plant)} style={{background:'none', border:'1px solid var(--line-s)', borderRadius:5, padding:'6px 13px', cursor:'pointer', ...SML, color:'var(--text-m)'}}>Edit Plant</button>}
+        </div>
+
+        {/* Header */}
+        <div style={{marginBottom:18}}>
+          <div style={{fontFamily:'var(--font-label)', fontSize:10, letterSpacing:'.22em', textTransform:'uppercase', color:'var(--pine)', marginBottom:8}}>{plant.family} · {plant.category}</div>
+          <div style={{fontFamily:'var(--font-display)', fontSize:52, fontVariationSettings:'"BNCE" 20', fontWeight:700, lineHeight:.96, color:'var(--text-p)', marginBottom:8}}>{plant.name}</div>
+          <div style={{fontFamily:'var(--font-botanical)', fontSize:30, color:'var(--pine)', lineHeight:1.1, marginBottom:10}}>{plant.species}</div>
+          <div style={{display:'flex', gap:8, alignItems:'center'}}>
+            <div style={{fontFamily:'var(--font-label)', fontSize:9, letterSpacing:'.15em', textTransform:'uppercase', color:'var(--text-m)'}}>{plant.variety && `Variety: ${plant.variety}`}</div>
+            <span className="chip" style={{background:cfg.bg, color:cfg.color, fontSize:9}}>{cfg.label}</span>
+          </div>
+        </div>
+
+        <div style={{borderTop:'2px solid var(--line-s)', marginBottom:20}}/>
+
+        {/* Quick facts grid */}
+        <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'0 28px', marginBottom:18}}>
+          {plant.facts.map(([l,v]) => (
+            <div key={l} style={{padding:'7px 0', borderBottom:'1px solid var(--line)'}}>
+              <div style={{fontFamily:'var(--font-label)', fontSize:8, letterSpacing:'.14em', textTransform:'uppercase', color:'var(--pine)', marginBottom:2}}>{l}</div>
+              <div style={{fontSize:14, fontWeight:700, color:'var(--text-s)'}}>{v}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Chips */}
+        <div style={{display:'flex', flexWrap:'wrap', gap:6, marginBottom:24}}>
+          {plant.chips.map(c => <span key={c} className="chip" style={{background:'var(--pale-herb)', color:'#0C1E0C'}}>{c}</span>)}
+        </div>
+
+        <div style={{borderTop:'1px solid var(--line)', marginBottom:22}}/>
+
+        {/* Care Notes */}
+        <div style={{marginBottom:22}}>
+          <div style={{fontFamily:'var(--font-label)', fontSize:10, fontWeight:500, letterSpacing:'.18em', textTransform:'uppercase', color:'var(--pine)', marginBottom:14}}>Care Notes</div>
+          <p style={{fontSize:14, color:'var(--text-s)', lineHeight:1.78}}>{plant.careNotes}</p>
+        </div>
+
+        <div style={{borderTop:'1px solid var(--line)', marginBottom:22}}/>
+
+        {/* History */}
+        <div style={{marginBottom:22}}>
+          <div style={{fontFamily:'var(--font-label)', fontSize:10, fontWeight:500, letterSpacing:'.18em', textTransform:'uppercase', color:'var(--pine)', marginBottom:14}}>History & Observations</div>
+          <p style={{fontSize:14, color:'var(--text-s)', lineHeight:1.78}}>{plant.history}</p>
+          {plant.sowDate && (
+            <div style={{fontFamily:'var(--font-botanical)', fontSize:18, color:'var(--pine)', lineHeight:1.2, marginTop:10}}>
+              {[plant.sowDate&&`Sown ${plant.sowDate}`, plant.redCupDate&&`Red cup ${plant.redCupDate}`, plant.transplantDate&&`Final ${plant.transplantDate}`].filter(Boolean).join(' → ')}
+            </div>
+          )}
+        </div>
+
+        {/* Rhizome suggestions */}
+        {plant.suggestions.length > 0 && <>
+          <div style={{borderTop:'1px solid var(--line)', marginBottom:22}}/>
+          <div style={{marginBottom:22}}>
+            <div style={{fontFamily:'var(--font-label)', fontSize:10, fontWeight:500, letterSpacing:'.18em', textTransform:'uppercase', color:'var(--pine)', marginBottom:14}}>Rhizome Suggests</div>
+            <div style={{display:'flex', flexDirection:'column', gap:8}}>
+              {plant.suggestions.map((s,i) => (
+                <div key={i} style={{padding:'11px 14px', borderLeft:`3px solid ${s.urgency==='urgent'?'var(--clay)':'var(--chartreuse)'}`, background:'var(--bg-raised)', borderRadius:'0 7px 7px 0'}}>
+                  <div style={{fontFamily:'var(--font-label)', fontSize:8, letterSpacing:'.12em', textTransform:'uppercase', color:s.urgency==='urgent'?'var(--clay)':'var(--pine)', marginBottom:5}}>{s.urgency==='urgent'?'Action needed':'Note'}</div>
+                  <p style={{fontSize:13, color:'var(--text-s)', lineHeight:1.6}}>{s.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>}
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, {PlantsOverviewPage, PlantDetailPage});
+
+</script>
+<script type="text/babel">
+
+const PROJ_CFG = {
+  active:      {dot:'●', color:'var(--pine)',      border:'#2B5C2F', label:'Active'},
+  planning:    {dot:'◎', color:'var(--buttercup)', border:'#FFC94D', label:'Planning'},
+  maintaining: {dot:'○', color:'var(--pale-herb)', border:'#B0EAAC', label:'Maintaining'},
+  paused:      {dot:'◌', color:'var(--text-m)',    border:'rgba(242,232,201,.2)', label:'Paused'},
+  complete:    {dot:'✓', color:'var(--chartreuse)',border:'#B8D43A', label:'Complete'},
+};
+const PSML={fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase'};
+
+/* ── Projects List ── */
+function ProjectsPage({setPage, projects, plants, openEdit}) {
+  const [filter, setFilter] = React.useState('all');
+  const statuses = ['all','planning','active','maintaining','paused','complete'];
+  const filtered = filter==='all' ? projects : projects.filter(p=>p.status===filter);
+
+  return (
+    <div style={{height:'100%', display:'flex', flexDirection:'column', overflow:'hidden'}}>
+      <div style={{padding:'20px 28px 14px', borderBottom:'1px solid var(--line)', flexShrink:0}}>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16}}>
+          <div>
+            <div style={{fontFamily:'var(--font-display)', fontSize:22, fontVariationSettings:'"BNCE" 20', fontWeight:700, color:'var(--text-p)', lineHeight:1}}>Projects</div>
+            <div style={{fontFamily:'var(--font-label)', fontSize:9, letterSpacing:'.16em', textTransform:'uppercase', color:'var(--pine)', marginTop:5}}>{projects.filter(p=>p.status==='active').length} active · {projects.length} total</div>
+          </div>
+          {openEdit && <button onClick={()=>openEdit('project',null)} style={{background:'var(--chartreuse)', border:'none', borderRadius:5, padding:'7px 14px', cursor:'pointer', fontFamily:'var(--font-label)', fontSize:9, letterSpacing:'.12em', textTransform:'uppercase', color:'#0C1E0C', fontWeight:600}}>+ New Project</button>}
+        </div>
+        <div style={{display:'flex', gap:4}}>
+          {statuses.map(s => (
+            <button key={s} onClick={()=>setFilter(s)} style={{background:filter===s?'var(--pine)':'transparent', border:`1px solid ${filter===s?'var(--pine)':'var(--line-s)'}`, borderRadius:4, padding:'4px 10px', cursor:'pointer', ...PSML, color:filter===s?'rgba(255,255,255,.9)':'var(--text-m)', transition:'all .15s', textTransform:'capitalize'}}>
+              {s==='all'?'All':s}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{flex:1, overflowY:'auto'}}>
+        {filtered.map(proj => {
+          const cfg = PROJ_CFG[proj.status] || PROJ_CFG.active;
+          const budgetPct = proj.budget > 0 ? Math.round(proj.budgetSpent/proj.budget*100) : 0;
+          const projPlants = plants.filter(p=>p.projectId===proj.id);
+          return (
+            <div key={proj.id} className="hr" onClick={()=>setPage('project',{projectId:proj.id})}
+              style={{borderLeft:`3px solid ${cfg.border}`, paddingLeft:22, paddingRight:28, paddingTop:18, paddingBottom:18, borderBottom:'1px solid var(--line)', cursor:'pointer', display:'grid', gridTemplateColumns:'1fr auto', gap:20, alignItems:'start'}}>
+              <div>
+                <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:7}}>
+                  <span style={{color:cfg.color, fontSize:13}}>{cfg.dot}</span>
+                  <span style={{...PSML, color:cfg.color, fontWeight:600}}>{cfg.label}</span>
+                  {proj.startDate && <span style={{...PSML, fontSize:8, color:'var(--text-m)'}}>Since {proj.startDate.split(',')[0]}</span>}
+                </div>
+                <div style={{fontFamily:'var(--font-display)', fontSize:20, fontVariationSettings:'"BNCE" 20', fontWeight:700, color:'var(--text-p)', lineHeight:1.1, marginBottom:6}}>{proj.name}</div>
+                <div style={{fontSize:13, color:'var(--text-t)', lineHeight:1.55, marginBottom:10, maxWidth:560}}>{proj.goal.length > 110 ? proj.goal.slice(0,110)+'…' : proj.goal}</div>
+                <div style={{display:'flex', gap:6, flexWrap:'wrap', alignItems:'center'}}>
+                  {proj.beds.map(b => <span key={b} className="chip" style={{background:'var(--bg-raised)', color:'var(--text-s)', border:'1px solid var(--line)', fontSize:8}}>📍 {b}</span>)}
+                  {proj.containers.map(c => <span key={c} className="chip" style={{background:'var(--bg-raised)', color:'var(--text-t)', border:'1px solid var(--line)', fontSize:8}}>○ {c}</span>)}
+                  {proj.traySlots > 0 && <span className="chip" style={{background:'var(--bg-raised)', color:'var(--text-t)', border:'1px solid var(--line)', fontSize:8}}>⊞ {proj.traySlots} trays</span>}
+                  {projPlants.length > 0 && <span style={{...PSML, fontSize:8, color:'var(--text-m)'}}>{projPlants.length} plant{projPlants.length!==1?'s':''}</span>}
+                </div>
+              </div>
+              <div style={{display:'flex', flexDirection:'column', alignItems:'flex-end', gap:10, minWidth:110, flexShrink:0}}>
+                <div style={{...PSML, fontSize:8, color:'var(--text-m)'}}>{proj.completedTasks}/{proj.taskCount} tasks</div>
+                {proj.budget > 0 && (
+                  <div style={{textAlign:'right'}}>
+                    <div style={{...PSML, fontSize:8, color:'var(--text-m)', marginBottom:4}}>${proj.budgetSpent} / ${proj.budget}</div>
+                    <div style={{width:90, height:3, background:'var(--line)', borderRadius:999}}>
+                      <div style={{width:`${budgetPct}%`, height:'100%', background:cfg.color, borderRadius:999, transition:'width .3s'}}/>
+                    </div>
+                  </div>
+                )}
+                <span style={{fontSize:14, color:'var(--text-m)'}}>→</span>
+              </div>
+            </div>
+          );
+        })}
+        {filtered.length === 0 && <div style={{padding:'48px 0', textAlign:'center', ...PSML, color:'var(--text-m)', fontSize:10}}>No projects match filter</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ── Project Detail ── */
+function ProjectDetailPage({projectId, setPage, projects, plants, openEdit}) {
+  const [tab, setTab] = React.useState('overview');
+  const [projTasks, setProjTasks] = React.useState(null);
+
+  const project = projects.find(p => p.id === projectId);
+  if (!project) return <div style={{padding:40, color:'var(--text-m)'}}>Project not found.</div>;
+
+  React.useEffect(() => { setProjTasks(project.tasks.map(t=>({...t}))); }, [projectId]);
+
+  const cfg = PROJ_CFG[project.status] || PROJ_CFG.active;
+  const projPlants = plants.filter(p => p.projectId === projectId);
+  const budgetPct = project.budget > 0 ? Math.round(project.budgetSpent/project.budget*100) : 0;
+  const tasks = projTasks || project.tasks;
+  const toggleTask = id => setProjTasks(ts => ts.map(t=>t.id===id?{...t,done:!t.done}:t));
+
+  const TABS = ['overview','plants','schedule','tasks','activity'];
+
+  return (
+    <div style={{height:'100%', display:'flex', flexDirection:'column', overflow:'hidden'}}>
+      {/* Header */}
+      <div style={{padding:'16px 28px 12px', borderBottom:'1px solid var(--line)', flexShrink:0, borderLeft:`3px solid ${cfg.border}`}}>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+          <div style={{flex:1}}>
+            <button onClick={()=>setPage('projects')} style={{background:'none', border:'none', cursor:'pointer', ...PSML, color:'var(--text-m)', display:'flex', alignItems:'center', gap:5, padding:0, marginBottom:10}}>
+              <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M8 2L4 6l4 4"/></svg>
+              Projects
+            </button>
+            <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:6}}>
+              <span style={{color:cfg.color, fontSize:13}}>{cfg.dot}</span>
+              <span style={{...PSML, color:cfg.color, fontWeight:600}}>{cfg.label}</span>
+            </div>
+            <div style={{fontFamily:'var(--font-display)', fontSize:26, fontVariationSettings:'"BNCE" 20', fontWeight:700, color:'var(--text-p)', lineHeight:1.05, marginBottom:8}}>{project.name}</div>
+            <div style={{fontSize:13, color:'var(--text-t)', lineHeight:1.6, maxWidth:600, marginBottom:12, fontStyle:'italic'}}>"{project.goal}"</div>
+            <div style={{display:'flex', gap:6, flexWrap:'wrap'}}>
+              {project.beds.map(b => <span key={b} className="chip" style={{background:'var(--bg-raised)', color:'var(--text-s)', border:'1px solid var(--line)', fontSize:8}}>📍 {b}</span>)}
+              {project.containers.map(c => <span key={c} className="chip" style={{background:'var(--bg-raised)', color:'var(--text-t)', border:'1px solid var(--line)', fontSize:8}}>○ {c}</span>)}
+              {project.traySlots > 0 && <span className="chip" style={{background:'var(--bg-raised)', color:'var(--text-t)', border:'1px solid var(--line)', fontSize:8}}>⊞ {project.traySlots} of 8 trays</span>}
+            </div>
+          </div>
+          {openEdit && <button onClick={()=>openEdit('project',project)} style={{background:'none', border:'1px solid var(--line-s)', borderRadius:5, padding:'6px 12px', cursor:'pointer', ...PSML, color:'var(--text-m)', flexShrink:0}}>Edit</button>}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div style={{display:'flex', borderBottom:'1px solid var(--line)', flexShrink:0, padding:'8px 28px 0'}}>
+        {TABS.map(t => (
+          <button key={t} onClick={()=>setTab(t)} style={{background:'none', border:'none', cursor:'pointer', fontFamily:'var(--font-label)', fontSize:10, letterSpacing:'.14em', textTransform:'capitalize', color:tab===t?'var(--pine)':'var(--text-m)', fontWeight:tab===t?600:400, padding:'9px 14px 8px', borderBottom:tab===t?'2px solid var(--pine)':'2px solid transparent', transition:'all .15s', marginBottom:-1}}>
+            {t}{t==='plants'&&projPlants.length>0?` (${projPlants.length})`:''}{t==='tasks'&&tasks.length>0?` (${tasks.length})`:''}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div style={{flex:1, overflowY:'auto', padding:'24px 28px 48px'}}>
+
+        {/* OVERVIEW */}
+        {tab==='overview' && (
+          <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:32, maxWidth:700}}>
+            <div>
+              <div style={{...PSML, color:'var(--pine)', marginBottom:14, fontSize:10, fontWeight:500}}>Timeline</div>
+              {[['Started', project.startDate||'Not set'], ['Target', project.targetDate||'Not set']].map(([l,v])=>(
+                <div key={l} style={{display:'flex', justifyContent:'space-between', padding:'7px 0', borderBottom:'1px solid var(--line)'}}>
+                  <span style={{...PSML, fontSize:9, color:'var(--text-m)'}}>{l}</span>
+                  <span style={{fontSize:13, color:'var(--text-s)', fontWeight:500}}>{v}</span>
+                </div>
+              ))}
+              <div style={{display:'flex', justifyContent:'space-between', padding:'7px 0', borderBottom:'1px solid var(--line)'}}>
+                <span style={{...PSML, fontSize:9, color:'var(--text-m)'}}>Progress</span>
+                <span style={{fontSize:13, color:'var(--text-s)', fontWeight:500}}>{project.completedTasks}/{project.taskCount} tasks</span>
+              </div>
+              <div style={{display:'flex', justifyContent:'space-between', padding:'7px 0', borderBottom:'1px solid var(--line)'}}>
+                <span style={{...PSML, fontSize:9, color:'var(--text-m)'}}>Plants</span>
+                <span style={{fontSize:13, color:'var(--text-s)', fontWeight:500}}>{projPlants.length} assigned</span>
+              </div>
+            </div>
+            {project.budget > 0 && (
+              <div>
+                <div style={{...PSML, color:'var(--pine)', marginBottom:14, fontSize:10, fontWeight:500}}>Budget</div>
+                <div style={{display:'flex', justifyContent:'space-between', marginBottom:8}}>
+                  <span style={{fontSize:22, fontWeight:700, color:'var(--text-p)'}}>${project.budgetSpent}</span>
+                  <span style={{fontSize:13, color:'var(--text-m)', alignSelf:'flex-end', marginBottom:3}}>of ${project.budget}</span>
+                </div>
+                <div style={{height:6, background:'var(--line)', borderRadius:999, marginBottom:6}}>
+                  <div style={{width:`${budgetPct}%`, height:'100%', background:cfg.color, borderRadius:999}}/>
+                </div>
+                <div style={{...PSML, fontSize:8, color:'var(--text-m)'}}>{100-budgetPct}% remaining · ${project.budget - project.budgetSpent} left</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* PLANTS */}
+        {tab==='plants' && (
+          <div>
+            {projPlants.length === 0 ? (
+              <div style={{padding:'32px 0', color:'var(--text-m)', fontSize:13}}>No plants assigned to this project yet.{' '}
+                <button onClick={()=>openEdit&&openEdit('plant',null)} style={{background:'none',border:'none',cursor:'pointer',color:'var(--pine)',fontSize:13,fontFamily:'var(--font-body)'}}>Add a plant →</button>
+              </div>
+            ) : (
+              <>
+                <div style={{display:'grid', gridTemplateColumns:'2fr 2fr 1.2fr 1.2fr', gap:'0 16px', paddingBottom:7, borderBottom:'1px solid var(--line)', marginBottom:2}}>
+                  {['Name','Species','Status','Location'].map(h=><div key={h} style={{...PSML, fontSize:9, color:'var(--text-m)'}}>{h}</div>)}
+                </div>
+                {projPlants.map(p=>(
+                  <div key={p.id} className="hr cd" onClick={()=>setPage('plant',{plantId:p.id})} style={{display:'grid', gridTemplateColumns:'2fr 2fr 1.2fr 1.2fr', gap:'0 16px', padding:'10px 0', borderBottom:'1px solid var(--line)', alignItems:'center'}}>
+                    <span style={{fontSize:14, fontWeight:600, color:'var(--text-p)'}}>{p.name}</span>
+                    <span style={{fontFamily:'var(--font-botanical)', fontSize:14, color:'var(--pine)'}}>{p.species}</span>
+                    <span className="chip" style={{background:({seedling:'var(--pale-herb)',growing:'var(--chartreuse)',fruiting:'var(--buttercup)',established:'var(--bg-raised)'})[p.status]||'var(--bg-raised)', color:({seedling:'#0C1E0C',growing:'#0C1E0C',fruiting:'#2C1E00',established:'var(--text-s)'})[p.status]||'var(--text-s)', fontSize:8, alignSelf:'center', justifySelf:'start'}}>{p.status}</span>
+                    <span style={{fontSize:12, color:'var(--text-t)'}}>{p.location}</span>
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* SCHEDULE */}
+        {tab==='schedule' && (
+          <div>
+            {project.seedSchedule.length === 0 ? (
+              <div style={{padding:'32px 0', color:'var(--text-m)', fontSize:13}}>No seed schedule yet — approve a plan to generate one.</div>
+            ) : (
+              <>
+                <div style={{marginBottom:24}}>
+                  <div style={{...PSML, color:'var(--text-m)', fontSize:9, marginBottom:12}}>Apr 2026 → Oct 2026</div>
+                  {/* Month header */}
+                  <div style={{display:'flex', marginBottom:4, paddingLeft:130}}>
+                    {['Apr','May','Jun','Jul','Aug','Sep','Oct'].map(m=><div key={m} style={{flex:1, ...PSML, fontSize:8, color:'var(--text-m)', textAlign:'center'}}>{m}</div>)}
+                  </div>
+                  <div style={{paddingLeft:130, marginBottom:6, position:'relative'}}>
+                    {[0,1,2,3,4,5,6].map(i=><div key={i} style={{position:'absolute', left:`calc(130px + ${i/7*100}%)`, top:-8, bottom:0, width:1, background:'var(--line)', opacity:.5}}/>)}
+                  </div>
+                  {project.seedSchedule.map(row => (
+                    <div key={row.plant} style={{display:'flex', alignItems:'center', marginBottom:18, gap:0}}>
+                      <div style={{width:130, flexShrink:0, fontSize:13, color:'var(--text-s)', paddingRight:16}}>
+                        <div style={{fontWeight:600}}>{row.plant}</div>
+                        <div style={{...PSML, fontSize:8, color:({fruiting:'var(--buttercup)',growing:'var(--chartreuse)',seedling:'var(--pale-herb)',established:'var(--text-m)'})[row.status]||'var(--text-m)', marginTop:2}}>{row.status}</div>
+                      </div>
+                      <div style={{flex:1, position:'relative', height:28}}>
+                        <div style={{position:'absolute', top:'50%', left:0, right:0, height:1, background:'var(--line)', transform:'translateY(-50%)'}}/>
+                        {/* Draw line between first and last event */}
+                        {row.events.length > 1 && (
+                          <div style={{position:'absolute', top:'50%', left:`${row.events[0].pct}%`, right:`${100-row.events[row.events.length-1].pct}%`, height:2, background:'var(--line-s)', transform:'translateY(-50%)'}}/>
+                        )}
+                        {row.events.map((ev,i) => (
+                          <div key={i} style={{position:'absolute', left:`${ev.pct}%`, top:'50%', transform:'translate(-50%, -50%)', textAlign:'center', zIndex:1}}>
+                            <div style={{width:10, height:10, borderRadius:'50%', background:ev.color, border:'2px solid var(--bg)', margin:'0 auto'}}/>
+                            <div style={{...PSML, fontSize:7, color:'var(--text-m)', marginTop:4, whiteSpace:'nowrap'}}>{ev.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  {/* Legend */}
+                  <div style={{display:'flex', gap:16, marginTop:8, paddingTop:12, borderTop:'1px solid var(--line)'}}>
+                    {[['#2B5C2F','Sow'],['#B8D43A','Red Cup'],['#B0EAAC','Final'],['#FFC94D','Harvest'],['#E06B4A','Bloom']].map(([c,l])=>(
+                      <div key={l} style={{display:'flex', alignItems:'center', gap:5}}>
+                        <div style={{width:8,height:8,borderRadius:'50%',background:c}}/>
+                        <span style={{...PSML,fontSize:8,color:'var(--text-m)'}}>{l}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* TASKS */}
+        {tab==='tasks' && (
+          <div>
+            {tasks.map(task => {
+              const urgencyColor = {blocker:'var(--clay)',time_sensitive:'var(--buttercup)',scheduled:'var(--pine)',backlog:'var(--text-m)'}[task.urgency];
+              return (
+                <div key={task.id} className="hr" onClick={()=>toggleTask(task.id)} style={{display:'flex', alignItems:'flex-start', gap:10, padding:'9px 6px', borderBottom:'1px solid var(--line)', cursor:'pointer', borderRadius:4}}>
+                  <div style={{width:14, height:14, borderRadius:3, flexShrink:0, marginTop:2, border:`1.5px solid ${task.done?'var(--pine)':urgencyColor}`, background:task.done?'var(--pine)':'transparent', display:'flex', alignItems:'center', justifyContent:'center', transition:'all .15s'}}>
+                    {task.done && <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M1.5 4l2 2 3-3"/></svg>}
+                  </div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13, color:task.done?'var(--text-m)':'var(--text-p)', textDecoration:task.done?'line-through':'none', lineHeight:1.4}}>{task.text}</div>
+                    <div style={{display:'flex', gap:8, marginTop:2}}>
+                      <span style={{...PSML, fontSize:8, color:urgencyColor}}>{task.urgency.replace('_','-')}</span>
+                      {task.dl && <span style={{...PSML, fontSize:8, color:'var(--text-m)'}}>{task.dl}</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ACTIVITY */}
+        {tab==='activity' && (
+          <div>
+            {project.iterations.length === 0 ? (
+              <div style={{padding:'32px 0', color:'var(--text-m)', fontSize:13}}>No activity logged yet.</div>
+            ) : (
+              <div style={{position:'relative', paddingLeft:24}}>
+                <div style={{position:'absolute', left:6, top:8, bottom:8, width:1, background:'var(--line)'}}/>
+                {project.iterations.map((it,i)=>(
+                  <div key={i} style={{marginBottom:20, position:'relative'}}>
+                    <div style={{position:'absolute', left:-20, top:5, width:8, height:8, borderRadius:'50%', background:'var(--pine)', border:'2px solid var(--bg)'}}/>
+                    <div style={{...PSML, fontSize:9, color:'var(--pine)', marginBottom:5}}>{it.date}</div>
+                    <div style={{fontSize:13, color:'var(--text-s)', lineHeight:1.6}}>{it.note}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, {ProjectsPage, ProjectDetailPage});
+
+</script>
+<script type="text/babel">
+
+const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const EVTYPE_CFG = {
+  seed:      {color:'#2B5C2F', label:'Seed'},
+  transplant:{color:'#B8D43A', label:'Transplant'},
+  harvest:   {color:'#FFC94D', label:'Harvest'},
+  task:      {color:'#E06B4A', label:'Task'},
+  weather:   {color:'#A0B8F5', label:'Weather'},
+  milestone: {color:'#D7A5FF', label:'Milestone'},
+};
+const CSML={fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.12em',textTransform:'uppercase'};
+const DABB3=['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+function CalendarPage({setPage}) {
+  // June 2026: Jun 1 = Sunday (offset 0), 30 days, today = 14
+  const [selDay, setSelDay] = React.useState(14);
+  const [view, setView] = React.useState('month');
+  const [projFilter, setProjFilter] = React.useState('all');
+
+  const month = 6; const year = 2026; const today = 14;
+  const firstDayOffset = 0; // June 1, 2026 = Sunday
+  const daysInMonth = 30;
+  const totalCells = firstDayOffset + daysInMonth;
+  const rows = Math.ceil(totalCells / 7);
+
+  const getEvents = (day) => {
+    if (!day) return [];
+    const evts = VP_CAL_EVENTS[day] || [];
+    if (projFilter === 'all') return evts;
+    return evts.filter(e => e.project === projFilter || !e.project);
+  };
+
+  const weekStart = 8; // week of June 8
+  const weekDays = Array.from({length:7},(_,i)=>weekStart+i);
+
+  const projNames = {
+    'summer-veg':'Summer Veg. Beds',
+    'cottage-front':'Cottage Front Bed',
+    'rose-pruning':'Rose Cane Pruning',
+  };
+
+  return (
+    <div style={{height:'100%', display:'flex', flexDirection:'column', overflow:'hidden'}}>
+      {/* Header */}
+      <div style={{padding:'14px 28px 12px', borderBottom:'1px solid var(--line)', flexShrink:0}}>
+        {/* Row 1: title */}
+        <div style={{marginBottom:10}}>
+          <div style={{fontFamily:'var(--font-display)', fontSize:22, fontVariationSettings:'"BNCE" 20', fontWeight:700, color:'var(--text-p)', lineHeight:1}}>June 2026</div>
+          <div style={{fontFamily:'var(--font-botanical)', fontSize:14, color:'var(--text-m)', marginTop:3}}>Zone 9b · Bay Area</div>
+        </div>
+        {/* Row 2: controls — wraps on narrow viewports */}
+        <div style={{display:'flex', gap:6, alignItems:'center', flexWrap:'wrap'}}>
+          <div style={{display:'flex', gap:4, flexShrink:0}}>
+            {['month','week'].map(v=>(
+              <button key={v} onClick={()=>setView(v)} style={{background:view===v?'var(--pine)':'transparent', border:`1px solid ${view===v?'var(--pine)':'var(--line-s)'}`, borderRadius:4, padding:'4px 10px', cursor:'pointer', ...CSML, color:view===v?'rgba(255,255,255,.9)':'var(--text-m)', transition:'all .15s', textTransform:'capitalize'}}>{v}</button>
+            ))}
+          </div>
+          <div style={{width:1, height:16, background:'var(--line)', flexShrink:0}}/>
+          <div style={{display:'flex', gap:4, flexWrap:'wrap'}}>
+            <button onClick={()=>setProjFilter('all')} style={{background:projFilter==='all'?'var(--bg-raised)':'transparent', border:`1px solid ${projFilter==='all'?'var(--line-s)':'transparent'}`, borderRadius:4, padding:'4px 9px', cursor:'pointer', ...CSML, fontSize:8, color:projFilter==='all'?'var(--text-s)':'var(--text-m)', whiteSpace:'nowrap'}}>All</button>
+            {Object.entries(projNames).map(([id,name])=>(
+              <button key={id} onClick={()=>setProjFilter(id)} style={{background:projFilter===id?'var(--bg-raised)':'transparent', border:`1px solid ${projFilter===id?'var(--line-s)':'transparent'}`, borderRadius:4, padding:'4px 9px', cursor:'pointer', ...CSML, fontSize:8, color:projFilter===id?'var(--text-s)':'var(--text-m)', whiteSpace:'nowrap'}}>{name.split(' ').slice(0,2).join(' ')}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main content: calendar + day panel */}
+      <div style={{flex:1, display:'flex', overflow:'hidden'}}>
+        {/* Calendar grid */}
+        <div style={{flex:1, overflow:'auto', padding:'16px 16px 32px', borderRight:'1px solid var(--line)', minWidth:0}}>
+          {/* Single unified grid — headers in row 1, cells follow. One grid = perfect column alignment. */}
+          {view==='month' && (
+            <div style={{display:'grid', gridTemplateColumns:'repeat(7,minmax(0,1fr))', gap:2}}>
+              {/* Header row — same grid, so columns always align */}
+              {DABB3.map(d=>(
+                <div key={d} style={{...CSML, fontSize:8, color:'var(--text-m)', textAlign:'center', padding:'4px 0 8px'}}>{d}</div>
+              ))}
+              {/* Empty offset cells for days before the 1st */}
+              {Array.from({length:firstDayOffset}).map((_,i)=>(
+                <div key={`e${i}`}/>
+              ))}
+              {/* Day cells */}
+              {Array.from({length:daysInMonth},(_,i)=>i+1).map(day=>{
+                const evts = getEvents(day);
+                const isToday = day === today;
+                const isSel = day === selDay;
+                return (
+                  <div key={day} onClick={()=>setSelDay(day)} className="cd"
+                    style={{borderRadius:5, padding:'6px 7px', minHeight:72, background:isToday?'rgba(184,212,58,0.1)':isSel?'var(--bg-raised)':'transparent', border:`1px solid ${isToday?'rgba(184,212,58,0.35)':isSel?'var(--line-s)':'var(--line)'}`, cursor:'pointer', display:'flex', flexDirection:'column', gap:3}}>
+                    <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:2}}>
+                      <span style={{fontSize:14, fontWeight:isToday?700:400, color:isToday?'var(--chartreuse)':'var(--text-s)', lineHeight:1, fontFamily:isToday?'var(--font-display)':'var(--font-body)', fontVariationSettings:isToday?'"BNCE" 20':undefined}}>{day}</span>
+                      {isToday && <span style={{...CSML, fontSize:7, color:'var(--chartreuse)'}}>Today</span>}
+                    </div>
+                    {evts.slice(0,3).map((ev,i)=>(
+                      <div key={i} style={{display:'flex', alignItems:'center', gap:4, overflow:'hidden'}}>
+                        <div style={{width:6, height:6, borderRadius:'50%', background:ev.color, flexShrink:0}}/>
+                        <span style={{fontSize:10, color:'var(--text-t)', lineHeight:1.2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{ev.label}</span>
+                      </div>
+                    ))}
+                    {evts.length > 3 && <span style={{...CSML, fontSize:7, color:'var(--text-m)'}}>+{evts.length-3} more</span>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {view==='week' && (
+            <div style={{display:'grid', gridTemplateColumns:'repeat(7,minmax(0,1fr))', gap:4}}>
+              {/* Header row inside the same grid */}
+              {DABB3.map(d=>(
+                <div key={d} style={{...CSML, fontSize:8, color:'var(--text-m)', textAlign:'center', padding:'4px 0 8px'}}>{d}</div>
+              ))}
+              {weekDays.map((day,idx)=>{
+                const evts = getEvents(day);
+                const isToday = day === today;
+                const isSel = day === selDay;
+                return (
+                  <div key={day} onClick={()=>setSelDay(day)} className="cd"
+                    style={{borderRadius:6, padding:'12px 10px', minHeight:160, background:isToday?'rgba(184,212,58,0.08)':isSel?'var(--bg-raised)':'transparent', border:`1px solid ${isToday?'rgba(184,212,58,0.3)':isSel?'var(--line-s)':'var(--line)'}`, cursor:'pointer'}}>
+                    <div style={{fontSize:22, fontFamily:isToday?'var(--font-display)':'var(--font-body)', fontVariationSettings:isToday?'"BNCE" 20':undefined, fontWeight:isToday?700:300, color:isToday?'var(--chartreuse)':'var(--text-s)', lineHeight:1, marginBottom:10}}>{day}</div>
+                    {isToday && <div style={{width:'100%', height:1, background:'var(--chartreuse)', opacity:.25, marginBottom:8}}/>}
+                    <div style={{display:'flex', flexDirection:'column', gap:5}}>
+                      {evts.map((ev,i)=>(
+                        <div key={i} style={{display:'flex', alignItems:'flex-start', gap:5}}>
+                          <div style={{width:6, height:6, borderRadius:'50%', background:ev.color, flexShrink:0, marginTop:2}}/>
+                          <span style={{fontSize:11, color:'var(--text-s)', lineHeight:1.35}}>{ev.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Legend */}
+          <div style={{display:'flex', flexWrap:'wrap', gap:12, marginTop:20, paddingTop:14, borderTop:'1px solid var(--line)'}}>
+            {Object.entries(EVTYPE_CFG).map(([k,cfg])=>(
+              <div key={k} style={{display:'flex', alignItems:'center', gap:5}}>
+                <div style={{width:8, height:8, borderRadius:'50%', background:cfg.color}}/>
+                <span style={{...CSML, fontSize:8, color:'var(--text-m)'}}>{cfg.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Day detail panel */}
+        <div className="dg" style={{width:230, flexShrink:0, overflowY:'auto', padding:'20px 16px 40px'}}>
+          <div style={{fontFamily:'var(--font-botanical)', fontSize:30, color:'var(--text-p)', lineHeight:1, marginBottom:4}}>
+            June {selDay}
+          </div>
+          <div style={{...CSML, fontSize:8, color:'var(--pine)', marginBottom:18}}>
+            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][((selDay-1)%7+0)%7]} · 2026
+          </div>
+
+          {getEvents(selDay).length === 0 ? (
+            <div style={{fontSize:13, color:'var(--text-m)', fontStyle:'italic', lineHeight:1.7}}>Nothing scheduled for this day.</div>
+          ) : (
+            <div style={{display:'flex', flexDirection:'column', gap:10}}>
+              {getEvents(selDay).map((ev,i)=>{
+                const tcfg = EVTYPE_CFG[ev.type] || EVTYPE_CFG.task;
+                return (
+                  <div key={i} style={{padding:'10px 12px', borderLeft:`3px solid ${tcfg.color}`, background:'var(--bg-nav)', borderRadius:'0 7px 7px 0', border:'1px solid var(--line)', borderLeftWidth:3, borderLeftColor:tcfg.color}}>
+                    <div style={{...CSML, fontSize:8, color:tcfg.color, marginBottom:5}}>{tcfg.label}{ev.project?` · ${projNames[ev.project]||ev.project}`:''}</div>
+                    <div style={{fontSize:13, color:'var(--text-s)', lineHeight:1.5}}>{ev.label}</div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Upcoming in next 7 days */}
+          <div style={{marginTop:24, paddingTop:18, borderTop:'1px solid var(--line)'}}>
+            <div style={{...CSML, fontSize:9, color:'var(--text-m)', marginBottom:12}}>Upcoming 7 days</div>
+            {Array.from({length:7},(_,i)=>selDay+i+1).filter(d=>d<=30&&getEvents(d).length>0).flatMap(d=>
+              getEvents(d).map((ev,i)=>({day:d, ev, key:`${d}-${i}`}))
+            ).slice(0,6).map(({day,ev,key})=>{
+              const tcfg = EVTYPE_CFG[ev.type] || EVTYPE_CFG.task;
+              return (
+                <div key={key} className="hr cd" onClick={()=>setSelDay(day)} style={{display:'flex', alignItems:'flex-start', gap:8, padding:'7px 4px', borderBottom:'1px solid var(--line)'}}>
+                  <div style={{...CSML, fontSize:9, color:'var(--text-m)', flexShrink:0, width:28}}>Jun {day}</div>
+                  <div style={{display:'flex', alignItems:'center', gap:6, flex:1, overflow:'hidden'}}>
+                    <div style={{width:7, height:7, borderRadius:'50%', background:tcfg.color, flexShrink:0}}/>
+                    <span style={{fontSize:12, color:'var(--text-s)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>{ev.label}</span>
+                  </div>
+                </div>
+              );
+            })}
+            {Array.from({length:7},(_,i)=>selDay+i+1).filter(d=>d<=30&&getEvents(d).length>0).flatMap(d=>getEvents(d)).length===0 && (
+              <div style={{fontSize:12, color:'var(--text-m)', fontStyle:'italic'}}>Clear week ahead.</div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+Object.assign(window, {CalendarPage});
+
+</script>
+<script type="text/babel">
+
+const ESML={fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.14em',textTransform:'uppercase'};
+
+function FieldLabel({children}) {
+  return <div style={{...ESML, color:'var(--text-m)', marginBottom:6, marginTop:16}}>{children}</div>;
+}
+
+function EditModal({type, entity, onSave, onClose, projects}) {
+  const isNew = !entity || !entity.id;
+  const [form, setForm] = React.useState(() => {
+    if (type === 'plant') return {
+      name: entity?.name||'', species: entity?.species||'', variety: entity?.variety||'',
+      family: entity?.family||'', category: entity?.category||'',
+      location: entity?.location||'', status: entity?.status||'growing',
+      projectId: entity?.projectId||'', sun: entity?.sun||'Full sun',
+      water: entity?.water||'', zone: entity?.zone||'9b — excellent',
+      careNotes: entity?.careNotes||'', history: entity?.history||'',
+    };
+    if (type === 'project') return {
+      name: entity?.name||'', status: entity?.status||'planning',
+      goal: entity?.goal||'', budget: entity?.budget||0,
+      budgetSpent: entity?.budgetSpent||0,
+      startDate: entity?.startDate||'', targetDate: entity?.targetDate||'',
+      traySlots: entity?.traySlots||0,
+    };
+    if (type === 'task') return {
+      text: entity?.text||'', urgency: entity?.urgency||'scheduled',
+      type: entity?.type||'maintenance', dl: entity?.dl||'',
+      mins: entity?.mins||30, rev: entity?.rev!==undefined?entity.rev:true,
+    };
+    return {};
+  });
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  const [saved, setSaved] = React.useState(false);
+
+  const handleSave = () => {
+    const out = type==='plant'
+      ? {...(entity||{}), ...form, id: entity?.id, chips: entity?.chips||[], facts: entity?.facts||[], suggestions: entity?.suggestions||[]}
+      : type==='project'
+      ? {...(entity||{}), ...form, id: entity?.id, tasks: entity?.tasks||[], seedSchedule: entity?.seedSchedule||[], iterations: entity?.iterations||[], taskCount: entity?.taskCount||0, completedTasks: entity?.completedTasks||0, beds: entity?.beds||[], containers: entity?.containers||[]}
+      : {...(entity||{}), ...form, id: entity?.id};
+    setSaved(true);
+    setTimeout(()=>onSave(type, out), 400);
+  };
+
+  const titles = {plant: isNew?'New Plant':'Edit Plant', project: isNew?'New Project':'Edit Project', task: isNew?'New Task':'Edit Task', garden:'Edit Garden Profile'};
+
+  return (
+    <div onClick={e=>{if(e.target===e.currentTarget)onClose();}} style={{position:'fixed',inset:0,background:'rgba(0,0,0,.55)',zIndex:200,display:'flex',justifyContent:'flex-end',backdropFilter:'blur(2px)'}}>
+      <div style={{width:360, background:'var(--bg-nav)', borderLeft:'1px solid var(--line)', height:'100%', display:'flex', flexDirection:'column', animation:'slideIn .22s ease', overflowY:'hidden'}}>
+        <style>{`@keyframes slideIn{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}`}</style>
+        {/* Header */}
+        <div style={{padding:'18px 20px 16px', borderBottom:'1px solid var(--line)', flexShrink:0, display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+          <div>
+            <div style={{fontFamily:'var(--font-display)', fontSize:20, fontVariationSettings:'"BNCE" 20', fontWeight:700, color:'var(--text-p)', lineHeight:1}}>{titles[type]||'Edit'}</div>
+            {!isNew && entity?.name && <div style={{...ESML, fontSize:8, color:'var(--pine)', marginTop:4}}>{entity.name}</div>}
+          </div>
+          <button onClick={onClose} style={{background:'none', border:'none', cursor:'pointer', color:'var(--text-m)', padding:4, display:'flex'}}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>
+          </button>
+        </div>
+
+        {/* Form */}
+        <div style={{flex:1, overflowY:'auto', padding:'4px 20px 24px'}}>
+          {type==='plant' && <>
+            <FieldLabel>Common Name</FieldLabel>
+            <input value={form.name} onChange={e=>set('name',e.target.value)} placeholder="e.g. Cherry Tomatoes"/>
+            <FieldLabel>Species</FieldLabel>
+            <input value={form.species} onChange={e=>set('species',e.target.value)} placeholder="e.g. Solanum lycopersicum"/>
+            <FieldLabel>Variety</FieldLabel>
+            <input value={form.variety} onChange={e=>set('variety',e.target.value)} placeholder="e.g. Sungold F1"/>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
+              <div>
+                <FieldLabel>Status</FieldLabel>
+                <select value={form.status} onChange={e=>set('status',e.target.value)}>
+                  {['seedling','growing','fruiting','established','removed'].map(s=><option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <FieldLabel>Sun</FieldLabel>
+                <select value={form.sun} onChange={e=>set('sun',e.target.value)}>
+                  {['Full sun','Part sun','Dappled shade','Full shade'].map(s=><option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+            </div>
+            <FieldLabel>Location</FieldLabel>
+            <input value={form.location} onChange={e=>set('location',e.target.value)} placeholder="e.g. Courtyard · Growbag A"/>
+            <FieldLabel>Project</FieldLabel>
+            <select value={form.projectId||''} onChange={e=>set('projectId',e.target.value||null)}>
+              <option value="">None</option>
+              {projects.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <FieldLabel>Watering</FieldLabel>
+            <input value={form.water} onChange={e=>set('water',e.target.value)} placeholder="e.g. Every 2–3 days"/>
+            <FieldLabel>Care Notes</FieldLabel>
+            <textarea value={form.careNotes} onChange={e=>set('careNotes',e.target.value)} rows={4} style={{background:'var(--input-bg)',border:'1px solid var(--line)',borderRadius:6,padding:'8px 11px',width:'100%',resize:'vertical',color:'var(--text-p)',fontFamily:'var(--font-body)',fontSize:13,lineHeight:1.6}} placeholder="Growing tips, feeding schedule, pest watch…"/>
+          </>}
+
+          {type==='project' && <>
+            <FieldLabel>Project Name</FieldLabel>
+            <input value={form.name} onChange={e=>set('name',e.target.value)} placeholder="e.g. Summer Veg. Beds"/>
+            <FieldLabel>Status</FieldLabel>
+            <select value={form.status} onChange={e=>set('status',e.target.value)}>
+              {['planning','active','maintaining','paused','complete'].map(s=><option key={s} value={s}>{s}</option>)}
+            </select>
+            <FieldLabel>Goal</FieldLabel>
+            <textarea value={form.goal} onChange={e=>set('goal',e.target.value)} rows={4} style={{background:'var(--input-bg)',border:'1px solid var(--line)',borderRadius:6,padding:'8px 11px',width:'100%',resize:'vertical',color:'var(--text-p)',fontFamily:'var(--font-body)',fontSize:13,lineHeight:1.6}} placeholder="Describe what you want to achieve…"/>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
+              <div>
+                <FieldLabel>Budget ($)</FieldLabel>
+                <input type="number" value={form.budget} onChange={e=>set('budget',Number(e.target.value))} placeholder="150"/>
+              </div>
+              <div>
+                <FieldLabel>Tray Slots</FieldLabel>
+                <input type="number" value={form.traySlots} onChange={e=>set('traySlots',Number(e.target.value))} placeholder="0" min="0" max="8"/>
+              </div>
+            </div>
+            <FieldLabel>Start Date</FieldLabel>
+            <input value={form.startDate} onChange={e=>set('startDate',e.target.value)} placeholder="e.g. Mar 15, 2026"/>
+            <FieldLabel>Target Date</FieldLabel>
+            <input value={form.targetDate} onChange={e=>set('targetDate',e.target.value)} placeholder="e.g. Oct 31, 2026"/>
+          </>}
+
+          {type==='task' && <>
+            <FieldLabel>Description</FieldLabel>
+            <input value={form.text} onChange={e=>set('text',e.target.value)} placeholder="What needs to be done?"/>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
+              <div>
+                <FieldLabel>Type</FieldLabel>
+                <select value={form.type} onChange={e=>set('type',e.target.value)}>
+                  {['emergency','milestone','maintenance','opportunistic'].map(s=><option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <FieldLabel>Urgency</FieldLabel>
+                <select value={form.urgency} onChange={e=>set('urgency',e.target.value)}>
+                  {['blocker','time_sensitive','scheduled','backlog'].map(s=><option key={s} value={s}>{s.replace('_',' ')}</option>)}
+                </select>
+              </div>
+            </div>
+            <FieldLabel>Deadline</FieldLabel>
+            <input value={form.dl||''} onChange={e=>set('dl',e.target.value)} placeholder="e.g. Jun 20 or Today"/>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10}}>
+              <div>
+                <FieldLabel>Est. Minutes</FieldLabel>
+                <input type="number" value={form.mins} onChange={e=>set('mins',Number(e.target.value))} placeholder="30"/>
+              </div>
+              <div style={{paddingTop:16+6}}>
+                <label style={{display:'flex', alignItems:'center', gap:8, cursor:'pointer', fontSize:13, color:'var(--text-s)'}}>
+                  <input type="checkbox" checked={form.rev} onChange={e=>set('rev',e.target.checked)} style={{width:'auto', accentColor:'var(--chartreuse)'}}/>
+                  Reversible
+                </label>
+              </div>
+            </div>
+          </>}
+
+          {type==='garden' && (
+            <div style={{padding:'20px 0', color:'var(--text-m)', fontSize:13, lineHeight:1.7}}>
+              Garden profile editing — beds, containers, constraints, and preferences — will be handled through conversation with Rhizome in a future version.
+              <br/><br/>
+              <button onClick={()=>window.__vpSetPage&&window.__vpSetPage('rhizome')} style={{background:'none',border:'none',cursor:'pointer',color:'var(--pine)',fontFamily:'var(--font-label)',fontSize:9,letterSpacing:'.14em',textTransform:'uppercase',padding:0}}>Open Rhizome to discuss →</button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        {type !== 'garden' && (
+          <div style={{padding:'14px 20px', borderTop:'1px solid var(--line)', flexShrink:0, display:'flex', gap:8, justifyContent:'flex-end'}}>
+            <button onClick={onClose} style={{background:'transparent', border:'1px solid var(--line-s)', borderRadius:5, padding:'8px 16px', cursor:'pointer', ...ESML, color:'var(--text-m)'}}>Cancel</button>
+            <button onClick={handleSave} style={{background:saved?'var(--pine)':'var(--chartreuse)', border:'none', borderRadius:5, padding:'8px 18px', cursor:'pointer', ...ESML, color:saved?'rgba(255,255,255,.9)':'#0C1E0C', fontWeight:600, transition:'background .3s', minWidth:80}}>
+              {saved ? '✓ Saved' : isNew ? 'Create' : 'Save'}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+Object.assign(window, {EditModal});
+
+</script>
+<script type="text/babel">
+
+const PAGE_LABELS = {
+  today:'Today', rhizome:'Rhizome', tasks:'Tasks', calendar:'Calendar',
+  garden:'Garden', plants:'Plants', projects:'Projects',
+};
+
+function App() {
+  const [page, setPage] = React.useState('today');
+  const [selectedPlantId, setSelectedPlantId] = React.useState(null);
+  const [selectedProjectId, setSelectedProjectId] = React.useState(null);
+  const [theme, setTheme] = React.useState('dark');
+  const [collapsed, setCollapsed] = React.useState(false);
+  const [sweepKey, setSweepKey] = React.useState(0);
+  const [sweeping, setSweeping] = React.useState(false);
+  const [editState, setEditState] = React.useState({open:false, type:null, entity:null});
+  const [plants, setPlants] = React.useState(VP_PLANTS.map(p=>({...p})));
+  const [projects, setProjects] = React.useState(VP_PROJECTS.map(p=>({...p})));
+
+  // Store navigate on window so EditModal can access it
+  window.__vpSetPage = (p) => navigate(p);
+
+  const navigate = React.useCallback((pageId, params={}) => {
+    setSweeping(true); setSweepKey(k=>k+1);
+    setPage(pageId);
+    if (params.plantId !== undefined) setSelectedPlantId(params.plantId);
+    if (params.projectId !== undefined) setSelectedProjectId(params.projectId);
+    setTimeout(()=>setSweeping(false), 520);
+  }, []);
+
+  const openEdit = (type, entity) => setEditState({open:true, type, entity});
+  const closeEdit = () => setEditState({open:false, type:null, entity:null});
+
+  const handleSave = (type, updated) => {
+    if (type==='plant') {
+      if (updated.id) setPlants(prev=>prev.map(p=>p.id===updated.id?updated:p));
+      else setPlants(prev=>[...prev, {...updated, id:'plant-'+Date.now()}]);
+    } else if (type==='project') {
+      if (updated.id) setProjects(prev=>prev.map(p=>p.id===updated.id?updated:p));
+      else setProjects(prev=>[...prev, {...updated, id:'proj-'+Date.now()}]);
+    }
+    closeEdit();
+  };
+
+  React.useEffect(()=>{ document.documentElement.setAttribute('data-theme', theme); }, [theme]);
+
+  // Breadcrumb
+  const crumbs = (() => {
+    if (page==='plant') return [{label:'Plants', target:'plants'}, {label: plants.find(p=>p.id===selectedPlantId)?.name||'Plant'}];
+    if (page==='project') return [{label:'Projects', target:'projects'}, {label: projects.find(p=>p.id===selectedProjectId)?.name||'Project'}];
+    return [{label: PAGE_LABELS[page]||page}];
+  })();
+
+  const sharedProps = {setPage:navigate, theme, openEdit, plants, projects};
+
+  const renderPage = () => {
+    switch(page) {
+      case 'today':    return <TodayPage {...sharedProps}/>;
+      case 'rhizome':  return <RhizomePage {...sharedProps}/>;
+      case 'tasks':    return <TasksPage {...sharedProps}/>;
+      case 'calendar': return <CalendarPage {...sharedProps}/>;
+      case 'garden':   return <GardenPage {...sharedProps}/>;
+      case 'plants':   return <PlantsOverviewPage {...sharedProps}/>;
+      case 'plant':    return <PlantDetailPage {...sharedProps} plantId={selectedPlantId}/>;
+      case 'projects': return <ProjectsPage {...sharedProps}/>;
+      case 'project':  return <ProjectDetailPage {...sharedProps} projectId={selectedProjectId}/>;
+      default:         return <TodayPage {...sharedProps}/>;
+    }
+  };
+
+  return (
+    <>
+      {sweeping && <div key={sweepKey} className="vs"/>}
+      <VPNav page={page} setPage={navigate} theme={theme} setTheme={setTheme} collapsed={collapsed} setCollapsed={setCollapsed}/>
+      <div className="cw">
+        {/* Breadcrumb */}
+        <div className="bc">
+          <span>Verdant Pages</span>
+          {crumbs.map((c,i) => (
+            <React.Fragment key={i}>
+              <span style={{color:'var(--line-s)'}}>›</span>
+              {c.target
+                ? <span className="bc-link" onClick={()=>navigate(c.target)}>{c.label}</span>
+                : <span style={{color:'var(--text-s)'}}>{c.label}</span>}
+            </React.Fragment>
+          ))}
+        </div>
+        <div className="cm">
+          <div className="pi" key={page+selectedPlantId+selectedProjectId}>
+            {renderPage()}
+          </div>
+        </div>
+      </div>
+      {editState.open && (
+        <EditModal type={editState.type} entity={editState.entity} onSave={handleSave} onClose={closeEdit} projects={projects}/>
+      )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+
+</script>
+</body>
+</html>
