@@ -69,49 +69,45 @@ Rendered as a bulleted list with a dash marker styled in clay (hard) or pine (so
 
 ## Tabs
 
-### Areas / Beds
+The tabs are **previews only** — each shows a compact summary (up to 8 rows/cards) with a "See all →" link to the full dedicated list page. No filtering or sorting in the hub tabs themselves.
 
-Beds grouped by their location string (e.g. Front Yard, Courtyard, Back Slope). Uses `GET /api/v1/garden/locations/{location}` to resolve groupings, then `GET /api/v1/garden/beds` for full detail.
+### Areas / Beds tab (preview)
 
-Each row is a TanStack Table ledger row showing: name, size, sunlight, soil, plant count, care state indicator (colour dot: green/amber/red based on recency of last care event).
+Beds grouped by location string. Shows up to 8 — name, location, care state dot. "See all beds →" navigates to `/app/garden/beds` (full `BedListPage`).
 
-Clicking a row navigates to `/app/garden/beds/:id`.
+`+ Add bed` navigates to `/app/garden/beds/new`.
 
-An `+ Add bed` button opens a creation drawer. Form fields: name (required), location, size, sunlight, soil type, notes. Calls `POST /api/v1/garden/beds` *(requires [rhizome#116](https://github.com/ybordag/rhizome/issues/116))*.
-
-**API:**
-- `GET /api/v1/garden/beds` — list
-- `GET /api/v1/garden/locations/{location}` — area groupings
-- `POST /api/v1/garden/beds` *(rhizome#116)*
+**API:** `GET /api/v1/garden/beds` (first 8), `GET /api/v1/garden/locations/{location}` for area groupings.
 
 ---
 
-### Containers
+### Containers tab (preview)
 
-All containers in a TanStack Table ledger. Columns: name, type, size, location, current plant (or "—"), mobile indicator, care state dot.
+Shows up to 8 containers — name, type, current plant, care state dot. "See all containers →" navigates to `/app/garden/containers` (full `ContainerListPage`).
 
-Clicking navigates to `/app/garden/containers/:id`.
+`+ Add container` navigates to `/app/garden/containers/new`.
 
-`+ Add container` opens creation drawer: name, type (growbag/pot/raised/trough), size_gallons, location, is_mobile toggle. Calls `POST /api/v1/garden/containers`.
-
-**API:**
-- `GET /api/v1/garden/containers`
-- `POST /api/v1/garden/containers`
+**API:** `GET /api/v1/garden/containers` (first 8).
 
 ---
 
-### Plants
+### Plants tab (preview)
 
-A card grid of all active plants (excludes `removed` status by default). Each card shows: common name, species in Caveat italic, status badge, location, and a colour-coded care state indicator.
+Shows up to 8 plant cards — name, status badge, location, last care indicator. "See all plants →" navigates to `/app/plants` (full `PlantsPage`).
 
-Filter strip across the top: **All** | Seedling | Growing | Fruiting | Established | Removed.
+`+ Add plant` navigates to `/app/plants/new`.
 
-Clicking a card navigates to `/app/plants/:id` (Plants has its own nav item and detail page — this tab is a portal into it, not a separate surface).
+**API:** `GET /api/v1/garden/plants?limit=8`
 
-`+ Add plant` opens a creation drawer. Key fields: name, species, variety, source (seed/cutting/transplant/existing), bed or container assignment, sow date. Calls `POST /api/v1/garden/plants`.
+---
 
-**API:**
-- `GET /api/v1/garden/plants?status=X` *(add location filter: rhizome#116)*
+### BedListPage (`/app/garden/beds`)
+
+Full list page — filter rail + TanStack Table ledger. Filters: location/area, sunlight, care state. Sortable columns: name, location, last watered. Clicking a row → `/app/garden/beds/:id`.
+
+### ContainerListPage (`/app/garden/containers`)
+
+Full list page — filter rail + TanStack Table ledger. Filters: type, location, mobile, care state. Clicking a row → `/app/garden/containers/:id`.
 
 ---
 
@@ -129,9 +125,12 @@ Cursor-paginated, newest first. Each row: date, event type, affected object (cli
 
 ```
 Garden hub
-  → Bed detail          click a bed row in Areas/Beds tab
-  → Container detail    click a container row in Containers tab
-  → Plant detail        click a plant card in Plants tab (→ /app/plants/:id)
+  → BedListPage         "See all beds →" in Areas/Beds tab
+  → Bed detail          click a bed row in Areas/Beds tab preview
+  → ContainerListPage   "See all containers →" in Containers tab
+  → Container detail    click a container row in Containers tab preview
+  → PlantsPage          "See all plants →" in Plants tab
+  → Plant detail        click a plant card in Plants tab preview (→ /app/plants/:id)
   → Full map view       click "Expand ↗" on the map hero
   → Object linked to    clicking a bed/container on the expanded map
 ```

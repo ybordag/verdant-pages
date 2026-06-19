@@ -419,9 +419,11 @@ src/
 │   ├── TaskCreatePage/         # /app/tasks/new — wizard
 │   ├── TaskSeriesPage/         # /app/tasks/series/:id
 │   ├── CalendarPage/
-│   ├── GardenPage/
+│   ├── GardenPage/             # hub — tab previews with "See all →" links
+│   ├── BedListPage/            # /app/garden/beds — full list
 │   ├── BedDetailPage/
 │   ├── BedCreatePage/          # /app/garden/beds/new — static form
+│   ├── ContainerListPage/      # /app/garden/containers — full list
 │   ├── ContainerDetailPage/
 │   ├── ContainerCreatePage/    # /app/garden/containers/new — static form
 │   ├── PlantsPage/

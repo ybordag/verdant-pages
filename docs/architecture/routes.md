@@ -24,14 +24,14 @@ All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`.
   /app/rhizome              → RhizomePage — agent chat (auto-creates thread if none)
   /app/rhizome/:threadId    → RhizomePage — specific thread loaded
 
-  /app/garden               → GardenPage — overview tab (profile, map, constraints)
-  /app/garden/beds          → GardenPage — Areas/Beds tab pre-selected
+  /app/garden               → GardenPage — hub (map, profile, tab previews for beds/containers/plants/activity)
+  /app/garden/beds          → BedListPage — full bed list with filters and TanStack Table
   /app/garden/beds/new      → BedCreatePage — static form
   /app/garden/beds/:id      → BedDetailPage
-  /app/garden/containers    → GardenPage — Containers tab pre-selected
+  /app/garden/containers    → ContainerListPage — full container list with filters and TanStack Table
   /app/garden/containers/new → ContainerCreatePage — static form
   /app/garden/containers/:id → ContainerDetailPage
-  /app/plants               → PlantsPage — plant list
+  /app/plants               → PlantsPage — full plant list (card grid or ledger, filters)
   /app/plants/new           → PlantCreatePage — 4-step progressive wizard
   /app/plants/:id           → PlantDetailPage
 
@@ -63,10 +63,12 @@ Seven top-level nav items in three groups:
 |---|---|
 | Garden (overview) | `/app/garden` |
 | Plants | `/app/plants` |
-| Beds | `/app/garden/beds` — opens GardenPage with Beds tab pre-selected |
-| Containers | `/app/garden/containers` — opens GardenPage with Containers tab pre-selected |
+| Beds | `/app/garden/beds` |
+| Containers | `/app/garden/containers` |
 
-`/app/garden/beds` and `/app/garden/containers` are the same `GardenPage` component — the URL drives which tab is active on mount. Detail pages and `/new` creation pages exist for all three object types.
+**The Garden hub tabs are previews only.** Each tab (Beds, Containers, Plants, Activity) shows a compact summary with a "See all →" link that navigates to the full dedicated list page. Plants, Beds, and Containers all follow the same pattern: preview tab in the hub → full list page → detail page → creation page.
+
+Plants are a top-level nav item (frequent daily access). Beds and Containers are accessed via the garden card — they are less frequently visited and more structural than operational.
 
 ## Notes
 
