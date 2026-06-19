@@ -61,17 +61,55 @@ No domain knowledge. Props are generic. Could be dropped into any app.
 
 | Component | Description |
 |---|---|
-| `VPNav` | Fixed left sidebar. 210px expanded, 52px collapsed. Contains: nav items with badge counts, theme toggle, garden card widget (bottom), quick actions panel. Collapse/expand behavior from prototype. Active item: chartreuse accent + left border. |
-| `AppShell` | Root layout: `VPNav` + `.cw` content wrapper (flex column, takes remaining width). Optional right panel slot (used by RhizomePage for the interaction panel). |
+| `VPNav` | Fixed left sidebar. 210px expanded, 52px collapsed. Three nav sections, two widgets, one footer. See full spec below. |
+| `AppShell` | Root layout: `VPNav` + `.cw` content wrapper (flex column, takes remaining width). Optional right panel slot (used by RhizomePage and the notification drawer). |
 | `Breadcrumb` | `.bc` breadcrumb bar — `--font-label`, 9px, uppercase, letter-spaced, `--text-m`. Shows current location. |
 
-### VPNav — sidebar extras
+### VPNav — full specification
 
-The sidebar in the mockup has two persistent widgets below the nav items:
+**Nav sections (three groups, separated by dividers):**
 
-**Quick actions panel** — three buttons: "Ask Rhizome" (navigates to `/app/rhizome`), "New Task" (navigates to `/app/tasks/new`), "Run Triage" (calls `POST /api/v1/triage/run`). Always visible.
+| Group | Items | Badge |
+|---|---|---|
+| Orientation | Rhizome, Today | Rhizome: pending interaction count |
+| Work | Tasks, Calendar, Projects | Tasks: open task count; Projects: active project count |
+| Operational | Incidents, Activity | Incidents: open incident count |
 
-**Garden profile card** — compact summary: zone, soil type, mapped object count, a mini plot grid. Links to `/app/garden`. Always visible.
+Garden and Plants are **not** top-level nav items — they are accessed through the garden profile card widget (see below).
+
+**Active state:** chartreuse left border + chartreuse text (`--nav-accent`) + `--nav-active-bg` tint.
+
+**Badge counts (expanded mode only):** chartreuse pill showing the count. Disappears in collapsed mode.
+
+**Pending state in collapsed mode:** when an item has pending items but the nav is collapsed, the icon renders at `--text-p` (fully lit, 94% opacity) instead of the default `--text-s` (70%). No badge, no dot — just the icon appears "on." Active item remains chartreuse.
+
+**Icons:** SVG icons for each nav item (all already in the prototype). In collapsed mode the label and badge hide; only the icon and pending-state colour remain.
+
+**Widgets (below nav sections):**
+
+**Quick actions panel** — three action buttons:
+- "Ask Rhizome" → `/app/rhizome`
+- "+ New Task" → `/app/tasks/new`
+- "▶ Run Triage" → `POST /api/v1/triage/run`
+
+In **collapsed mode**: the panel collapses to three stacked icon buttons (speech bubble / plus / play triangle). Labels hidden.
+
+**Garden profile card** — the portal to all garden objects. Shows: zone badge, object count, mini plot grid, and chip links to Garden, Plants, Beds, Containers. In **collapsed mode**: collapses to a single garden icon button that navigates to `/app/garden`. Mini map, chips, and labels hidden.
+
+**Footer (bottom of sidebar):**
+
+```
+[avatar]  you@email.com         ← truncated if long
+                   [☀️/🌙]  [🔔]
+```
+
+- Avatar + email: clicking opens `/app/settings`
+- Theme toggle: switches between dark/light, persists to `localStorage('vp_theme')`
+- Notifications button (🔔): opens the **notification drawer** from the right edge of the screen — the only drawer in the app
+
+In **collapsed mode**: avatar icon only (no email), theme + notification icon buttons remain.
+
+**Notification drawer** — slides in from the right when 🔔 is clicked. Contains the notification panel (In Progress jobs, Pending Approvals, Alerts). This is the one and only drawer in the application. All other creation/editing flows use dedicated pages or inline interactions.
 
 ---
 

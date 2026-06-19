@@ -45,8 +45,21 @@ All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`.
   /app/settings             → SettingsPage — provider keys, preferences
 ```
 
+## Nav items
+
+Seven top-level nav items in three groups:
+
+| Group | Nav items |
+|---|---|
+| Orientation | Rhizome, Today |
+| Work | Tasks, Calendar, Projects |
+| Operational | Incidents, Activity |
+
+**Garden, Plants, Beds, and Containers are NOT nav items.** They are accessed through the garden profile card widget in the sidebar, which links to `/app/garden`, `/app/plants`, `/app/garden/beds/:id`, `/app/garden/containers/:id`. Their routes still exist — they are just not directly in the nav.
+
 ## Notes
 
 - The Tasks page shares a single route component (`TasksPage`) across all its views. The active view is determined by the URL. A filter rail in the left of the page shows all view options.
 - `/app/tasks` and `/app/calendar` are deliberately separate — they serve different cognitive modes (operational ledger vs temporal overview). The Calendar is not a view mode within Tasks.
 - Deep links work for all views — every URL is bookmarkable and browser-back navigable.
+- The notification drawer is the only drawer in the app. It opens from the 🔔 button in the nav footer. All other creation/editing flows use dedicated pages (`/new` routes) or inline interactions.
