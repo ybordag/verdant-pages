@@ -25,7 +25,12 @@ All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`.
   /app/rhizome/:threadId    → RhizomePage — specific thread loaded
 
   /app/garden               → GardenPage — profile, areas, beds, containers
+  /app/garden/beds/new      → BedCreatePage — static form
+  /app/garden/beds/:id      → BedDetailPage
+  /app/garden/containers/new → ContainerCreatePage — static form
+  /app/garden/containers/:id → ContainerDetailPage
   /app/plants               → PlantsPage — plant list
+  /app/plants/new           → PlantCreatePage — 4-step progressive wizard
   /app/plants/:id           → PlantDetailPage
 
   /app/projects             → ProjectsPage — project list

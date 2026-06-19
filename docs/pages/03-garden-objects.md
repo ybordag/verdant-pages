@@ -19,6 +19,55 @@ Plants gets its own nav item because it is the most frequently visited object ty
 
 ---
 
+## Creation patterns
+
+| Object | Route | Pattern |
+|---|---|---|
+| Bed | `/app/garden/beds/new` | Static form — all fields on one page, no wizard |
+| Container | `/app/garden/containers/new` | Static form — all fields on one page, no wizard |
+| Plant | `/app/plants/new` | Progressive wizard — 4 steps (see below) |
+| Task series (care) | `/app/tasks/series/new` | Dedicated form page |
+
+**Why static forms for beds/containers:** they have few enough fields (5–6) that a multi-step wizard adds friction without clarity. Drawers are not used elsewhere in the app, so a dedicated page keeps the pattern consistent.
+
+**Why a wizard for plants:** plants have ~15 fields with logical dependencies between them. The wizard surfaces only what's relevant at each stage.
+
+### Plant creation wizard (`/app/plants/new`)
+
+**Step 1 — Identity:** Common name (required), species, variety, source (`seed / cutting / transplant / existing`)
+
+**Step 2 — Location:** Assign to a bed or container (picker from available locations). Optional at creation — can be assigned later.
+
+**Step 3 — Timing:** Date fields appropriate to source:
+- Seed: sow date, red cup date (optional), transplant date (optional), harvest expected (optional)
+- Cutting / Transplant / Existing: transplant/introduction date only
+
+**Step 4 — Care + Batch:** Fertilizing schedule, special instructions. Toggle: "Part of a batch?" → if yes: quantity, seed lot reference, grow light assignment, tray assignment. Batch creation calls `POST /api/v1/garden/plants/batch`.
+
+Each step shows a progress indicator. "Back" and "Next/Finish" buttons. Any step can be skipped (fields are optional beyond step 1).
+
+### Bed creation (`/app/garden/beds/new`)
+
+Single static form: name (required), location/area, size, sunlight, soil type, notes. Calls `POST /api/v1/garden/beds` *(rhizome#116)*.
+
+### Container creation (`/app/garden/containers/new`)
+
+Single static form: name (required), type (growbag / ceramic pot / trough / raised / other), size in gallons, location, mobile toggle, notes. Calls `POST /api/v1/garden/containers`.
+
+---
+
+## Editing pattern — inline field editing
+
+All detail pages use **inline field editing**. Clicking any editable field makes it editable in place — text fields become `<input>` or `<textarea>`, enums become `<select>`, dates open a date picker. Blur or Enter saves. Escape cancels. Changes call `PATCH` on the respective endpoint.
+
+Fields that are system-generated (IDs, created_at, care timestamps) are read-only. Care timestamps are updated via the care recording action, not direct field editing.
+
+**Special purpose-built components** exist for interactions that are too complex for inline editing:
+- Plant lifecycle transitions (sow → red cup → transplant → harvest/remove) — dedicated action buttons with timestamp pickers
+- Project Gantt drag, proposal review cards, budget tracker (see [04-projects.md](04-projects.md))
+
+---
+
 ## Plants list page (`/app/plants`)
 
 A dedicated page for plant management across the whole garden — more featured than the Plants tab in the garden hub.
@@ -31,7 +80,7 @@ A dedicated page for plant management across the whole garden — more featured 
 
 **Ledger view:** TanStack Table — name, species/variety, status, location, source, sow date, last care. Sortable by any column.
 
-**`+ Add plant` button** opens the creation drawer. Same form as the garden hub Plants tab.
+**`+ Add plant` button** navigates to `/app/plants/new`.
 
 **API:**
 - `GET /api/v1/garden/plants?status=X&location=Y&project_id=Z` *(location filter requires [rhizome#116](https://github.com/ybordag/rhizome/issues/116))*
@@ -75,6 +124,14 @@ Six care dimensions displayed as labelled tiles, colour-coded by recency:
 - 🟢 Green — last action within normal care window
 - 🟡 Amber — approaching due
 - 🔴 Red — overdue
+
+**Quick care recording:** each tile has a small "Log" button (clock icon). Tapping it opens a minimal inline popover — datetime picker (defaults to now) and optional notes field. Submitting calls `POST /api/v1/garden/{type}/{id}/care` with `{ care_type, notes, recorded_at }`.
+
+The endpoint finds any existing pending care task of the matching type linked to this object (from a task series first, then standalone) and completes it — or creates a one-off care task and immediately completes it if none exists. Task completion triggers Rhizome's `infer_care_action`, updating the care timestamp and recording an `ActivityEvent`. The tile flashes green and the timestamp refreshes.
+
+This means **care is always tracked as tasks** — the quick button is just a fast path that collapses create + complete into a single tap. For planned recurring care, the task series provides the task; for ad-hoc care, a one-off task is created transparently.
+
+Source: `POST /api/v1/garden/{type}/{id}/care` *(requires [rhizome#128](https://github.com/ybordag/rhizome/issues/128))*
 
 | Care field | Applies to |
 |---|---|

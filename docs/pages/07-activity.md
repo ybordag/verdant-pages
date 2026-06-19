@@ -1,3 +1,60 @@
-# [Page Group] — Design TBD
+# Activity — Global Feed
 
-*Not yet designed. See [docs/README.md](../README.md) for the full doc index.*
+## Purpose
+
+A single page showing everything that has happened across the whole garden — task completions, care actions, project updates, incidents, weather events, agent actions, and interactions. The primary use is verifying what Rhizome did, cross-referencing events across objects, and building a picture of the garden's history.
+
+Per-object history is surfaced on each object's detail page using the same `ObjectActivityFeed` component. The Activity page is that same component pointed at the global feed.
+
+---
+
+## Page (`/app/activity`)
+
+### Layout
+
+Filter rail (left) + activity feed (main, infinite scroll).
+
+### Filter rail
+
+- **Category:** All / Task / Project / Plant / Care / Incident / Interaction / Weather
+- **Event type:** specific event types within the selected category (e.g. `task_completed`, `plant_watered`, `proposal_accepted`)
+- **Since / Before:** date range pickers
+- **Subject:** plant/bed/container/project picker — filters to events involving a specific object *(requires [rhizome#115](https://github.com/ybordag/rhizome/issues/115))*
+
+### Activity feed
+
+Cursor-paginated, newest first. Each row:
+- Date/time (relative for recent, absolute for older)
+- Event type badge (colour-coded by category — task=pine, care=chartreuse, incident=clay, interaction=cornflower, weather=buttercup)
+- Summary text — human-readable description
+- Actor label — "Rhizome" or "You"
+- Affected objects as clickable chips (navigate to detail page)
+
+Infinite scroll via `before_timestamp` cursor. "Load more" fallback for accessibility.
+
+### No new API work needed
+
+All requirements are covered by existing endpoints and already-tracked issues:
+
+| Requirement | Endpoint | Status |
+|---|---|---|
+| Global feed with filters | `GET /api/v1/activity` | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120) for JSON, [#115](https://github.com/ybordag/rhizome/issues/115) for subject_type filter) |
+| Cursor pagination | `before_timestamp` param | ✅ |
+| Per-object feeds | `GET /api/v1/garden/{type}/{id}/activity` | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| Velocity stats | `GET /api/v1/activity/stats` | Blocked on [#115](https://github.com/ybordag/rhizome/issues/115) |
+
+---
+
+## Shared `ObjectActivityFeed` component
+
+Used in two places:
+1. The `/app/activity` page — full page with filter rail
+2. Every garden object detail page (plant, bed, container, task, incident, project) — embedded section, no filters
+
+```typescript
+interface ObjectActivityFeedProps {
+  endpoint: string;          // '/api/v1/activity' or '/api/v1/garden/plants/:id/activity'
+  showFilters?: boolean;     // true on full page, false on detail page sections
+  limit?: number;            // default 20
+}
+```
