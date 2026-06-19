@@ -25,12 +25,12 @@ All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`.
   /app/rhizome/:threadId    → RhizomePage — specific thread loaded
 
   /app/garden               → GardenPage — hub (map, profile, tab previews for beds/containers/plants/activity)
-  /app/garden/beds          → BedListPage — full bed list with filters and TanStack Table
-  /app/garden/beds/new      → BedCreatePage — static form
-  /app/garden/beds/:id      → BedDetailPage
-  /app/garden/containers    → ContainerListPage — full container list with filters and TanStack Table
-  /app/garden/containers/new → ContainerCreatePage — static form
-  /app/garden/containers/:id → ContainerDetailPage
+  /app/beds                 → BedListPage — full bed list with filters and TanStack Table
+  /app/beds/new             → BedCreatePage — static form
+  /app/beds/:id             → BedDetailPage
+  /app/containers           → ContainerListPage — full container list with filters and TanStack Table
+  /app/containers/new       → ContainerCreatePage — static form
+  /app/containers/:id       → ContainerDetailPage
   /app/plants               → PlantsPage — full plant list (card grid or ledger, filters)
   /app/plants/new           → PlantCreatePage — 4-step progressive wizard
   /app/plants/:id           → PlantDetailPage
@@ -63,8 +63,8 @@ Seven top-level nav items in three groups:
 |---|---|
 | Garden (overview) | `/app/garden` |
 | Plants | `/app/plants` |
-| Beds | `/app/garden/beds` |
-| Containers | `/app/garden/containers` |
+| Beds | `/app/beds` |
+| Containers | `/app/containers` |
 
 **The Garden hub tabs are previews only.** Each tab (Beds, Containers, Plants, Activity) shows a compact summary with a "See all →" link that navigates to the full dedicated list page. Plants, Beds, and Containers all follow the same pattern: preview tab in the hub → full list page → detail page → creation page.
 

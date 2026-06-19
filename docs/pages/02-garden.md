@@ -73,9 +73,9 @@ The tabs are **previews only** — each shows a compact summary (up to 8 rows/ca
 
 ### Areas / Beds tab (preview)
 
-Beds grouped by location string. Shows up to 8 — name, location, care state dot. "See all beds →" navigates to `/app/garden/beds` (full `BedListPage`).
+Beds grouped by location string. Shows up to 8 — name, location, care state dot. "See all beds →" navigates to `/app/beds` (full `BedListPage`).
 
-`+ Add bed` navigates to `/app/garden/beds/new`.
+`+ Add bed` navigates to `/app/beds/new`.
 
 **API:** `GET /api/v1/garden/beds` (first 8), `GET /api/v1/garden/locations/{location}` for area groupings.
 
@@ -83,9 +83,9 @@ Beds grouped by location string. Shows up to 8 — name, location, care state do
 
 ### Containers tab (preview)
 
-Shows up to 8 containers — name, type, current plant, care state dot. "See all containers →" navigates to `/app/garden/containers` (full `ContainerListPage`).
+Shows up to 8 containers — name, type, current plant, care state dot. "See all containers →" navigates to `/app/containers` (full `ContainerListPage`).
 
-`+ Add container` navigates to `/app/garden/containers/new`.
+`+ Add container` navigates to `/app/containers/new`.
 
 **API:** `GET /api/v1/garden/containers` (first 8).
 
@@ -101,13 +101,13 @@ Shows up to 8 plant cards — name, status badge, location, last care indicator.
 
 ---
 
-### BedListPage (`/app/garden/beds`)
+### BedListPage (`/app/beds`)
 
-Full list page — filter rail + TanStack Table ledger. Filters: location/area, sunlight, care state. Sortable columns: name, location, last watered. Clicking a row → `/app/garden/beds/:id`.
+Full list page — filter rail + TanStack Table ledger. Filters: location/area, sunlight, care state. Sortable columns: name, location, last watered. Clicking a row → `/app/beds/:id`.
 
-### ContainerListPage (`/app/garden/containers`)
+### ContainerListPage (`/app/containers`)
 
-Full list page — filter rail + TanStack Table ledger. Filters: type, location, mobile, care state. Clicking a row → `/app/garden/containers/:id`.
+Full list page — filter rail + TanStack Table ledger. Filters: type, location, mobile, care state. Clicking a row → `/app/containers/:id`.
 
 ---
 
@@ -125,10 +125,10 @@ Cursor-paginated, newest first. Each row: date, event type, affected object (cli
 
 ```
 Garden hub
-  → BedListPage         "See all beds →" in Areas/Beds tab
-  → Bed detail          click a bed row in Areas/Beds tab preview
-  → ContainerListPage   "See all containers →" in Containers tab
-  → Container detail    click a container row in Containers tab preview
+  → BedListPage (/app/beds)               "See all beds →" in Areas/Beds tab
+  → Bed detail (/app/beds/:id)            click a bed row in Areas/Beds tab preview
+  → ContainerListPage (/app/containers)   "See all containers →" in Containers tab
+  → Container detail (/app/containers/:id) click a container row in Containers tab preview
   → PlantsPage          "See all plants →" in Plants tab
   → Plant detail        click a plant card in Plants tab preview (→ /app/plants/:id)
   → Full map view       click "Expand ↗" on the map hero

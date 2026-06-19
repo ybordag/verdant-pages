@@ -347,7 +347,7 @@ interface WizardShellProps {
 
 ### `StaticForm`
 
-Shared wrapper for single-page creation forms (beds, containers). Provides: consistent header, cancel/submit buttons, validation state. Used at `/app/garden/beds/new` and `/app/garden/containers/new`.
+Shared wrapper for single-page creation forms (beds, containers). Provides: consistent header, cancel/submit buttons, validation state. Used at `/app/beds/new` and `/app/containers/new`.
 
 ---
 
@@ -420,12 +420,12 @@ src/
 │   ├── TaskSeriesPage/         # /app/tasks/series/:id
 │   ├── CalendarPage/
 │   ├── GardenPage/             # hub — tab previews with "See all →" links
-│   ├── BedListPage/            # /app/garden/beds — full list
-│   ├── BedDetailPage/
-│   ├── BedCreatePage/          # /app/garden/beds/new — static form
-│   ├── ContainerListPage/      # /app/garden/containers — full list
-│   ├── ContainerDetailPage/
-│   ├── ContainerCreatePage/    # /app/garden/containers/new — static form
+│   ├── BedListPage/            # /app/beds — full list
+│   ├── BedDetailPage/          # /app/beds/:id
+│   ├── BedCreatePage/          # /app/beds/new — static form
+│   ├── ContainerListPage/      # /app/containers — full list
+│   ├── ContainerDetailPage/    # /app/containers/:id
+│   ├── ContainerCreatePage/    # /app/containers/new — static form
 │   ├── PlantsPage/
 │   ├── PlantDetailPage/
 │   ├── PlantCreatePage/        # /app/plants/new — 4-step wizard

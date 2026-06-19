@@ -12,8 +12,8 @@ Plants, beds, and containers share a common detail page pattern. They are all ph
 |---|---|---|
 | Plants list | `/app/plants` | Top-level nav item (frequent access) |
 | Plant detail | `/app/plants/:id` | From plants list, garden hub Plants tab, task linked subject |
-| Bed detail | `/app/garden/beds/:id` | From garden hub Areas/Beds tab, map |
-| Container detail | `/app/garden/containers/:id` | From garden hub Containers tab, map |
+| Bed detail | `/app/beds/:id` | From bed list, garden hub Areas/Beds tab preview, map |
+| Container detail | `/app/containers/:id` | From container list, garden hub Containers tab preview, map |
 
 Plants gets its own nav item because it is the most frequently visited object type. Beds and containers are accessed through the garden hub.
 
@@ -23,8 +23,8 @@ Plants gets its own nav item because it is the most frequently visited object ty
 
 | Object | Route | Pattern |
 |---|---|---|
-| Bed | `/app/garden/beds/new` | Static form — all fields on one page, no wizard |
-| Container | `/app/garden/containers/new` | Static form — all fields on one page, no wizard |
+| Bed | `/app/beds/new` | Static form — all fields on one page, no wizard |
+| Container | `/app/containers/new` | Static form — all fields on one page, no wizard |
 | Plant | `/app/plants/new` | Progressive wizard — 4 steps (see below) |
 | Task series (care) | `/app/tasks/series/new` | Dedicated form page |
 
@@ -46,11 +46,11 @@ Plants gets its own nav item because it is the most frequently visited object ty
 
 Each step shows a progress indicator. "Back" and "Next/Finish" buttons. Any step can be skipped (fields are optional beyond step 1).
 
-### Bed creation (`/app/garden/beds/new`)
+### Bed creation (`/app/beds/new`)
 
-Single static form: name (required), location/area, size, sunlight, soil type, notes. Calls `POST /api/v1/garden/beds` *(rhizome#116)*.
+Static form at `/app/beds/new`: name (required), location/area, size, sunlight, soil type, notes. Calls `POST /api/v1/garden/beds` *(rhizome#116)*.
 
-### Container creation (`/app/garden/containers/new`)
+### Container creation (`/app/containers/new`)
 
 Single static form: name (required), type (growbag / ceramic pot / trough / raised / other), size in gallons, location, mobile toggle, notes. Calls `POST /api/v1/garden/containers`.
 
@@ -210,11 +210,11 @@ Source: `GET /api/v1/garden/{type}/{id}/activity?before_timestamp=X&limit=20` *(
 
 **Variety info** — species (in Caveat italic), variety name, family. Read-only from the plant record.
 
-### Bed detail (`/app/garden/beds/:id`)
+### Bed detail (`/app/beds/:id`)
 
 **Additional:** soil type, size, sunlight level shown prominently in the header area (below the breadcrumb).
 
-### Container detail (`/app/garden/containers/:id`)
+### Container detail (`/app/containers/:id`)
 
 **Additional:** container type, volume (size_gallons), mobile indicator. If `is_mobile`, a small "mobile" badge appears in the header.
 
