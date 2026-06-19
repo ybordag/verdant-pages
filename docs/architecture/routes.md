@@ -24,9 +24,11 @@ All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`.
   /app/rhizome              → RhizomePage — agent chat (auto-creates thread if none)
   /app/rhizome/:threadId    → RhizomePage — specific thread loaded
 
-  /app/garden               → GardenPage — profile, areas, beds, containers
+  /app/garden               → GardenPage — overview tab (profile, map, constraints)
+  /app/garden/beds          → GardenPage — Areas/Beds tab pre-selected
   /app/garden/beds/new      → BedCreatePage — static form
   /app/garden/beds/:id      → BedDetailPage
+  /app/garden/containers    → GardenPage — Containers tab pre-selected
   /app/garden/containers/new → ContainerCreatePage — static form
   /app/garden/containers/:id → ContainerDetailPage
   /app/plants               → PlantsPage — plant list
@@ -55,7 +57,16 @@ Seven top-level nav items in three groups:
 | Work | Tasks, Calendar, Projects |
 | Operational | Incidents, Activity |
 
-**Garden, Plants, Beds, and Containers are NOT nav items.** They are accessed through the garden profile card widget in the sidebar, which links to `/app/garden`, `/app/plants`, `/app/garden/beds/:id`, `/app/garden/containers/:id`. Their routes still exist — they are just not directly in the nav.
+**Garden, Plants, Beds, and Containers are NOT nav items.** They are accessed through the garden profile card widget in the sidebar. The card links to:
+
+| Card link | Route |
+|---|---|
+| Garden (overview) | `/app/garden` |
+| Plants | `/app/plants` |
+| Beds | `/app/garden/beds` — opens GardenPage with Beds tab pre-selected |
+| Containers | `/app/garden/containers` — opens GardenPage with Containers tab pre-selected |
+
+`/app/garden/beds` and `/app/garden/containers` are the same `GardenPage` component — the URL drives which tab is active on mount. Detail pages and `/new` creation pages exist for all three object types.
 
 ## Notes
 
