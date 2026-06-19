@@ -2,124 +2,171 @@
 
 ## Styling approach
 
-- **CSS modules** for component-specific styles — each component gets a `.module.css` file, locally scoped
-- **Global `tokens.css`** — the single source of truth for all design tokens (see [design-tokens.md](design-tokens.md))
-- **Global `utilities.css`** — a small set of shared utility classes ported from the prototype:
-  - `.dg` — dot-grid background (used in chat, calendar cells)
-  - `.gg` — line-grid background (used in the map placeholder)
-  - `.chip` — pill-shaped tag
-  - `.hr` — hover row (subtle background on hover)
-  - `.cd` — clickable div (pointer cursor + hover)
-  - `.nb` — nav button (font-label, uppercase, no border)
-- **No CSS-in-JS**, no Tailwind — CSS custom properties referenced via `var(--token-name)` everywhere
-- **Never hardcode colour values** in component files — always reference tokens
-
----
+- **CSS modules** for component-specific styles — each component has a `.module.css`, locally scoped
+- **`tokens.css`** — single source of truth for all design tokens (see [design-tokens.md](design-tokens.md))
+- **`utilities.css`** — shared classes from the prototype: `.dg` (dot grid), `.gg` (line grid), `.chip`, `.hr`, `.cd`, `.nb`
+- No CSS-in-JS, no Tailwind — always `var(--token-name)`, never hardcoded colours
+- **No drawers** anywhere except the notification drawer (the single exception — see §2)
 
 ## Key libraries
 
 | Library | Used for |
 |---|---|
-| **TanStack Table v8** | All ledger-style data tables (tasks, beds, containers, plants, expenses, shopping list). Headless — we apply token-based styling. |
-| **Pragmatic Drag and Drop** | Calendar task rescheduling, Gantt task/dependency dragging. Chosen over @dnd-kit for native browser event performance. |
-| **TanStack Query v5** | All server state — fetch, cache, optimistic mutations. No component fetches directly. |
-
----
+| **TanStack Table v8** | All ledger tables (tasks, beds, containers, plants, expenses, shopping list) |
+| **Pragmatic Drag and Drop** | Calendar rescheduling, Gantt bars and dependencies |
+| **TanStack Query v5** | All server state — no component fetches directly |
 
 ## Component tiers
 
-Three tiers. The rule: **can you write a meaningful test or Storybook story for it in isolation?**
-
 | Tier | Domain knowledge | Examples |
 |---|---|---|
-| **Primitives** | None | Button, Input, Chip, Modal |
-| **Composed** | Domain types | TaskRow, ProposalCard, CareStateStrip |
+| **Primitives** | None | Button, Input, Chip |
+| **Composed** | Domain types | TaskRow, CareStateStrip |
 | **Pages** | Full page + data fetching | TodayPage, TasksPage |
 | **Layout** | Routing, not domain data | VPNav, AppShell |
 
 ---
 
-## Primitives
+## 1. Primitives
 
-No domain knowledge. Props are generic. Could be dropped into any app.
+No domain knowledge. Could be dropped into any app.
 
 | Component | Description |
 |---|---|
-| `Button` | `variant`: `primary` (chartreuse fill), `ghost` (transparent + line border), `danger`. Size: `sm` / `md` (default). |
-| `Input` | Styled `<input>` with chartreuse focus ring. Matches `input` in global CSS. |
-| `Select` | Styled `<select>`. `options` prop or `children`. |
-| `Textarea` | Auto-resize `<textarea>` with chartreuse caret. |
-| `Chip` | Pill tag. `color` prop maps to brand tokens. `removable` shows `×` button. |
-| `FieldLabel` | Uppercase Montserrat label — `--font-label`, 9–10px, letter-spaced. Equivalent to prototype's `LBL` / `SMLL` style objects. |
-| `Modal` | Overlay + centered card. Closes on Escape + backdrop click. Focus-trapped. Equivalent to prototype's `EditModal`. |
-
-**No drawers** — the app does not use the drawer pattern. Bed and container creation use dedicated `/new` pages. Wizards use dedicated `/new` routes. This was an explicit design decision for consistency.
+| `Button` | `variant`: `primary` (chartreuse), `ghost` (border only), `danger`. Size: `sm` / `md`. |
+| `Input` | Styled `<input>` with chartreuse focus ring. |
+| `Select` | Styled `<select>`. |
+| `Textarea` | Auto-resize with chartreuse caret. |
+| `Chip` | Pill tag. `color` maps to tokens. `removable` shows `×`. |
+| `FieldLabel` | Uppercase Montserrat, 9–10px, letter-spaced. Equivalent to `LBL`/`SMLL` in prototype. |
+| `Modal` | Focus-trapped overlay. Closes on Escape + backdrop click. |
+| `InlinePopover` | Small contextual popup anchored to a trigger element. Used for: care log (datetime + note), task defer (date picker), task skip (reason input). |
+| `StatusBadge` | Small coloured pill for status/urgency/severity values. |
+| `ProgressBar` | Horizontal fill bar for task completion %, budget burn. |
 
 ---
 
-## Layout
+## 2. App Shell & Navigation
 
-| Component | Description |
+### `AppShell`
+
+Root layout. Composes `VPNav` + content wrapper + `NotificationDrawer` portal.
+
+```
+AppShell
+  ├── VPNav (left, fixed)
+  ├── .cw content wrapper (flex column, fills remaining width)
+  └── NotificationDrawer portal (right edge, conditionally open)
+```
+
+---
+
+### `VPNav`
+
+Fixed left sidebar. 210px expanded, 52px collapsed.
+
+```
+VPNav
+  ├── Brand row (logo + collapse toggle)
+  ├── NavSection × 3
+  │     └── NavItem × N (icon + label + badge count)
+  ├── QuickActionsPanel (sidebar widget)
+  ├── GardenProfileCard (sidebar widget)
+  └── NavFooter
+        ├── UserAvatar + email → /app/settings
+        ├── ThemeToggle (persists to localStorage)
+        └── NotificationBell → opens NotificationDrawer
+```
+
+**NavItem states:**
+
+| State | Visual |
 |---|---|
-| `VPNav` | Fixed left sidebar. 210px expanded, 52px collapsed. Three nav sections, two widgets, one footer. See full spec below. |
-| `AppShell` | Root layout: `VPNav` + `.cw` content wrapper (flex column, takes remaining width). Optional right panel slot (used by RhizomePage and the notification drawer). |
-| `Breadcrumb` | `.bc` breadcrumb bar — `--font-label`, 9px, uppercase, letter-spaced, `--text-m`. Shows current location. |
+| Default | Icon + label at `--text-s` (70% opacity) |
+| Has pending items, collapsed | Icon at `--text-p` (94% — lit, no badge) |
+| Has pending items, expanded | Chartreuse badge count pill beside label |
+| Active | Chartreuse left border + `--nav-accent` text + `--nav-active-bg` tint |
 
-### VPNav — full specification
+**NavSection groups:**
 
-**Nav sections (three groups, separated by dividers):**
-
-| Group | Items | Badge |
+| Group | Items | Badge source |
 |---|---|---|
 | Orientation | Rhizome, Today | Rhizome: pending interaction count |
-| Work | Tasks, Calendar, Projects | Tasks: open task count; Projects: active project count |
-| Operational | Incidents, Activity | Incidents: open incident count |
-
-Garden and Plants are **not** top-level nav items — they are accessed through the garden profile card widget (see below).
-
-**Active state:** chartreuse left border + chartreuse text (`--nav-accent`) + `--nav-active-bg` tint.
-
-**Badge counts (expanded mode only):** chartreuse pill showing the count. Disappears in collapsed mode.
-
-**Pending state in collapsed mode:** when an item has pending items but the nav is collapsed, the icon renders at `--text-p` (fully lit, 94% opacity) instead of the default `--text-s` (70%). No badge, no dot — just the icon appears "on." Active item remains chartreuse.
-
-**Icons:** SVG icons for each nav item (all already in the prototype). In collapsed mode the label and badge hide; only the icon and pending-state colour remain.
-
-**Widgets (below nav sections):**
-
-**Quick actions panel** — three action buttons:
-- "Ask Rhizome" → `/app/rhizome`
-- "+ New Task" → `/app/tasks/new`
-- "▶ Run Triage" → `POST /api/v1/triage/run`
-
-In **collapsed mode**: the panel collapses to three stacked icon buttons (speech bubble / plus / play triangle). Labels hidden.
-
-**Garden profile card** — the portal to all garden objects. Shows: zone badge, object count, mini plot grid, and chip links to Garden, Plants, Beds, Containers. In **collapsed mode**: collapses to a single garden icon button that navigates to `/app/garden`. Mini map, chips, and labels hidden.
-
-**Footer (bottom of sidebar):**
-
-```
-[avatar]  you@email.com         ← truncated if long
-                   [☀️/🌙]  [🔔]
-```
-
-- Avatar + email: clicking opens `/app/settings`
-- Theme toggle: switches between dark/light, persists to `localStorage('vp_theme')`
-- Notifications button (🔔): opens the **notification drawer** from the right edge of the screen — the only drawer in the app
-
-In **collapsed mode**: avatar icon only (no email), theme + notification icon buttons remain.
-
-**Notification drawer** — slides in from the right when 🔔 is clicked. Contains the notification panel (In Progress jobs, Pending Approvals, Alerts). This is the one and only drawer in the application. All other creation/editing flows use dedicated pages or inline interactions.
+| Work | Tasks, Calendar, Projects | Tasks: open count; Projects: active count |
+| Operational | Incidents, Activity | Incidents: open count |
 
 ---
 
-## Shared composed components
+### `QuickActionsPanel` (sidebar widget)
 
-These are reused across multiple pages. Each knows about domain types.
+Three action buttons inside a card widget. Sits below the nav items.
+
+| Button | Collapsed icon | Action |
+|---|---|---|
+| Ask Rhizome | Speech bubble | Navigate to `/app/rhizome` |
+| + New Task | Plus | Navigate to `/app/tasks/new` |
+| ▶ Run Triage | Play triangle | `POST /api/v1/triage/run` |
+
+Collapsed: three stacked icon buttons (labels hidden).
+
+---
+
+### `GardenProfileCard` (sidebar widget)
+
+Always-visible portal to all garden objects. Sits below QuickActionsPanel.
+
+**Expanded:** zone badge, object count, mini plot grid, chip links → Garden, Plants, Beds, Containers.
+
+**Collapsed:** single garden icon button → `/app/garden`.
+
+---
+
+### `NotificationDrawer`
+
+The **one and only drawer** in the app. Slides in from the right when the NotificationBell is clicked.
+
+```
+NotificationDrawer
+  └── NotificationPanel
+        ├── In Progress section
+        │     └── JobProgressTree × N
+        ├── Pending Approval section
+        │     └── InteractionCard × N (compact)
+        └── Alerts section
+              └── AlertRow × N
+```
+
+---
+
+### `JobProgressTree`
+
+Renders one background job's subtask tree. Steps arrive via SSE `job_step` events and update live.
+
+```
+JobProgressTree
+  ├── Job title + status indicator
+  └── StepRow × N  (step label + ✅/🔄 icon)
+```
+
+---
+
+### `Toast`
+
+Ephemeral bottom-right notification. Auto-dismisses after 4s. Triggered by `job_complete` and high-severity `alert` SSE events. Clicking navigates to the relevant page.
+
+---
+
+### `Breadcrumb`
+
+`.bc` bar — `--font-label`, 9px, uppercase, letter-spaced. Shows current location path.
+
+---
+
+## 3. Shared data display
 
 ### `LedgerTable`
 
-Wrapper around **TanStack Table v8**. Used for all tabular data (beds, containers, plants, tasks in ledger view, expenses, shopping list).
+Wrapper around TanStack Table v8. Used for: task ledger, beds list, containers list, plants ledger view, expenses, shopping list.
 
 ```typescript
 interface LedgerTableProps<T> {
@@ -131,23 +178,62 @@ interface LedgerTableProps<T> {
 }
 ```
 
-Applies token-based styling: chartreuse-tinted header row, `--line-on-paper` row borders, hover state via `.hr` utility. Column header has sort indicator when `enableSorting` is true.
+Applies token styling: chartreuse-tinted sticky header, `--line-on-paper` row borders, `.hr` hover state.
 
-### `DetailPanel`
+---
 
-Dark-background right panel that slides in when a row is clicked. Used in:
-- **Tasks page** — task detail
-- **Calendar page** — day detail
+### `FilterRail`
+
+Left filter panel pattern. Used on: Tasks (all views), Plants, Beds, Containers, Incidents, Activity. ~200px wide, takes a `filters` config array and calls `onChange` on each update.
 
 ```typescript
-interface DetailPanelProps {
-  isOpen: boolean;
-  onClose: () => void;
-  children: ReactNode;
+interface FilterRailProps {
+  filters: FilterConfig[];   // { label, type: "select"|"chips"|"daterange"|"toggle", options?, value, onChange }
+  onReset: () => void;
 }
 ```
 
-Dark background (`--bg-nav`), chartreuse top border accent, `border-left: 1px solid var(--line)`. Width: 270–340px. Closes on Escape or clicking outside.
+---
+
+### `TabNav`
+
+Within-page tab navigation. Used on: Garden hub (Overview/Beds/Containers/Plants/Activity), Project detail (Gantt/Kanban/List/Resources). Renders tab buttons with active underline in `--nav-accent`.
+
+---
+
+### `ObjectActivityFeed`
+
+Cursor-paginated activity feed. Used on the `/app/activity` full page AND embedded on every object detail page.
+
+```typescript
+interface ObjectActivityFeedProps {
+  endpoint: string;          // '/api/v1/activity' or '/api/v1/garden/plants/:id/activity'
+  showFilters?: boolean;     // true on full page, false on detail sections
+  limit?: number;
+}
+```
+
+---
+
+## 4. Garden map
+
+### `GardenMap`
+
+Renders the spatial garden plan from `GET /api/v1/garden/layout`. Two modes:
+
+**Minimap** (default in garden hub hero): compact, fixed height, clickable to expand.
+
+**ExpandedMapOverlay** (full screen): pan/zoom via pointer events, clickable object labels navigate to the relevant detail page, hovering an object shows name + status + image thumbnails. Close button returns to hub.
+
+**Empty state** (no layout yet): placeholder with prompt — "Send Rhizome a sketch or photos to generate your garden plan."
+
+Bed/area fills are colour-coded by status: active (pine tint), empty (neutral), weather-flagged (cornflower tint), selected (chartreuse outline).
+
+---
+
+## 5. Shared garden object components
+
+Used across plant/bed/container detail pages.
 
 ### `ObjectDetailHeader`
 
@@ -156,186 +242,462 @@ Shared header for Plant, Bed, and Container detail pages.
 ```typescript
 interface ObjectDetailHeaderProps {
   name: string;
-  typeBadge: string;                    // "Plant" | "Bed" | "Container"
-  locationBreadcrumb?: string;          // links back to garden hub
+  typeBadge: "Plant" | "Bed" | "Container";
+  locationBreadcrumb?: string;
   statusBadge?: string;
   onEdit: () => void;
   onDelete: () => void;
-  deleteLabel?: string;                 // "Delete" | "Remove" (plants use "Remove")
+  deleteLabel?: string;           // "Remove" for plants (soft delete), "Delete" for beds/containers
 }
 ```
-
-### `CareStateStrip`
-
-Six care tiles for plant/bed/container detail pages. Colour-coded by recency: green (recent), amber (due), red (overdue). Each tile has a "Log" button that opens an inline popover — datetime picker + optional note — and fires `POST /api/v1/garden/{type}/{id}/care`.
-
-```typescript
-interface CareStateStripProps {
-  careState: CareStateView;
-  subjectType: "plant" | "bed" | "container";
-  subjectId: string;
-  onCareRecorded: () => void;           // refetch after logging
-}
-```
-
-### `ObjectLifecycleTimeline`
-
-Horizontal milestone timeline. Shared across plant detail (explicit date fields) and bed/container detail (activity-derived milestones).
-
-```typescript
-interface Milestone {
-  label: string;
-  date: Date | null;
-  completed: boolean;
-}
-
-interface ObjectLifecycleTimelineProps {
-  milestones: Milestone[];
-}
-```
-
-Filled dots = completed. Hollow dots = upcoming. Dates shown below each dot. Plant detail populates from `sow_date`, `red_cup_date`, `transplant_date`, `harvest_expected`. Bed/container detail populates from activity events filtered to lifecycle event types.
-
-### `ObjectActivityFeed`
-
-Cursor-paginated activity feed. Used on the `/app/activity` full page AND embedded in every object detail page (plant, bed, container, task, incident, project).
-
-```typescript
-interface ObjectActivityFeedProps {
-  endpoint: string;         // e.g. '/api/v1/activity' or '/api/v1/garden/plants/:id/activity'
-  showFilters?: boolean;    // true on full-page, false on detail page sections
-  limit?: number;           // default 20
-}
-```
-
-### `LinkedProjectChips`
-
-Chips showing which projects an object is associated with. Clicking navigates to `/app/projects/:id`.
-
-```typescript
-interface LinkedProjectChipsProps {
-  projects: { id: string; name: string; status: string }[];
-}
-```
-
-### `MediaGallery`
-
-Image grid with thumbnail previews. Clicking opens a lightbox. `+` button opens a file picker. Requires [rhizome#117](https://github.com/ybordag/rhizome/issues/117).
-
-```typescript
-interface MediaGalleryProps {
-  mediaItems: MediaItem[];
-  onUpload: (file: File) => Promise<void>;
-  onDelete: (mediaId: string) => void;
-}
-```
-
-### `MiniCalendar`
-
-Compact 7-column month grid with event dots. Used in Today page (right column) and Calendar page (adjacent months in margin panel). Wraps `CalendarGrid` with compact sizing props.
-
-### `VelocityStrip`
-
-Four summary cards at the top of the Tasks ledger — completed this week, streak, deferred rate, triage alignment. Populated from `GET /api/v1/activity/stats`. Requires [rhizome#115](https://github.com/ybordag/rhizome/issues/115) (done ✅).
-
-### `ProposalCard`
-
-The approval card for structured Rhizome interactions. Used in:
-- **RhizomePage** interaction panel (full card)
-- **Today page** pending approvals (compact card)
-
-```typescript
-interface ProposalCardProps {
-  interaction: InteractionEnvelopeView;
-  onAccept: () => void;       // fires POST /api/v1/chat/resume/stream
-  onDefer: () => void;
-  onRequestRevision?: () => void;
-  compact?: boolean;          // Today page uses compact=true
-}
-```
-
-Accept triggers the chartreuse flash animation (`.af` from prototype) then calls resume stream.
-
-### `LinkedTasksList`
-
-Compact task list showing tasks where this object is a `linked_subject`. Quick-complete checkbox calls `POST /api/v1/tasks/{id}/complete` with optimistic update. Same `TaskRow` component used in the Tasks page. Requires [rhizome#112](https://github.com/ybordag/rhizome/issues/112) (done ✅).
 
 ---
 
-## Calendar components
+### `CareStateStrip`
+
+Six care tiles: watered, fertilized, amended, inspected, treated, pruned. Colour-coded by recency (green/amber/red). Each tile has a "Log" button opening an `InlinePopover` — datetime picker + optional note — that fires `POST /api/v1/garden/{type}/{id}/care`.
+
+---
+
+### `ObjectLifecycleTimeline`
+
+Horizontal milestone timeline. Shared across plant detail (explicit date fields) and bed/container detail (activity-derived milestones from care events).
+
+```typescript
+interface Milestone { label: string; date: Date | null; completed: boolean; }
+interface ObjectLifecycleTimelineProps { milestones: Milestone[]; }
+```
+
+---
+
+### `LinkedProjectChips`
+
+Chips for associated projects. Clicking navigates to `/app/projects/:id`.
+
+---
+
+### `LinkedTasksList`
+
+Compact list of open tasks where this object is a `linked_subject`. Quick-complete checkbox calls `POST /api/v1/tasks/{id}/complete` with optimistic update.
+
+---
+
+### `MediaGallery`
+
+Image grid with thumbnails + lightbox. `+` button opens file picker for upload.
+
+```
+MediaGallery
+  ├── MediaThumbnail × N
+  └── LightboxOverlay (full-size + caption, prev/next navigation)
+```
+
+---
+
+### `CurrentPlantsList`
+
+For bed and container detail pages: compact list of plants currently growing there. Each row: plant name, status badge, sow date. Links to `/app/plants/:id`.
+
+---
+
+### `ConstraintsEditor`
+
+Garden hub constraints section. Renders hard constraints and soft preferences as editable chips. Inline text editing on click; `+` adds a new entry. Saves via `PATCH /api/v1/garden/profile`.
+
+---
+
+## 6. Calendar components
 
 ### `CalendarGrid`
 
-The core calendar renderer. Handles grid structure and day cells. **Critically: uses a render prop** so the same component works for both read-only (MiniCalendar, Today page) and drag-and-drop (full Calendar page).
+Core calendar renderer. Grid structure only — **no DnD dependency itself**. Uses a render prop so DnD can be layered on by the caller.
 
 ```typescript
 interface CalendarGridProps {
   year: number;
   month: number;
+  view: "month" | "week";
   renderDay: (date: Date, events: CalendarEvent[]) => ReactNode;
-  view?: "month" | "week";
 }
 ```
 
-The **full Calendar page** passes a `renderDay` that wraps task chips in Pragmatic DnD `Draggable` components and wraps day cells in `Droppable` drop targets. `CalendarGrid` itself never imports Pragmatic DnD.
-
-The **MiniCalendar** passes a simple `renderDay` that renders event dots only.
-
-This separation means `CalendarGrid` has no DnD dependency and can be tested in isolation.
+The full Calendar page wraps task chips in Pragmatic DnD `Draggable` and day cells in `Droppable`. MiniCalendar passes a simple renderer that shows event dots only.
 
 ---
 
-## Chat components
+### `MiniCalendar`
 
-### `StreamingMessage`
-
-Renders an in-progress AI message. Holds `streamingText` in local state, appends each SSE `token` event, shows a blinking cursor. Unmounted when `done` event arrives — replaced by `MessageBubble`.
-
-### `MessageBubble`
-
-Static component rendering a completed message string. User messages: right-aligned, clay accent. Rhizome messages: left-aligned, pine accent.
-
-### `NotificationBell`
-
-Nav item with badge count. Clicking opens `NotificationPanel`.
-
-### `NotificationPanel`
-
-Slide-in panel with three sections: In Progress (job subtask trees), Pending Approval (interaction cards), Alerts (MonitorAlerts). Populated via the SSE notification stream. See [notifications.md](notifications.md) for the full architecture.
-
-### `JobProgressTree`
-
-Renders a background job's step tree. Receives `job_step` stream events and updates live — steps show running/done state with check marks.
-
-### `Toast`
-
-Ephemeral bottom-right notification. Auto-dismisses after 4 seconds. Triggered by `job_complete` and high-severity `alert` events from the notification stream.
-
-### `ContextSearchModal`
-
-Full-screen search modal for pinning context objects in the Rhizome chat. Supports unified search (`GET /api/v1/search?q=X`) and typed prefix search (`plant:tomatoes` → `?q=tomatoes&types=plant`). Autosuggest fires on each keystroke. Selecting a result pins it as a context chip on the thread.
+Wraps `CalendarGrid` with compact sizing. Used in: Today page right column, Calendar margin panel.
 
 ---
 
-## Task components
+### `DayDetailPanel`
+
+Slides in alongside the calendar when a day cell is clicked (not a navigation). Shows: full task list for the day (with complete checkboxes), annotation with inline edit, weather detail, "List view →" link to Tasks page.
+
+---
+
+### `CalendarMarginPanel`
+
+Right sidebar on the full Calendar page. Paper-planner aesthetic.
+
+```
+CalendarMarginPanel
+  ├── Month number (Shantell Sans, large)
+  ├── Month name (Caveat)
+  ├── AnnotationEditor (selected day note, inline edit)
+  ├── MonthChecklist (persistent cross-month notes)
+  └── MiniCalendar × 2 (previous and next months)
+```
+
+---
+
+### `WeatherIcon`
+
+Small SVG weather icon from meteocons. Displayed in calendar day cell top-right. Takes `weatherCode` from the forecast.
+
+---
+
+## 7. Task components
 
 ### `TaskRow`
 
-The ledger row. Used in Tasks page, Today page (top 5 strip), and the day detail panel in Calendar. Shows: type marker (circle/diamond/square), source colour (green/clay/cornflower left border), title, project tag, estimated time, deadline.
+The core task ledger row. Used in: Tasks page (all views), Today page (top 5 strip), DayDetailPanel.
 
-Hover reveals quick-action icons: defer (date picker inline), skip (reason input inline). Clicking the row body (not checkbox or title) opens the `DetailPanel`.
-
-### `TaskGroup`
-
-Container for a group of `TaskRow` components under a section header (e.g. "Before work", "Weather adjusted"). Header shows section name, urgency colour dot, open task count.
+- **Type marker:** circle (maintenance), diamond (opportunistic), square (milestone/emergency)
+- **Source colour:** green left border (Rhizome), clay (user), cornflower (weather)
+- **Hover reveals:** defer (`InlinePopover` date picker), skip (`InlinePopover` reason input), edit button
+- **Clicking the row body:** opens `DetailPanel` with full task detail
 
 ---
 
-## Garden object creation — form components
+### `TaskGroup`
+
+Section header + grouped `TaskRow` list. Header: section name, urgency colour dot, open task count.
+
+---
+
+### `DetailPanel`
+
+Dark-background right slide-in. Used for task detail in Tasks page and day detail in Calendar. **Width:** 270–340px.
+
+```
+DetailPanel
+  ├── Title + kicker label (chartreuse top border accent)
+  ├── Content slot (varies by caller)
+  └── "Open full page →" link
+```
+
+---
+
+### `VelocityStrip`
+
+Four summary cards at the top of the Tasks ledger (Today view only). Populated from `GET /api/v1/activity/stats`.
+
+| Card | Data |
+|---|---|
+| Completed this week | `totals.task_completed` from stats |
+| Current streak | Consecutive days with ≥1 completion |
+| Deferred rate | Deferrals vs. completions ratio |
+| Triage alignment | % of today's completed tasks Rhizome recommended |
+
+---
+
+## 8. Garden hub page components
+
+### `GardenHeroSection`
+
+Top of the Garden hub. Left: `GardenMap` (minimap). Right: `ProfilePanel`.
+
+---
+
+### `ProfilePanel`
+
+Compact data grid: zone, soil, indoor trays, last frost, first frost, mapped objects. "Edit profile →" opens profile edit form.
+
+---
+
+### `TabPreviewSection`
+
+Generic preview container used for each hub tab (Beds, Containers, Plants, Activity). Shows up to 8 rows/cards with a "See all →" link to the full list page. No filters — preview only.
+
+---
+
+## 9. Today page components
+
+These sections are unique to the Today page.
+
+### `TodayConditionsPanel`
+
+Left column: weather data from `GET /api/v1/weather/latest`. Displays as `label / value` rows: Temp, Wind, Humidity, Rain tonight, UV Index, Frost risk.
+
+### `RhizomeBriefingPanel`
+
+Centre column: one-paragraph briefing from `GET /api/v1/triage/latest`, followed by inline `InteractionCard` components for any pending approvals from `GET /api/v1/interactions/pending`. "Open today's journal →" link to `/app/rhizome`.
+
+### `TodayOverviewPanel`
+
+Right column: active projects list (status dot, name, task count, navigate on click), `MiniCalendar` showing current month.
+
+### `TodayTasksStrip`
+
+Below the fold: top 5 tasks from `GET /api/v1/tasks/daily?limit=5`. Each has a quick-complete checkbox. "All tasks →" navigates to `/app/tasks`.
+
+### `ThisWeekStrip`
+
+7-day row (current week). Each day shows its date number and event dots. Clicking a day navigates to the Calendar page.
+
+---
+
+## 10. Projects
+
+### `ProjectCard`
+
+Used in the Projects list grouped by status. Shows: name, status badge, goal text (truncated), `ProgressBar`, timeline health indicator (on track/at risk/overdue), budget burn gauge, target date.
+
+---
+
+### `PhaseIndicatorStrip`
+
+Horizontal lifecycle indicator at the top of Project detail.
+
+```
+[Brief] → [Proposal] → [Revision] → [Execution] → [Complete]
+```
+
+Active phase highlighted in chartreuse. Completed phases filled.
+
+---
+
+### `BriefPanel`
+
+Editable form on the project detail planning mode. Fields: goal, desired outcome, budget cap, target start, target completion, effort preference, propagation preference. Saves via `PATCH /api/v1/projects/{id}/brief`.
+
+---
+
+### `ResourceAllocationPanel`
+
+Bed and container picker for project planning. Queries `GET /api/v1/garden/beds?available=true` and `GET /api/v1/garden/containers?available=true`. Shows: available (can allocate), already in this project (can deallocate), in another active project (unavailable/greyed).
+
+---
+
+### `GanttChart`
+
+Horizontal task timeline. Uses **Pragmatic Drag and Drop**.
+
+```
+GanttChart
+  ├── GanttTimelineHeader (date columns)
+  ├── GanttRow × N
+  │     ├── GanttTaskBar (draggable, resize right edge for window)
+  │     └── GanttDependencyLine (arrow from blocking → blocked task)
+  └── GanttMilestoneDiamond (tasks with type=milestone)
+```
+
+**Drag interactions:**
+- Drag bar → move `scheduled_date` (fires bulk update on drop)
+- Drag right edge → extend/shorten window
+- Drag from bar right edge to another bar left edge → create dependency
+- Click dependency arrow + Delete → remove dependency
+
+Weather-impacted days tinted cornflower.
+
+---
+
+### `KanbanBoard`
+
+Three-column (Pending / In Progress / Done) task layout. Cards drag between columns calling task lifecycle actions.
+
+```
+KanbanBoard
+  ├── KanbanColumn × 3
+  │     └── KanbanCard × N
+  └── (Pragmatic DnD for between-column drag)
+```
+
+---
+
+### `ProjectProposalCard`
+
+Full proposal review card on the Project detail and `/app/projects/:id/proposals/:proposalId` page. **Distinct from `InteractionCard`** (which is for chat interactions).
+
+Shows: summary, cost estimate (line items + total), timeline estimate (milestones), effort estimate (hours/week breakdown), feasibility (violations + warnings), assumptions, tradeoffs, risks. Actions: Accept / Request revision / Reject.
+
+---
+
+### `BudgetTracker`
+
+Project Resources tab — budget section. Composes:
+- `BudgetGauge` — visual gauge: proposal estimate vs. total estimated vs. total actual spend
+- `LedgerTable` — list of `ProjectExpense` records, inline status update
+
+---
+
+### `ShoppingListPanel`
+
+Project Resources tab — shopping section. `LedgerTable` of `ShoppingItem` records. "Mark purchased" calls `POST /api/v1/shopping/{id}/purchase`.
+
+---
+
+### `PlantProgressPanel`
+
+Collapsible panel on Project detail (execution mode). One row per plant in the project showing a compact propagation timeline:
+
+```
+Cherry Tomatoes  Sow ●────── Red Cup ●────── Transplant ●────── Harvest ○
+```
+
+Populated from `GET /api/v1/garden/plants?project_id=X`.
+
+---
+
+## 11. Agent / Chat
+
+### `SessionStrip`
+
+Narrow strip below topbar on the Rhizome page. Two panels side by side:
+- **Startup intake** — Rhizome's session-start questions (time available, energy, focus). Shown once answered.
+- **System status** — weather snapshot timestamp, pending review count.
+
+---
+
+### `ContextStrip`
+
+Visible when ≥1 object is pinned. Row of entity chips between session strip and chat thread. Each chip: type icon, entity name, `×` remove. `+ Add context` opens `ContextSearchModal`.
+
+---
+
+### `ContextSearchModal`
+
+Full-screen search overlay. Unified search across all entity types. Typed prefix syntax: `plant:tomatoes` → searches plants only, `task:water` → searches tasks only. Autosuggest fires on each keystroke via `GET /api/v1/search`.
+
+---
+
+### `ChatThread`
+
+Scrollable message area with dot-grid background. Contains day-separator labels and message components.
+
+```
+ChatThread
+  ├── DayLabel (date separator)
+  ├── MessageBubble | StreamingMessage (alternating)
+  └── InlineInteractionSummary (compact card inside a Rhizome bubble)
+```
+
+---
+
+### `StreamingMessage`
+
+In-progress AI message. Holds `streamingText` in local state, appends `token` SSE events, shows blinking cursor. Replaced by `MessageBubble` on `done`.
+
+---
+
+### `MessageBubble`
+
+Completed message. User: right-aligned, clay accent. Rhizome: left-aligned, pine accent.
+
+---
+
+### `Composer`
+
+Textarea + Send button at the bottom of the Rhizome page. Status line: zone + model indicator. Enter sends (Shift+Enter newline).
+
+---
+
+### `InteractionPanel`
+
+Right side of Rhizome page. Slides open when stream delivers an `interaction` event. The panel contains:
+
+```
+InteractionPanel
+  ├── PendingInteractionList (collapsible — all pending interactions queued)
+  │     └── PendingInteractionRow × N (title, type, "Now" badge on active)
+  └── InteractionCard (full — the active review card)
+```
+
+---
+
+### `InteractionCard`
+
+Chat interaction approval card. Different from `ProjectProposalCard` (which is for project planning proposals). Used for: weather change reviews, treatment plan drafts requiring approval, proposal summaries in chat.
+
+```
+InteractionCard
+  ├── Type label + title
+  ├── Summary text
+  ├── Metrics grid (type-specific: rain %, window, affected count)
+  ├── Proposed changes list
+  ├── Affected subjects chips
+  ├── Decision notes input (optional note to Rhizome)
+  └── Actions: Request Revision | Reject | Approve (primary)
+```
+
+Compact variant used on the Today page for pending approvals in `RhizomeBriefingPanel`.
+
+---
+
+## 12. Incidents
+
+### `IncidentRow`
+
+Ledger row in incidents list: type badge, summary, severity indicator, affected subject chips, status badge, date, treatment plan status.
+
+---
+
+### `IncidentDetailHeader`
+
+Type badge (Pest/Disease/Weed), severity (clay/buttercup/pine/muted), summary, status, date. Inline editing for summary/severity/notes. Resolve and Delete actions.
+
+---
+
+### `AffectedSubjectsPicker`
+
+Multi-select for plants, beds, containers affected by an incident. Uses `GET /api/v1/search` for subject lookup. Renders as chips with remove button.
+
+---
+
+### `TreatmentPlanSection`
+
+The dual-path section on incident detail.
+
+```
+TreatmentPlanSection
+  ├── [no plan] → two buttons: "Draft with Rhizome" | "Write my own"
+  └── [plan exists] →
+        └── TreatmentPlanCard (view/edit/approve)
+              ├── Source badge (Rhizome draft | User plan)
+              ├── Approach summary
+              ├── TreatmentStepsList (step rows: title, task type, minutes, days from approval)
+              ├── Follow-up strategy
+              └── Actions: Edit | Approve | Delete draft
+```
+
+---
+
+### `TreatmentStepsEditor`
+
+Add/edit/remove step interface for manual treatment plan creation. Each step: title, task type selector, estimated minutes, days from approval.
+
+---
+
+## 13. Account settings sections
+
+These compose the single `SettingsPage`.
+
+| Section | Component | Fields |
+|---|---|---|
+| Profile | `ProfileSection` | Email (read-only), change password form |
+| AI Provider | `AIProviderSection` | Provider segmented control (Gemini/OpenAI/Anthropic), model name input |
+| API Keys | `APIKeysSection` | Per-provider row: configured badge, set/update/remove button |
+| Appearance | `AppearanceSection` | Light/Dark toggle |
+
+---
+
+## 14. Creation forms
 
 ### `WizardShell`
 
-Shared wrapper for all multi-step creation wizards (plant, project, task full-mode). Provides: step indicator (filled/hollow dots), Back/Next buttons, skip mechanism, progress persistence.
+Multi-step wizard wrapper. Used for plant, project, and full-mode task creation.
 
 ```typescript
 interface WizardShellProps {
@@ -345,19 +707,25 @@ interface WizardShellProps {
 }
 ```
 
-### `StaticForm`
-
-Shared wrapper for single-page creation forms (beds, containers). Provides: consistent header, cancel/submit buttons, validation state. Used at `/app/beds/new` and `/app/containers/new`.
+Step indicator (filled/hollow dots), Back/Next buttons, skip mechanism for optional steps.
 
 ---
 
-## Directory layout
+### `StaticForm`
+
+Single-page form wrapper. Used for bed (`/app/beds/new`) and container (`/app/containers/new`) creation.
+
+Provides: consistent header with title, cancel/submit buttons, validation state display.
+
+---
+
+## 15. Directory layout
 
 ```
 src/
 ├── styles/
-│   ├── tokens.css              # All CSS custom properties — source of truth
-│   ├── global.css              # Reset, body, scrollbar, shared keyframes
+│   ├── tokens.css              # Design tokens — source of truth
+│   ├── global.css              # Reset, body, scrollbar, keyframes
 │   └── utilities.css           # .dg .gg .chip .hr .cd .nb
 │
 ├── components/
@@ -368,81 +736,142 @@ src/
 │   │   ├── Textarea/
 │   │   ├── Chip/
 │   │   ├── FieldLabel/
-│   │   └── Modal/
+│   │   ├── Modal/
+│   │   ├── InlinePopover/
+│   │   ├── StatusBadge/
+│   │   └── ProgressBar/
 │   │
-│   ├── layout/
-│   │   ├── VPNav/              # sidebar nav + garden card + quick actions
-│   │   ├── AppShell/           # VPNav + content wrapper + right panel slot
+│   ├── shell/                  # App structure
+│   │   ├── AppShell/
+│   │   ├── VPNav/
+│   │   │   ├── NavItem/
+│   │   │   ├── QuickActionsPanel/
+│   │   │   ├── GardenProfileCard/
+│   │   │   └── NavFooter/
+│   │   ├── NotificationDrawer/ # The only drawer
+│   │   │   ├── NotificationPanel/
+│   │   │   └── JobProgressTree/
+│   │   ├── Toast/
 │   │   └── Breadcrumb/
 │   │
-│   ├── shared/                 # Composed components used across multiple pages
+│   ├── data/                   # Shared data display
 │   │   ├── LedgerTable/
-│   │   ├── DetailPanel/
+│   │   ├── FilterRail/
+│   │   ├── TabNav/
+│   │   └── ObjectActivityFeed/
+│   │
+│   ├── map/
+│   │   └── GardenMap/          # Minimap + ExpandedMapOverlay
+│   │
+│   ├── garden-objects/         # Shared across plant/bed/container detail
 │   │   ├── ObjectDetailHeader/
 │   │   ├── CareStateStrip/
 │   │   ├── ObjectLifecycleTimeline/
-│   │   ├── ObjectActivityFeed/
 │   │   ├── LinkedProjectChips/
 │   │   ├── LinkedTasksList/
 │   │   ├── MediaGallery/
-│   │   ├── MiniCalendar/
-│   │   ├── VelocityStrip/
-│   │   └── ProposalCard/
+│   │   ├── CurrentPlantsList/
+│   │   └── ConstraintsEditor/
 │   │
 │   ├── calendar/
-│   │   └── CalendarGrid/       # render-prop calendar grid, no DnD dependency
-│   │
-│   ├── chat/
-│   │   ├── StreamingMessage/
-│   │   ├── MessageBubble/
-│   │   ├── NotificationBell/
-│   │   ├── NotificationPanel/
-│   │   ├── JobProgressTree/
-│   │   ├── Toast/
-│   │   └── ContextSearchModal/
+│   │   ├── CalendarGrid/       # Render-prop, no DnD dependency
+│   │   ├── MiniCalendar/
+│   │   ├── DayDetailPanel/
+│   │   ├── CalendarMarginPanel/
+│   │   └── WeatherIcon/
 │   │
 │   ├── tasks/
 │   │   ├── TaskRow/
-│   │   └── TaskGroup/
+│   │   ├── TaskGroup/
+│   │   ├── DetailPanel/
+│   │   └── VelocityStrip/
+│   │
+│   ├── projects/
+│   │   ├── ProjectCard/
+│   │   ├── PhaseIndicatorStrip/
+│   │   ├── BriefPanel/
+│   │   ├── ResourceAllocationPanel/
+│   │   ├── GanttChart/
+│   │   │   ├── GanttTaskBar/
+│   │   │   └── GanttDependencyLine/
+│   │   ├── KanbanBoard/
+│   │   │   └── KanbanCard/
+│   │   ├── ProjectProposalCard/
+│   │   ├── BudgetTracker/
+│   │   ├── ShoppingListPanel/
+│   │   └── PlantProgressPanel/
+│   │
+│   ├── today/
+│   │   ├── TodayConditionsPanel/
+│   │   ├── RhizomeBriefingPanel/
+│   │   ├── TodayOverviewPanel/
+│   │   ├── TodayTasksStrip/
+│   │   └── ThisWeekStrip/
+│   │
+│   ├── chat/
+│   │   ├── SessionStrip/
+│   │   ├── ContextStrip/
+│   │   ├── ContextSearchModal/
+│   │   ├── ChatThread/
+│   │   ├── StreamingMessage/
+│   │   ├── MessageBubble/
+│   │   ├── Composer/
+│   │   ├── InteractionPanel/
+│   │   │   └── PendingInteractionList/
+│   │   └── InteractionCard/    # Chat approval cards (≠ ProjectProposalCard)
+│   │
+│   ├── incidents/
+│   │   ├── IncidentRow/
+│   │   ├── IncidentDetailHeader/
+│   │   ├── AffectedSubjectsPicker/
+│   │   ├── TreatmentPlanSection/
+│   │   │   └── TreatmentPlanCard/
+│   │   └── TreatmentStepsEditor/
+│   │
+│   ├── settings/
+│   │   ├── ProfileSection/
+│   │   ├── AIProviderSection/
+│   │   ├── APIKeysSection/
+│   │   └── AppearanceSection/
 │   │
 │   └── forms/
-│       ├── WizardShell/        # multi-step wizard wrapper
-│       └── StaticForm/         # single-page form wrapper
+│       ├── WizardShell/
+│       └── StaticForm/
 │
-├── pages/                      # Route components — own data fetching
+├── pages/
 │   ├── auth/
 │   │   ├── LoginPage/
 │   │   └── RegisterPage/
 │   ├── TodayPage/
-│   ├── TasksPage/
-│   ├── TaskDetailPage/
-│   ├── TaskCreatePage/         # /app/tasks/new — wizard
+│   ├── TasksPage/              # Shared across all /app/tasks/* views
+│   ├── TaskDetailPage/         # /app/tasks/:id
+│   ├── TaskCreatePage/         # /app/tasks/new
 │   ├── TaskSeriesPage/         # /app/tasks/series/:id
 │   ├── CalendarPage/
-│   ├── GardenPage/             # hub — tab previews with "See all →" links
-│   ├── BedListPage/            # /app/beds — full list
+│   ├── RhizomePage/
+│   ├── GardenPage/             # Hub — tab previews with "See all →" links
+│   ├── BedListPage/            # /app/beds
 │   ├── BedDetailPage/          # /app/beds/:id
-│   ├── BedCreatePage/          # /app/beds/new — static form
-│   ├── ContainerListPage/      # /app/containers — full list
+│   ├── BedCreatePage/          # /app/beds/new
+│   ├── ContainerListPage/      # /app/containers
 │   ├── ContainerDetailPage/    # /app/containers/:id
-│   ├── ContainerCreatePage/    # /app/containers/new — static form
-│   ├── PlantsPage/
-│   ├── PlantDetailPage/
+│   ├── ContainerCreatePage/    # /app/containers/new
+│   ├── PlantsPage/             # /app/plants
+│   ├── PlantDetailPage/        # /app/plants/:id
 │   ├── PlantCreatePage/        # /app/plants/new — 4-step wizard
 │   ├── ProjectsPage/
 │   ├── ProjectDetailPage/
 │   ├── ProjectCreatePage/      # /app/projects/new — wizard
-│   ├── ProposalDetailPage/
-│   ├── RhizomePage/
+│   ├── ProposalDetailPage/     # /app/projects/:id/proposals/:proposalId
 │   ├── IncidentsPage/
 │   ├── IncidentDetailPage/
 │   ├── ActivityPage/
 │   └── SettingsPage/
 │
 ├── routes/
-│   ├── router.tsx              # createBrowserRouter definitions
-│   └── ProtectedRoute.tsx      # auth guard
+│   ├── router.tsx
+│   └── ProtectedRoute.tsx
 │
-├── App.tsx                     # Providers: Theme, Auth, QueryClient, Router
+├── App.tsx
 └── main.tsx
 ```
