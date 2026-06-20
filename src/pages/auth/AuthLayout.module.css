@@ -34,6 +34,10 @@
   padding: 40px;
   display: flex;
   flex-direction: column;
+  /* Inputs inside this card read var(--input-bg) — redefine it locally so
+     they pick up the warm, inkwell-free marketing tone instead of the
+     app-wide one. */
+  --input-bg: var(--input-bg-marketing);
 }
 
 .logo {

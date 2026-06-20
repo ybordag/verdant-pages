@@ -58,6 +58,7 @@
   /* Marketing pages (landing, login, register) — same as --bg/--bg-nav in dark mode */
   --bg-marketing: var(--bg);
   --card-marketing: var(--bg-nav);
+  --input-bg-marketing: var(--input-bg);
 
   /* Paper surfaces — used for cards, panels, drawers */
   --surface-primary: var(--vellum-light);
@@ -100,10 +101,18 @@
   --bg: var(--vellum-whisper);
   --bg-nav: var(--vellum-light);
 
-  /* Marketing pages (landing, login, register). Card lighter than page,
-     same direction as dark mode's --bg/--bg-nav pair. */
+  /* Marketing pages (landing, login, register). --vellum-light is lighter
+     AND less saturated than --vellum (~55% vs ~61%), so swapping to it
+     reads as "turning toward white," not "the same cream, slightly
+     faded" — contrast ratio alone doesn't catch that, since it only
+     measures luminance, not chroma. Relative color syntax keeps vellum's
+     exact hue/chroma and only nudges lightness up a notch instead. */
   --bg-marketing: var(--vellum);
-  --card-marketing: var(--vellum-light);
+  --card-marketing: oklch(from var(--vellum) calc(l + 0.03) c h);
+  /* The global --input-bg mixes toward --inkwell, which works fine on the
+     app's normal light surfaces but desaturates against this warm
+     palette — recess to plain --vellum instead, no inkwell involved. */
+  --input-bg-marketing: var(--vellum);
 
   /* Paper surfaces */
   --surface-primary: var(--vellum-light);
