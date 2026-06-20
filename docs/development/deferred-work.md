@@ -14,7 +14,7 @@ If you're auditing test coverage or docs completeness and find something not lis
 
 **Why deferred:** This is Phase 4 scope by design — see [build-phases.md](../architecture/build-phases.md). Building the API client before there's any page that consumes it would mean testing against assumptions instead of real call sites. The login/register forms were an exception worth building early since they needed no API to get the UX and validation right, and they're the first real exercise of the `Input`/`Button`/`FieldLabel` primitives.
 
-**Re-enable when:** Phase 4 starts. Not a soft target — this is the literal next phase after Phase 3 (current). Wiring `LoginPage`/`RegisterPage`'s submit handlers to real `apiFetch` calls is one of the first things to do.
+**Re-enable when:** Phase 4 is now in progress (`birch` branch) — the auth UI landed first, but `apiFetch`, `AuthContext`, the domain API modules, and the SSE consumer are still unbuilt. Wiring `LoginPage`/`RegisterPage`'s submit handlers to real `apiFetch` calls is one of the first things to do once `client.ts` exists.
 
 ---
 

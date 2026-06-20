@@ -16,7 +16,7 @@ Active phase work gets a doc in `docs/current_work/`. Completed phase docs stay 
 | 1 | Scaffold + build tooling | **complete** | `willow` |
 | 2 | Tokens + theme + fonts | **complete** | `aspen` |
 | 3 | Primitives + app shell | **complete** | `cedar` |
-| 4 | Auth + API client foundation | not started | — |
+| 4 | Auth + API client foundation | **in progress** (auth UI done, API client not started) | `birch` |
 | 5a | Garden objects | not started | — |
 | 5b | Tasks | not started | — |
 | 5c | Projects | not started (partial blockers) | — |
@@ -87,17 +87,33 @@ Done:
 
 ---
 
-## Phase 4 — Auth + API client foundation
+## Phase 4 — Auth + API client foundation 🚧 in progress (`birch`)
 
-**Deliverable:** Login and register work. Protected routes redirect correctly. All API modules typed.
+**Deliverable:** Login and register work against the real Cambium API. Protected routes redirect correctly. Proactive token refresh runs. All API modules are written and typed.
 
-Key files: `src/lib/api/client.ts`, `src/lib/auth/context.tsx`, all `src/lib/api/*.ts` domain modules
+**Done so far:**
+- `LandingPage` — public marketing page at `/` (wordmark, tagline, GitHub link, theme toggle, Login/Sign Up)
+- `AuthLayout`, `LoginPage`, `RegisterPage` — real forms with client-side validation (required fields, email format, password length/match), botanical-aesthetic card layout. `onSubmit` handlers validate and stop — no `apiFetch` to call yet.
+- `ThemeToggle` extracted into a shared primitive (`src/components/primitives/ThemeToggle/`), used by `AppNav`, `LandingPage`, and `AuthLayout`
+- All 10 UI primitives now have unit tests (the last 7 — `Select`, `Textarea`, `Chip`, `Modal`, `InlinePopover`, `StatusBadge`, `ProgressBar` — landed alongside this work; see [deferred-work.md](../development/deferred-work.md))
+- `Button` gained a `ghost-clay` variant — see the variant table in [components.md](../architecture/components.md)
+- Tests: 12 unit (`LoginPage.test.tsx`, `RegisterPage.test.tsx`) + 4 E2E (`landing.spec.ts`)
 
-**Tests:**
+**Not started — the actual "auth + API client" part:**
+- `src/lib/api/client.ts` — `apiFetch`, `ApiError`, 401→refresh→retry
+- `src/lib/api/auth.ts` — `login`, `register`, `logout`, `tryRefreshToken`, `getSession`
+- `src/lib/auth/context.tsx` — `AuthProvider`, `useAuth`, proactive refresh timer
+- `ProtectedRoute` — still a passthrough, no real auth check
+- All 16 domain API modules (`garden.ts`, `plants.ts`, `tasks.ts`, …) + `src/lib/types/{rhizome,cambium}.ts`
+- `src/lib/api/stream.ts` — `consumeSSEStream`, `consumeNotificationStream`
+- `QueryClientProvider` wired into `App.tsx` — not present yet
+- Vite proxy (configured since Phase 1) confirmed working end-to-end — unverified, nothing has called it yet
+
+**Tests still needed:**
 - `apiFetch` attaches `Authorization` header
 - 401 response triggers refresh → retry → redirect
 - `ProtectedRoute` redirects unauthenticated users to `/login`
-- Login / register forms submit and redirect
+- E2E: register → login → protected page → logout → login required
 
 ---
 
