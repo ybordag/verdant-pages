@@ -1,0 +1,33 @@
+.bc {
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  background: var(--bg-nav);
+}
+
+.item { display: flex; align-items: center; gap: 6px; }
+
+.sep { color: var(--text-muted); }
+
+.link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  padding: 0;
+}
+.link:hover { color: var(--text-secondary); }
+
+.current { color: var(--text-secondary); }

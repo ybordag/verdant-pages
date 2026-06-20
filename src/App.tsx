@@ -1,23 +1,11 @@
-import { ThemeProvider, useTheme } from '@/lib/theme/ThemeProvider'
+import { RouterProvider } from 'react-router-dom'
+import { ThemeProvider } from '@/lib/theme/ThemeProvider'
+import { router } from '@/routes/router'
 
-function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme()
-  return (
-    <button onClick={toggleTheme} aria-label="Toggle theme">
-      {theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
-    </button>
-  )
-}
-
-function App() {
+export default function App() {
   return (
     <ThemeProvider>
-      <div>
-        <span>Verdant Pages</span>
-        <ThemeToggle />
-      </div>
+      <RouterProvider router={router} />
     </ThemeProvider>
   )
 }
-
-export default App

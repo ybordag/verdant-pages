@@ -1,0 +1,20 @@
+.textarea {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.65;
+  padding: 8px 11px;
+  resize: none;
+  outline: none;
+  caret-color: var(--chartreuse);
+  transition: border-color 0.15s;
+  field-sizing: content;
+  min-height: 72px;
+}
+
+.textarea::placeholder { color: var(--text-placeholder); font-style: italic; }
+.textarea:focus { border-color: var(--chartreuse); }
