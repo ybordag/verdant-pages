@@ -24,11 +24,14 @@
   --dark-berry: #280C18;
   --dark-navy: #0A1428;
   --dark-plum: #1A0A2C;
+  --dark-clay: #7A2F1D;
 
   /* RGB channels — for rgb() / oklch-style alpha composition */
   --inkwell-rgb: 28 24 20;
   --vellum-rgb: 242 232 201;
   --pine-rgb: 43 92 47;
+  --clay-rgb: 224 107 74;
+  --chartreuse-rgb: 184 212 58;
 
   /* Typography */
   --font-display: "Shantell Sans", cursive;

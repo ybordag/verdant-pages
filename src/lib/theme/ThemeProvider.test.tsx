@@ -29,7 +29,7 @@ describe('ThemeProvider', () => {
   })
 
   it('reads saved theme from localStorage on mount', () => {
-    localStorage.setItem('vp_theme', 'light')
+    localStorage.setItem('theme', 'light')
     render(
       <ThemeProvider>
         <ThemeDisplay />
@@ -51,7 +51,7 @@ describe('ThemeProvider', () => {
   })
 
   it('toggles back from light to dark', async () => {
-    localStorage.setItem('vp_theme', 'light')
+    localStorage.setItem('theme', 'light')
     render(
       <ThemeProvider>
         <ThemeDisplay />
@@ -69,6 +69,6 @@ describe('ThemeProvider', () => {
       </ThemeProvider>,
     )
     await userEvent.click(screen.getByRole('button', { name: 'toggle' }))
-    expect(localStorage.getItem('vp_theme')).toBe('light')
+    expect(localStorage.getItem('theme')).toBe('light')
   })
 })

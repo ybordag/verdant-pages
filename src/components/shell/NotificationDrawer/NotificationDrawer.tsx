@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { useNav } from '@/components/shell/VPNav/NavContext'
+import { useNav } from '@/components/shell/AppNav/NavContext'
 import s from './NotificationDrawer.module.css'
 
 export default function NotificationDrawer() {

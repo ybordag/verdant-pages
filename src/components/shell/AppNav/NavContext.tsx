@@ -10,11 +10,11 @@ interface NavContextValue {
 const NavContext = createContext<NavContextValue | null>(null)
 
 export function NavProvider({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('vp_nav_collapsed') === 'true')
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('nav_collapsed') === 'true')
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem('vp_nav_collapsed', String(collapsed))
+    localStorage.setItem('nav_collapsed', String(collapsed))
   }, [collapsed])
 
   return (

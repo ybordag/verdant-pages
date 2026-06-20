@@ -38,4 +38,12 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', { name: /Expand nav/i }))
     expect(nav.dataset.collapsed).toBe('false')
   })
+
+  it('marks nav items with pending badges via data-has-badge, even when the badge itself is hidden on collapse', async () => {
+    render(<App />)
+    const rhizomeLink = screen.getByRole('link', { name: 'Rhizome' })
+    const calendarLink = screen.getByRole('link', { name: 'Calendar' })
+    expect(rhizomeLink.dataset.hasBadge).toBe('true')
+    expect(calendarLink.dataset.hasBadge).toBe('false')
+  })
 })
