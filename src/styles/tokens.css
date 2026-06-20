@@ -2,6 +2,7 @@
 :root {
   /* Ink / vellum scale */
   --inkwell: #1C1814;
+  --vellum-dark: #E9DEB7;
   --vellum: #F2E8C9;
   --vellum-light: #F6F0E0;
   --vellum-pale: #F8F4EC;
@@ -99,13 +100,10 @@
   --bg: var(--vellum-whisper);
   --bg-nav: var(--vellum-light);
 
-  /* Marketing pages (landing, login, register). --card-marketing is
-     --vellum (#F2E8C9) scaled down uniformly across R/G/B, not mixed
-     toward black/grey/--inkwell — mixing toward any achromatic point
-     desaturates a low-chroma color like vellum into visible grey fast.
-     A flat, hand-picked value keeps the same hue/saturation, just darker. */
+  /* Marketing pages (landing, login, register). Card lighter than page,
+     same direction as dark mode's --bg/--bg-nav pair. */
   --bg-marketing: var(--vellum);
-  --card-marketing: #E9DEB7;
+  --card-marketing: var(--vellum-light);
 
   /* Paper surfaces */
   --surface-primary: var(--vellum-light);
