@@ -99,11 +99,10 @@
   --bg: var(--vellum-whisper);
   --bg-nav: var(--vellum-light);
 
-  /* Marketing pages (landing, login, register). The page bg is a more
-     saturated, intense vellum — color-mix toward --buttercup deepens the
-     warm/gold tone without greying it out — and the card reuses --vellum
-     itself as the lighter, calmer surface on top of it. */
-  --bg-marketing: color-mix(in srgb, var(--vellum) 65%, var(--buttercup) 35%);
+  /* Marketing pages (landing, login, register) — flat --vellum throughout.
+     The card reads as a card from its border + radius alone, not a
+     background-color difference from the page. */
+  --bg-marketing: var(--vellum);
   --card-marketing: var(--vellum);
 
   /* Paper surfaces */
