@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import ProtectedRoute from './ProtectedRoute'
 import AppShell from '@/components/shell/AppShell/AppShell'
+import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import TodayPage from '@/pages/TodayPage'
@@ -30,6 +31,7 @@ import ActivityPage from '@/pages/ActivityPage'
 import SettingsPage from '@/pages/SettingsPage'
 
 export const router = createBrowserRouter([
+  { path: '/', element: <LandingPage /> },
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
   {
@@ -82,6 +84,5 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  { path: '/', element: <Navigate to="/app/today" replace /> },
-  { path: '*', element: <Navigate to="/app/today" replace /> },
+  { path: '*', element: <Navigate to="/" replace /> },
 ])

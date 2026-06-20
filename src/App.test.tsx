@@ -1,11 +1,13 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
+import { router } from '@/routes/router'
 
 describe('App', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     localStorage.clear()
     delete document.documentElement.dataset.theme
+    await router.navigate('/app/today')
   })
 
   it('renders the main navigation', () => {
@@ -45,5 +47,33 @@ describe('App', () => {
     const calendarLink = screen.getByRole('link', { name: 'Calendar' })
     expect(rhizomeLink.dataset.hasBadge).toBe('true')
     expect(calendarLink.dataset.hasBadge).toBe('false')
+  })
+})
+
+describe('App at /', () => {
+  beforeEach(async () => {
+    localStorage.clear()
+    delete document.documentElement.dataset.theme
+    await router.navigate('/')
+  })
+
+  it('renders the landing page wordmark and tagline instead of the app shell', () => {
+    render(<App />)
+    expect(screen.getByRole('heading', { name: 'Verdant Pages' })).toBeInTheDocument()
+    expect(screen.queryByRole('navigation', { name: 'Main navigation' })).not.toBeInTheDocument()
+  })
+
+  it('renders Login and Sign Up links', () => {
+    render(<App />)
+    expect(screen.getByRole('link', { name: 'Login' })).toHaveAttribute('href', '/login')
+    expect(screen.getByRole('link', { name: 'Sign Up' })).toHaveAttribute('href', '/register')
+  })
+
+  it('renders a GitHub link', () => {
+    render(<App />)
+    expect(screen.getByRole('link', { name: 'View on GitHub' })).toHaveAttribute(
+      'href',
+      'https://github.com/ybordag/verdant-pages',
+    )
   })
 })

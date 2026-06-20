@@ -1,0 +1,58 @@
+.page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-marketing);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.githubLink {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: flex;
+  color: var(--text-secondary);
+  transition: color 0.15s;
+}
+.githubLink:hover { color: var(--text-primary); }
+
+.topRight {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: clamp(8px, 2vw, 14px);
+  max-width: calc(100% - 72px);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 88px 24px 24px;
+}
+
+.wordmark {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-variation-settings: 'BNCE' var(--display-bounce);
+  font-size: clamp(56px, 11vw, 132px);
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.tagline {
+  margin: 20px 0 0;
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.6vw, 18px);
+  color: var(--text-secondary);
+  max-width: 36em;
+}

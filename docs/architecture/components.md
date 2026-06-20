@@ -35,7 +35,7 @@ No domain knowledge. Could be dropped into any app.
 
 | Component | Description |
 |---|---|
-| `Button` | `variant`: `primary` (chartreuse), `ghost` (border only), `danger`. Size: `sm` / `md`. |
+| `Button` | `variant`: `primary`, `ghost`, `ghost-clay`, `danger` — see table below. Size: `sm` / `md`. |
 | `Input` | Styled `<input>` with chartreuse focus ring. |
 | `Select` | Styled `<select>`. |
 | `Textarea` | Auto-resize with chartreuse caret. |
@@ -45,6 +45,15 @@ No domain knowledge. Could be dropped into any app.
 | `InlinePopover` | Small contextual popup anchored to a trigger element. Used for: care log (datetime + note), task defer (date picker), task skip (reason input). |
 | `StatusBadge` | Small coloured pill for status/urgency/severity values. |
 | `ProgressBar` | Horizontal fill bar for task completion %, budget burn. |
+
+### Button variants — quick reference
+
+| Variant | Look | Use for |
+|---|---|---|
+| `primary` | Solid chartreuse fill, dark text | The one primary action on a page/card — submit, confirm, "Sign Up". Use at most once per visual group. |
+| `ghost` | Transparent, neutral border/text | Secondary actions that don't need color emphasis — "Cancel", nav-adjacent links. |
+| `ghost-clay` | Transparent, clay border/text | A secondary action that should read as *less committal than primary but still warm* — e.g. "Login" next to a "Sign Up" primary button, where both are valid paths but one is the expected one. |
+| `danger` | Solid clay fill, white text | Destructive actions — delete, remove, revoke. |
 
 ---
 

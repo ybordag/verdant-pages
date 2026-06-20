@@ -1,11 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/')
-})
-
-test('redirects to /app/today by default', async ({ page }) => {
-  await expect(page).toHaveURL('/app/today')
+  await page.goto('/app/today')
 })
 
 test('renders all 7 nav items', async ({ page }) => {

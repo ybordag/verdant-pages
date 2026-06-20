@@ -54,6 +54,9 @@
   --bg: #181510;
   --bg-nav: #201C17;
 
+  /* Marketing pages (landing, login, register) — same as --bg in dark mode */
+  --bg-marketing: var(--bg);
+
   /* Paper surfaces — used for cards, panels, drawers */
   --surface-primary: var(--vellum-light);
   --surface-secondary: var(--vellum-pale);
@@ -94,6 +97,11 @@
   /* App shell */
   --bg: var(--vellum-whisper);
   --bg-nav: var(--vellum-light);
+
+  /* Marketing pages (landing, login, register) — deeper, warmer cream than
+     --bg's near-white tone. Dark mode pairs a near-black page bg with a
+     lighter nav-bg card; this mirrors that hierarchy in reverse. */
+  --bg-marketing: var(--vellum);
 
   /* Paper surfaces */
   --surface-primary: var(--vellum-light);

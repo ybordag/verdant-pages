@@ -8,23 +8,13 @@ If you're auditing test coverage or docs completeness and find something not lis
 
 ---
 
-### Unit tests for the 10 UI primitives
-
-**What's deferred:** `Button`, `Input`, `Select`, `Textarea`, `Chip`, `FieldLabel`, `Modal`, `InlinePopover`, `StatusBadge`, `ProgressBar` have no dedicated test files. They're only exercised indirectly through `App.test.tsx` and E2E tests that happen to render pages using them.
-
-**Why deferred:** Phase 3's goal was getting the shell and routing in place fast enough to unblock Phase 4+ page work, and the primitives' current consumers (nav, two sidebar cards) already have coverage at the integration level. Writing 10 sets of render+interaction tests for components with no real usage variety yet (no forms exist to exercise `Input` validation states, no list exists to exercise `Select`) would mostly test props that aren't proven correct against real usage.
-
-**Re-enable when:** The first page that uses a given primitive in a real form or interaction (Phase 4's login/register screens for `Input`/`Button`; Phase 5a's plant creation wizard for `Select`/`Textarea`) is built. Add that primitive's tests alongside the page, written against its actual usage rather than speculative props. By the end of Phase 5a, all 10 should have tests — if any don't, that's a real gap, not a deferral anymore.
-
----
-
 ### `src/lib/api/`, `src/lib/auth/`, `src/lib/sse/`, `src/lib/query/`
 
-**What's deferred:** All four directories are empty. No `apiFetch`, no `AuthContext`, no SSE consumer, no `QueryClient` setup exists yet, despite being fully specified in [api-client.md](../architecture/api-client.md), [auth.md](../architecture/auth.md), and [sse-streaming.md](../architecture/sse-streaming.md).
+**What's deferred:** All four directories are empty. No `apiFetch`, no `AuthContext`, no SSE consumer, no `QueryClient` setup exists yet, despite being fully specified in [api-client.md](../architecture/api-client.md), [auth.md](../architecture/auth.md), and [sse-streaming.md](../architecture/sse-streaming.md). `LoginPage` and `RegisterPage` now exist with real client-side form state and validation (built ahead of Phase 4, alongside the new landing page), but their `onSubmit` handlers are no-ops — they validate and stop short of calling `POST /auth/login`/`register`, since `apiFetch` and `AuthContext` don't exist yet.
 
-**Why deferred:** This is Phase 4 scope by design — see [build-phases.md](../architecture/build-phases.md). Building the API client before there's any page that consumes it would mean testing against assumptions instead of real call sites.
+**Why deferred:** This is Phase 4 scope by design — see [build-phases.md](../architecture/build-phases.md). Building the API client before there's any page that consumes it would mean testing against assumptions instead of real call sites. The login/register forms were an exception worth building early since they needed no API to get the UX and validation right, and they're the first real exercise of the `Input`/`Button`/`FieldLabel` primitives.
 
-**Re-enable when:** Phase 4 starts. Not a soft target — this is the literal next phase after Phase 3 (current).
+**Re-enable when:** Phase 4 starts. Not a soft target — this is the literal next phase after Phase 3 (current). Wiring `LoginPage`/`RegisterPage`'s submit handlers to real `apiFetch` calls is one of the first things to do.
 
 ---
 

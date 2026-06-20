@@ -5,7 +5,7 @@
 All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`.
 
 ```
-/                           → redirect to /app/today (authed) or /login
+/                           → LandingPage (public marketing page)
 /login                      → LoginPage
 /register                   → RegisterPage
 
