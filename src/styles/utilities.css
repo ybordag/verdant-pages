@@ -21,7 +21,7 @@
   font-size: 9px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--text-m);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -31,11 +31,11 @@
 
 .bc-link {
   cursor: pointer;
-  color: var(--text-t);
+  color: var(--text-tertiary);
 }
 
 .bc-link:hover {
-  color: var(--text-s);
+  color: var(--text-secondary);
 }
 
 /* ── Backgrounds ── */
@@ -81,7 +81,7 @@
 }
 
 .nb:hover {
-  background: var(--bg-raised);
+  background: var(--surface-muted);
 }
 
 .hr {
@@ -89,7 +89,7 @@
 }
 
 .hr:hover {
-  background: var(--bg-raised);
+  background: var(--surface-muted);
 }
 
 .cd {
@@ -99,7 +99,7 @@
 }
 
 .cd:hover {
-  background: var(--bg-raised);
+  background: var(--surface-muted);
 }
 
 /* ── Side panel ── */

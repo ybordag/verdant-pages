@@ -13,7 +13,7 @@ html, body {
 
 body {
   background: var(--bg);
-  color: var(--text-p);
+  color: var(--text-primary);
   font-family: var(--font-body);
   transition: background 0.35s, color 0.2s;
 }
@@ -30,7 +30,7 @@ textarea {
   background: transparent;
   border: none;
   outline: none;
-  color: var(--text-p);
+  color: var(--text-primary);
   font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.65;
@@ -39,7 +39,7 @@ textarea {
 }
 
 textarea::placeholder {
-  color: var(--text-m);
+  color: var(--text-muted);
   font-style: italic;
 }
 
@@ -47,7 +47,7 @@ input, select {
   background: var(--input-bg);
   border: 1px solid var(--line);
   border-radius: 6px;
-  color: var(--text-p);
+  color: var(--text-primary);
   font-family: var(--font-body);
   font-size: 14px;
   padding: 8px 11px;
@@ -67,7 +67,7 @@ select option {
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--line-s); border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
 
 /* ── Keyframes ── */
 @keyframes pIn {
