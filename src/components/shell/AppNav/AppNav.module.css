@@ -252,7 +252,7 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--chartreuse);
+  color: var(--nav-accent);
   white-space: nowrap;
 }
 
@@ -283,6 +283,15 @@
   border-color: var(--dark-clay);
   color: rgb(var(--vellum-rgb) / 0.9);
   background: rgb(var(--clay-rgb) / 0.16);
+}
+
+/* Dark-on-dark text reads fine on the dark theme's near-black background,
+   but disappears against light mode's cream surfaces — swap to a clay
+   border and inkwell text there instead. */
+[data-theme='light'] .cardBtnTertiary {
+  border-color: var(--clay);
+  color: var(--inkwell);
+  background: rgb(var(--clay-rgb) / 0.12);
 }
 
 .cardBtnSecondary {
@@ -334,10 +343,30 @@
   justify-content: center;
 }
 
+/* Pine at 24% opacity over the warm light-theme background desaturates into
+   a muddy grey-green — switch to a pale-herb tint instead, which stays
+   light and visibly green rather than grey. Border/text use --pine-light
+   (not --pine) so they sit closer in intensity to the background tint and
+   to the chartreuse buttons next to them, rather than reading as a much
+   "heavier" dark-on-light pairing. */
+[data-theme='light'] .cardGridPine {
+  background: rgb(var(--pale-herb-rgb) / 0.4);
+  border-color: var(--pine-light);
+  color: var(--pine-light);
+}
+
 .cardGridChartreuse {
   border: 1px solid var(--chartreuse);
   background: rgb(var(--chartreuse-rgb) / 0.24);
   color: var(--chartreuse);
+}
+
+/* Chartreuse text on a chartreuse-tinted background has poor contrast over
+   the light theme's cream surfaces — darken text/border to --chartreuse-deep
+   (same hue/chroma, just darker) while leaving the tinted fill as-is. */
+[data-theme='light'] .cardGridChartreuse {
+  border-color: var(--chartreuse-deep);
+  color: var(--chartreuse-deep);
 }
 
 /* Blank decorative tiles — puzzle-piece filler, no content */
@@ -347,6 +376,14 @@
   border: 1px solid var(--line-subtle);
   border-radius: var(--radius-tight);
   background: rgb(var(--inkwell-rgb) / 0.18);
+}
+
+/* An inkwell-tinted overlay reads as flat grey on the light theme's warm
+   cream surfaces — darken the vellum itself instead (same hue/chroma, see
+   tokens.css's ink/vellum scale) so the filler stays warm-toned. */
+[data-theme='light'] .cardGridFiller {
+  background: oklch(from var(--vellum) calc(l - 0.05) c h);
+  border-color: var(--line);
 }
 
 /* Guards icon SVGs in cardBtn/cardGridBtn from being flex-shrunk to nothing */

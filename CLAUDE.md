@@ -58,10 +58,10 @@ src/
 │   ├── primitives/   Generic UI atoms (Button, Input, Modal, ...) — no domain knowledge
 │   └── shell/        AppShell, AppNav, NotificationDrawer, Toast, Breadcrumb
 ├── lib/
-│   ├── api/          apiFetch + domain modules (garden.ts, tasks.ts, ...) — EMPTY, Phase 4
-│   ├── auth/         AuthContext, useAuth — EMPTY, Phase 4
-│   ├── query/        QueryClient setup — EMPTY, Phase 4/5
-│   ├── sse/          consumeSSEStream() — EMPTY, Phase 4/6
+│   ├── api/          client.ts + auth.ts built; domain modules (garden.ts, tasks.ts, ...) — EMPTY, Phase 4 follow-up
+│   ├── auth/         AuthContext, useAuth — built, Phase 4
+│   ├── query/        still EMPTY — QueryClientProvider is wired directly in App.tsx instead
+│   ├── sse/          consumeSSEStream() — EMPTY, needed Phase 4/6
 │   └── theme/        ThemeProvider — built, Phase 2
 ├── pages/            One file per route, 27 stubs today — built out per docs/pages/*.md, Phase 5+
 ├── routes/           router.tsx, ProtectedRoute.tsx
@@ -81,7 +81,7 @@ see [docs/development/deferred-work.md](docs/development/deferred-work.md).
 | 1 | Scaffold + build tooling | complete |
 | 2 | Tokens + theme + fonts | complete |
 | 3 | Primitives + app shell | complete (current — `cedar` branch) |
-| 4 | Auth + API client | not started — next up |
+| 4 | Auth + API client | in progress — auth core done, domain modules next |
 | 5a–5e | Feature pages | not started |
 | 6a–6c | Today / Incidents / Agent chat | blocked on rhizome#120 P1 |
 

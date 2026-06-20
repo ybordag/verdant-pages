@@ -17,6 +17,13 @@
   color: var(--clay);
 }
 
+.notice {
+  margin: 0 0 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
 .submit {
   width: 100%;
   justify-content: center;

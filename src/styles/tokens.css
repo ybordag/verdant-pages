@@ -14,7 +14,17 @@
 
   /* Brand */
   --chartreuse: #B8D43A;
+  /* Same hue/chroma as --chartreuse, just darker — for text/borders that need
+     to read against a chartreuse-tinted background (chartreuse-on-chartreuse
+     has poor contrast; relative color syntax darkens without desaturating). */
+  --chartreuse-deep: oklch(from var(--chartreuse) calc(l - 0.22) c h);
   --pine: #2B5C2F;
+  /* Light pine text/border color — a true forest green, lighter than --pine,
+     hand-picked rather than computed (lightening --pine via relative color
+     syntax clipped in sRGB and lost its green hue entirely). Use this
+     wherever pine-branded text/borders need to sit on a light or tinted
+     background without reading as too dark/heavy. */
+  --pine-light: #4F8F55;
   --clay: #E06B4A;
   --buttercup: #FFC94D;
   --pale-herb: #B0EAAC;
@@ -36,6 +46,7 @@
   --pine-rgb: 43 92 47;
   --clay-rgb: 224 107 74;
   --chartreuse-rgb: 184 212 58;
+  --pale-herb-rgb: 176 234 172;
 
   /* Typography */
   --font-display: "Shantell Sans", cursive;
@@ -101,8 +112,8 @@
 /* ── Light theme ── */
 [data-theme="light"] {
   /* App shell */
-  --bg: var(--vellum-whisper);
-  --bg-nav: var(--vellum-light);
+  --bg: var(--vellum-light);
+  --bg-nav: var(--vellum);
 
   /* Marketing pages (landing, login, register). --vellum-bright (page) is
      lighter than --vellum (card) with identical hue/chroma — see the

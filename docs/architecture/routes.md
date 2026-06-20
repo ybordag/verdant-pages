@@ -2,12 +2,12 @@
 
 **Last updated:** 2026-06-20
 
-All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`.
+All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`. `/login` and `/register` are wrapped by `PublicOnlyRoute`, which redirects to `/app/today` if the user is already authenticated (so a logged-in user can't land back on the login form).
 
 ```
 /                           → LandingPage (public marketing page)
-/login                      → LoginPage
-/register                   → RegisterPage
+/login                      → PublicOnlyRoute + LoginPage
+/register                   → PublicOnlyRoute + RegisterPage
 
 /app                        → ProtectedRoute + AppShell layout
   /app/today                → TodayPage

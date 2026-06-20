@@ -16,7 +16,7 @@ Active phase work gets a doc in `docs/current_work/`. Completed phase docs stay 
 | 1 | Scaffold + build tooling | **complete** | `willow` |
 | 2 | Tokens + theme + fonts | **complete** | `aspen` |
 | 3 | Primitives + app shell | **complete** | `cedar` |
-| 4 | Auth + API client foundation | **in progress** (auth UI done, API client not started) | `birch` |
+| 4 | Auth + API client foundation | **in progress** (auth core done and verified end-to-end; domain modules not started) | `birch` |
 | 5a | Garden objects | not started | — |
 | 5b | Tasks | not started | — |
 | 5c | Projects | not started (partial blockers) | — |
@@ -91,29 +91,31 @@ Done:
 
 **Deliverable:** Login and register work against the real Cambium API. Protected routes redirect correctly. Proactive token refresh runs. All API modules are written and typed.
 
-**Done so far:**
+**Done so far — auth core, verified end-to-end against a real Cambium instance:**
 - `LandingPage` — public marketing page at `/` (wordmark, tagline, GitHub link, theme toggle, Login/Sign Up)
-- `AuthLayout`, `LoginPage`, `RegisterPage` — real forms with client-side validation (required fields, email format, password length/match), botanical-aesthetic card layout. `onSubmit` handlers validate and stop — no `apiFetch` to call yet.
-- `ThemeToggle` extracted into a shared primitive (`src/components/primitives/ThemeToggle/`), used by `AppNav`, `LandingPage`, and `AuthLayout`
-- All 10 UI primitives now have unit tests (the last 7 — `Select`, `Textarea`, `Chip`, `Modal`, `InlinePopover`, `StatusBadge`, `ProgressBar` — landed alongside this work; see [deferred-work.md](../development/deferred-work.md))
-- `Button` gained a `ghost-clay` variant — see the variant table in [components.md](../architecture/components.md)
-- Tests: 12 unit (`LoginPage.test.tsx`, `RegisterPage.test.tsx`) + 4 E2E (`landing.spec.ts`)
-
-**Not started — the actual "auth + API client" part:**
-- `src/lib/api/client.ts` — `apiFetch`, `ApiError`, 401→refresh→retry
+- `src/lib/api/client.ts` — `apiFetch`, `ApiError`, in-memory token store, 401→refresh→retry. A 401 only triggers refresh when a token was actually attached, so a bad-login 401 surfaces as a normal `ApiError` instead of looping into the refresh/redirect path.
 - `src/lib/api/auth.ts` — `login`, `register`, `logout`, `tryRefreshToken`, `getSession`
-- `src/lib/auth/context.tsx` — `AuthProvider`, `useAuth`, proactive refresh timer
-- `ProtectedRoute` — still a passthrough, no real auth check
-- All 16 domain API modules (`garden.ts`, `plants.ts`, `tasks.ts`, …) + `src/lib/types/{rhizome,cambium}.ts`
-- `src/lib/api/stream.ts` — `consumeSSEStream`, `consumeNotificationStream`
-- `QueryClientProvider` wired into `App.tsx` — not present yet
-- Vite proxy (configured since Phase 1) confirmed working end-to-end — unverified, nothing has called it yet
+- `src/lib/auth/context.tsx` — `AuthProvider`, `useAuth`; silent refresh on mount, `setInterval` proactive refresh every 12 minutes, `visibilitychange` refresh-if-stale
+- `ProtectedRoute` — real check, redirects to `/login` when unauthenticated, shows a loading state while resolving
+- `AuthLayout`, `LoginPage`, `RegisterPage` — real forms wired to `useAuth().login`/`.register`, inline error messages for 401 (bad credentials) / 409 (email taken) / generic failure
+- A "Log out" button landed in `AppNav`'s footer (next to the notification bell) — there was previously no UI path to call `logout()` at all
+- `QueryClientProvider` wired into `App.tsx` (default options — nothing to tune yet, no domain queries exist)
+- Vite proxy confirmed working end-to-end against real Cambium (manual `curl` + full Playwright suite, not just config)
+- `ThemeToggle` extracted into a shared primitive (`src/components/primitives/ThemeToggle/`), used by `AppNav`, `LandingPage`, and `AuthLayout`
+- All 10 UI primitives now have unit tests (see [deferred-work.md](../development/deferred-work.md))
+- `Button` gained a `ghost-clay` variant — see the variant table in [components.md](../architecture/components.md)
+- Password strength meter on `RegisterPage` (`passwordStrength.ts` + `PasswordStrengthMeter`) — 4-bar indicator enforcing length, letters+numbers, uppercase, and special-character requirements
+- Light-theme nav/button color pass: `--bg`/`--bg-nav` swapped to `vellum-light`/`vellum`, new `--pine-light` and `--chartreuse-deep` tokens, per-theme `AppNav` overrides for the Garden Profile and Quick Actions cards
+- Login/register now give actionable messages instead of bare errors: a 409 on register links to `/login` (prefilled email + notice) instead of silently failing, and a 401 on login links to `/register` — both deliberately avoid distinguishing "wrong password" from "no such account," since Cambium returns identical responses for both to prevent email enumeration
+- Fixed a real StrictMode bug in `context.tsx`: the mount effect was double-invoked in dev, firing `/auth/refresh` twice and racing one cookie rotation against the other's revoke (symptom: login silently doing nothing after a logout). Fixed with a `hasMountedRef` guard; regression test added in `context.test.tsx` under `<StrictMode>`. Re-entrancy guards (`if (isSubmitting) return`) also added to both auth forms' submit handlers.
+- Closed a coverage audit's findings: added unit tests for `auth.ts` (previously only covered indirectly through mocks), `NavContext` (collapse/persist, mirroring `ThemeProvider.test.tsx`), `ThemeToggle` (the one primitive without a test), and `AppNav` (Garden Profile/Quick Actions cards, log-out button, collapse behavior)
+- Tests: full suite now 125 unit + 19 E2E, all passing against a live Cambium instance. `auth.spec.ts` covers register→logout→login, direct login to an existing account, wrong-password rejection, registering an already-taken email (with the "Log in instead" redirect), and the unauthenticated-redirect case.
 
-**Tests still needed:**
-- `apiFetch` attaches `Authorization` header
-- 401 response triggers refresh → retry → redirect
-- `ProtectedRoute` redirects unauthenticated users to `/login`
-- E2E: register → login → protected page → logout → login required
+**Not started:**
+- All 16 domain API modules (`garden.ts`, `plants.ts`, `tasks.ts`, …) + `src/lib/types/rhizome.ts`
+- `src/lib/api/stream.ts` — `consumeSSEStream`, `consumeNotificationStream` (needed for Phase 6c chat, Phase 7 notifications — not needed yet)
+
+See [deferred-work.md](../development/deferred-work.md) for the full breakdown of what's deferred and why.
 
 ---
 

@@ -8,13 +8,15 @@ If you're auditing test coverage or docs completeness and find something not lis
 
 ---
 
-### `src/lib/api/`, `src/lib/auth/`, `src/lib/sse/`, `src/lib/query/`
+### `src/lib/api/` domain modules, `src/lib/sse/`, `src/lib/query/` tuning
 
-**What's deferred:** All four directories are empty. No `apiFetch`, no `AuthContext`, no SSE consumer, no `QueryClient` setup exists yet, despite being fully specified in [api-client.md](../architecture/api-client.md), [auth.md](../architecture/auth.md), and [sse-streaming.md](../architecture/sse-streaming.md). `LoginPage` and `RegisterPage` now exist with real client-side form state and validation (built ahead of Phase 4, alongside the new landing page), but their `onSubmit` handlers are no-ops — they validate and stop short of calling `POST /auth/login`/`register`, since `apiFetch` and `AuthContext` don't exist yet.
+**What's deferred:** Auth is done — `src/lib/api/client.ts` (`apiFetch`, `ApiError`, in-memory token, 401→refresh→retry), `src/lib/api/auth.ts` (`login`, `register`, `logout`, `tryRefreshToken`, `getSession`), and `src/lib/auth/context.tsx` (`AuthProvider`, `useAuth`, proactive refresh) are all built and tested against a real Cambium instance. `ProtectedRoute` does a real check. `LoginPage`/`RegisterPage` call the real API and handle 401/409 inline. `QueryClientProvider` is wired into `App.tsx` with default options.
 
-**Why deferred:** This is Phase 4 scope by design — see [build-phases.md](../architecture/build-phases.md). Building the API client before there's any page that consumes it would mean testing against assumptions instead of real call sites. The login/register forms were an exception worth building early since they needed no API to get the UX and validation right, and they're the first real exercise of the `Input`/`Button`/`FieldLabel` primitives.
+Still empty: the 16 domain modules (`garden.ts`, `plants.ts`, `tasks.ts`, `projects.ts`, `chat.ts`, `triage.ts`, `weather.ts`, `incidents.ts`, `interactions.ts`, `activity.ts`, `alerts.ts`, `notifications.ts`, `shopping.ts`, `search.ts`, `calendar.ts`, `media.ts`) and `src/lib/types/rhizome.ts` — only `src/lib/types/cambium.ts`'s auth types (`TokenResponse`, `SessionResponse`) exist so far. `src/lib/api/stream.ts` (`consumeSSEStream`, `consumeNotificationStream`) is also unbuilt — not needed until chat (Phase 6c) or notifications (Phase 7).
 
-**Re-enable when:** Phase 4 is now in progress (`birch` branch) — the auth UI landed first, but `apiFetch`, `AuthContext`, the domain API modules, and the SSE consumer are still unbuilt. Wiring `LoginPage`/`RegisterPage`'s submit handlers to real `apiFetch` calls is one of the first things to do once `client.ts` exists.
+**Why deferred:** This was a deliberate scope split within Phase 4 — auth core first and verified working end-to-end, domain modules as a follow-up, since the domain modules are large in count but mechanical (signatures fully specified in [api-client.md](../architecture/api-client.md)) and don't block verifying the auth plumbing.
+
+**Re-enable when:** Starting the Phase 5 feature pages — each domain module gets built (or the relevant subset does) as the page that needs it gets built, rather than all 16 up front with no caller.
 
 ---
 
@@ -24,7 +26,7 @@ If you're auditing test coverage or docs completeness and find something not lis
 
 **Why deferred:** Coverage thresholds are only meaningful once there's a stable baseline of real feature code to measure against. Gating on coverage during Phase 1–3 (scaffold and shell) would mostly just penalize legitimate stub pages.
 
-**Re-enable when:** Phase 4 lands with its own tests (auth, API client). At that point, set thresholds based on the actual achieved baseline rather than picking an arbitrary number — see [development/testing.md](testing.md).
+**Re-enable when:** Phase 4 lands with its own tests (auth, API client) — this has now happened (125 unit + 19 E2E, including a full audit pass that closed gaps in `auth.ts`, `NavContext`, `ThemeToggle`, and `AppNav`). Still no `@vitest/coverage-v8` wired into `vite.config.ts`'s `test` block, and no CI to gate on it (CI itself is also on hold — see project notes). Worth adding the coverage tool itself now to get visibility, but hold off on enforcing a threshold until CI exists to enforce it against.
 
 ---
 

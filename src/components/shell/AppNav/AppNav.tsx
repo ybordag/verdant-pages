@@ -2,9 +2,10 @@ import { NavLink } from 'react-router-dom'
 import {
   Leaf, Sun, CheckSquare, Calendar, FolderOpen, AlertTriangle, Activity,
   ChevronsLeft, MessageSquare, Plus, Play, Map, Flower2, LayoutGrid, Package,
-  User, Bell,
+  User, Bell, LogOut,
 } from 'lucide-react'
 import { useNav } from './NavContext'
+import { useAuth } from '@/lib/auth/context'
 import ThemeToggle from '@/components/primitives/ThemeToggle/ThemeToggle'
 import s from './AppNav.module.css'
 
@@ -141,6 +142,7 @@ function GardenProfileCard() {
 
 function NavFooter() {
   const { collapsed, setDrawerOpen } = useNav()
+  const { logout } = useAuth()
 
   return (
     <div className={s.footer}>
@@ -152,6 +154,9 @@ function NavFooter() {
         <ThemeToggle vertical={collapsed} />
         <button className={s.bellBtn} onClick={() => setDrawerOpen(true)} aria-label="Notifications">
           <Bell size={16} />
+        </button>
+        <button className={s.bellBtn} onClick={() => logout()} aria-label="Log out" title="Log out">
+          <LogOut size={16} />
         </button>
       </div>
     </div>

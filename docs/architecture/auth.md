@@ -64,18 +64,25 @@ interface AuthActions {
 type AuthContextValue = AuthState & AuthActions;
 ```
 
-## ProtectedRoute
+## ProtectedRoute / PublicOnlyRoute
 
 ```tsx
-function ProtectedRoute({ children }: { children: ReactNode }) {
+function ProtectedRoute() {
   const { user, isLoading } = useAuth();
   if (isLoading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
-  return children;
+  return <Outlet />;
+}
+
+function PublicOnlyRoute() {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return null;
+  if (user) return <Navigate to="/app/today" replace />;
+  return <Outlet />;
 }
 ```
 
-All `/app/*` routes are wrapped. `/login` and `/register` redirect to `/app/today` when already authenticated.
+All `/app/*` routes are wrapped in `ProtectedRoute` (`src/routes/ProtectedRoute.tsx`). `/login` and `/register` are wrapped in `PublicOnlyRoute` (`src/routes/PublicOnlyRoute.tsx`), which redirects to `/app/today` when already authenticated.
 
 ## Login / Register screens
 

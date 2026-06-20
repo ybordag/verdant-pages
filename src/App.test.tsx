@@ -1,7 +1,22 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { vi } from 'vitest'
 import App from './App'
 import { router } from '@/routes/router'
+
+// App.test.tsx covers shell/landing rendering, not auth — stub the auth
+// context so ProtectedRoute always treats the user as signed in and no real
+// network call fires on mount.
+vi.mock('@/lib/auth/context', () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  useAuth: () => ({
+    user: { user_id: '1', email: 'me@example.com', preferred_provider: null, preferred_model: null },
+    isLoading: false,
+    login: vi.fn(),
+    register: vi.fn(),
+    logout: vi.fn(),
+  }),
+}))
 
 describe('App', () => {
   beforeEach(async () => {
