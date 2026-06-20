@@ -99,13 +99,11 @@
   --bg: var(--vellum-whisper);
   --bg-nav: var(--vellum-light);
 
-  /* Marketing pages (landing, login, register). Dark mode pairs a
-     near-black page bg with a lighter nav-bg card — full-strength cream
-     tones (even --vellum, the deepest one) are too pale to mirror that in
-     light mode, so the page bg is a muted, darkened vellum (color-mix
-     toward --inkwell), and the card reuses --vellum itself as the lighter
-     surface on top of it. */
-  --bg-marketing: color-mix(in srgb, var(--vellum) 55%, var(--inkwell) 45%);
+  /* Marketing pages (landing, login, register). The page bg is a more
+     saturated, intense vellum — color-mix toward --buttercup deepens the
+     warm/gold tone without greying it out — and the card reuses --vellum
+     itself as the lighter, calmer surface on top of it. */
+  --bg-marketing: color-mix(in srgb, var(--vellum) 65%, var(--buttercup) 35%);
   --card-marketing: var(--vellum);
 
   /* Paper surfaces */
