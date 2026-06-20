@@ -51,4 +51,9 @@ describe('LoginPage', () => {
     renderLogin()
     expect(screen.getByRole('link', { name: 'Sign up' })).toHaveAttribute('href', '/register')
   })
+
+  it('has a back link to the landing page', () => {
+    renderLogin()
+    expect(screen.getByRole('link', { name: 'Back to home' })).toHaveAttribute('href', '/')
+  })
 })

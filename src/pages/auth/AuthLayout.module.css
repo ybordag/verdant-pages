@@ -16,9 +16,19 @@
   right: 24px;
 }
 
+.backLink {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: flex;
+  color: var(--text-secondary);
+  transition: color 0.15s;
+}
+.backLink:hover { color: var(--text-primary); }
+
 .card {
   width: min(380px, 100%);
-  background: var(--bg-nav);
+  background: var(--card-marketing);
   border: 1px solid var(--line);
   border-radius: var(--radius-journal);
   padding: 40px;
@@ -31,7 +41,7 @@
   font-weight: var(--display-weight);
   font-variation-settings: 'BNCE' var(--display-bounce);
   font-size: 28px;
-  color: var(--chartreuse);
+  color: var(--nav-accent);
   text-decoration: none;
   text-align: center;
 }
