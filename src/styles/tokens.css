@@ -111,8 +111,9 @@
   --card-marketing: var(--vellum);
   /* The global --input-bg mixes toward --inkwell, which works fine on the
      app's normal light surfaces but desaturates against this warm
-     palette — recess to the page tone instead, no inkwell involved. */
-  --input-bg-marketing: var(--vellum-bright);
+     palette — nudge slightly darker than the card instead, same
+     hue/chroma as --vellum, no inkwell involved. */
+  --input-bg-marketing: oklch(from var(--vellum) calc(l - 0.025) c h);
 
   /* Paper surfaces */
   --surface-primary: var(--vellum-light);
