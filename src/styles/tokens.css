@@ -4,6 +4,9 @@
   --inkwell: #1C1814;
   --vellum-dark: #E9DEB7;
   --vellum: #F2E8C9;
+  /* Same hue/chroma as --vellum, just lighter — unlike --vellum-light,
+     which is both lighter and less saturated. */
+  --vellum-bright: oklch(from var(--vellum) calc(l + 0.03) c h);
   --vellum-light: #F6F0E0;
   --vellum-pale: #F8F4EC;
   --vellum-whisper: #FAF7F2;
@@ -101,18 +104,15 @@
   --bg: var(--vellum-whisper);
   --bg-nav: var(--vellum-light);
 
-  /* Marketing pages (landing, login, register). --vellum-light is lighter
-     AND less saturated than --vellum (~55% vs ~61%), so swapping to it
-     reads as "turning toward white," not "the same cream, slightly
-     faded" — contrast ratio alone doesn't catch that, since it only
-     measures luminance, not chroma. Relative color syntax keeps vellum's
-     exact hue/chroma and only nudges lightness up a notch instead. */
-  --bg-marketing: var(--vellum);
-  --card-marketing: oklch(from var(--vellum) calc(l + 0.03) c h);
+  /* Marketing pages (landing, login, register). --vellum-bright (page) is
+     lighter than --vellum (card) with identical hue/chroma — see the
+     ink/vellum scale above for why that's not the same as --vellum-light. */
+  --bg-marketing: var(--vellum-bright);
+  --card-marketing: var(--vellum);
   /* The global --input-bg mixes toward --inkwell, which works fine on the
      app's normal light surfaces but desaturates against this warm
-     palette — recess to plain --vellum instead, no inkwell involved. */
-  --input-bg-marketing: var(--vellum);
+     palette — recess to the page tone instead, no inkwell involved. */
+  --input-bg-marketing: var(--vellum-bright);
 
   /* Paper surfaces */
   --surface-primary: var(--vellum-light);
