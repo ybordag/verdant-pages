@@ -1,0 +1,119 @@
+/* ── Layout wrappers ── */
+.cw {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.cm {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Breadcrumb ── */
+.bc {
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  background: var(--bg-nav);
+}
+
+.bc-link {
+  cursor: pointer;
+  color: var(--text-tertiary);
+}
+
+.bc-link:hover {
+  color: var(--text-secondary);
+}
+
+/* ── Backgrounds ── */
+.dg {
+  background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.gg {
+  background-image:
+    linear-gradient(var(--gc) 1px, transparent 1px),
+    linear-gradient(90deg, var(--gc) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* ── Chip ── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+/* ── Interactive row states ── */
+.nb {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+
+.nb:hover {
+  background: var(--surface-muted);
+}
+
+.hr {
+  transition: background 0.1s;
+}
+
+.hr:hover {
+  background: var(--surface-muted);
+}
+
+.cd {
+  cursor: pointer;
+  transition: background 0.1s;
+  border-radius: 3px;
+}
+
+.cd:hover {
+  background: var(--surface-muted);
+}
+
+/* ── Side panel ── */
+.pp {
+  width: 0;
+  overflow: hidden;
+  border-left: 0 solid var(--line);
+  flex-shrink: 0;
+  transition: width 0.3s, border-left-width 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.pp.open {
+  width: 272px;
+  border-left-width: 1px;
+}
