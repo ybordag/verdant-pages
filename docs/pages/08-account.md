@@ -48,7 +48,7 @@ Source: `GET /api/v1/auth/keys`. Set via `PUT /api/v1/auth/keys`. Remove via `DE
 
 ### 4. Appearance
 
-**Theme** — Light / Dark toggle (same toggle as the nav sidebar). Persists to `localStorage('vp_theme')`. No server round-trip.
+**Theme** — Light / Dark toggle (same toggle as the nav sidebar). Persists to `localStorage('theme')`. No server round-trip.
 
 ---
 

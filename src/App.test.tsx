@@ -8,24 +8,42 @@ describe('App', () => {
     delete document.documentElement.dataset.theme
   })
 
-  it('renders without crashing', () => {
+  it('renders the main navigation', () => {
     render(<App />)
-    expect(screen.getByText('Verdant Pages')).toBeInTheDocument()
+    expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeInTheDocument()
   })
 
-  it('renders the theme toggle button', () => {
+  it('renders all 7 nav items', () => {
     render(<App />)
-    expect(screen.getByRole('button', { name: 'Toggle theme' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Rhizome' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Today' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Tasks' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Calendar' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Projects' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Incidents' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Activity' })).toBeInTheDocument()
   })
 
-  it('starts in dark theme by default', () => {
+  it('defaults to dark theme', () => {
     render(<App />)
     expect(document.documentElement.dataset.theme).toBe('dark')
   })
 
-  it('toggles theme when button is clicked', async () => {
+  it('collapse toggle collapses and expands the nav', async () => {
     render(<App />)
-    await userEvent.click(screen.getByRole('button', { name: 'Toggle theme' }))
-    expect(document.documentElement.dataset.theme).toBe('light')
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' })
+    expect(nav.dataset.collapsed).toBe('false')
+    await userEvent.click(screen.getByRole('button', { name: /Collapse nav/i }))
+    expect(nav.dataset.collapsed).toBe('true')
+    await userEvent.click(screen.getByRole('button', { name: /Expand nav/i }))
+    expect(nav.dataset.collapsed).toBe('false')
+  })
+
+  it('marks nav items with pending badges via data-has-badge, even when the badge itself is hidden on collapse', async () => {
+    render(<App />)
+    const rhizomeLink = screen.getByRole('link', { name: 'Rhizome' })
+    const calendarLink = screen.getByRole('link', { name: 'Calendar' })
+    expect(rhizomeLink.dataset.hasBadge).toBe('true')
+    expect(calendarLink.dataset.hasBadge).toBe('false')
   })
 })

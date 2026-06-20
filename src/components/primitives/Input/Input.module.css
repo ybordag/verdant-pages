@@ -1,0 +1,15 @@
+.input {
+  background: var(--input-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 8px 11px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input::placeholder { color: var(--text-placeholder); }
+.input:focus { border-color: var(--chartreuse); }

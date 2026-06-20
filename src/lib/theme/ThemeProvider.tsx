@@ -11,12 +11,12 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem('vp_theme') as Theme) ?? 'dark',
+    () => (localStorage.getItem('theme') as Theme) ?? 'dark',
   )
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
-    localStorage.setItem('vp_theme', theme)
+    localStorage.setItem('theme', theme)
   }, [theme])
 
   function toggleTheme() {

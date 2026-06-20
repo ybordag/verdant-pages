@@ -14,8 +14,8 @@ Active phase work gets a doc in `docs/current_work/`. Completed phase docs stay 
 |---|---|---|---|
 | 0 | Pre-build setup | **complete** | — |
 | 1 | Scaffold + build tooling | **complete** | `willow` |
-| 2 | Tokens + theme + fonts | not started | — |
-| 3 | Primitives + app shell | not started | — |
+| 2 | Tokens + theme + fonts | **complete** | `aspen` |
+| 3 | Primitives + app shell | **complete** | `cedar` |
 | 4 | Auth + API client foundation | not started | — |
 | 5a | Garden objects | not started | — |
 | 5b | Tasks | not started | — |
@@ -58,35 +58,32 @@ Done:
 
 ---
 
-## Phase 2 — Tokens + theme + fonts
+## Phase 2 — Tokens + theme + fonts ✅
 
-**Deliverable:** Full visual foundation — light/dark toggle works, all fonts load.
+**Deliverable:** Full visual foundation — light/dark toggle works, all fonts load. See [phase2_tokens.md](../current_work/phase2_tokens.md) for the full record.
 
-- `src/styles/tokens.css` — all CSS variables, both themes, ported from prototype
+- `src/styles/tokens.css` — full token system ported from `docs/design/mockup.html` (not the simplified prototype): inkwell/vellum scale, RGB channel variables, border radius scale, display variation tokens, semantic surface/text/line tokens for both themes
 - `src/styles/global.css` — reset, body, scrollbar, shared keyframes
 - `src/styles/utilities.css` — layout and chip utilities
-- Google Fonts `<link>` in `index.html`
-- `ThemeProvider` — reads/writes `localStorage('vp_theme')`, sets `data-theme` on `<html>`
-- App.tsx wrapped in ThemeProvider
+- Google Fonts `<link>` in `index.html` — Shantell Sans, Caveat, Nunito, Montserrat
+- `ThemeProvider` — reads/writes `localStorage('theme')`, sets `data-theme` on `<html>`, defaults to dark
+- App.tsx wrapped in `ThemeProvider`
 
-**Tests:**
-- `ThemeProvider` reads `localStorage` on mount
-- `ThemeProvider` toggles `data-theme` between `dark` and `light`
-- Token CSS variables resolve (smoke)
+**Tests:** 9 unit (ThemeProvider) + 3 E2E (default dark, toggle to light, persistence on reload) — folded into the broader suite in Phase 3.
 
 ---
 
-## Phase 3 — Primitives + app shell
+## Phase 3 — Primitives + app shell ✅
 
-**Deliverable:** Full app shell with navigation, all routes stubbed, all 7 nav items.
+**Deliverable:** Full app shell with navigation, all routes stubbed, all 7 nav items. See [phase3_app_shell.md](../current_work/phase3_app_shell.md) for the full record.
 
-Key components: `Button`, `Input`, `Modal`, `Chip`, `AppShell`, `VPNav`, `Breadcrumb`
+**Primitives:** `Button`, `Input`, `Select`, `Textarea`, `Chip`, `FieldLabel`, `Modal`, `InlinePopover`, `StatusBadge`, `ProgressBar`
 
-**Tests:**
-- Each primitive renders in all variants
-- `Modal` traps focus and closes on Escape
-- All 7 nav items render and respond to click
-- Route stubs all resolve without crashing
+**Shell:** `AppShell`, `AppNav` (renamed from `VPNav` for genericness — see naming audit below), `NavContext`, `QuickActionsPanel`, `GardenProfileCard`, `NavFooter`, `NotificationDrawer` (empty shell), `Toast` (empty shell), `Breadcrumb`
+
+**Router:** all routes from [routes.md](../architecture/routes.md), 27 page stubs, `ProtectedRoute` (passthrough until Phase 4)
+
+**Tests:** 30 total (20 unit + 10 E2E) covering all 7 nav items, collapse/expand + persistence, pending-badge "lit icon" state, route navigation, notification drawer, theme toggle, Toast and Breadcrumb component behavior.
 
 ---
 

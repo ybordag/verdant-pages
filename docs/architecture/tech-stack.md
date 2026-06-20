@@ -1,5 +1,7 @@
 # Tech Stack
 
+**Last updated:** 2026-06-20
+
 ## Proposed: Vite + React 18 + TypeScript + React Router v7
 
 | Layer | Choice | Rationale |

@@ -1,5 +1,7 @@
 # Component Library
 
+**Last updated:** 2026-06-20
+
 ## Styling approach
 
 - **CSS modules** for component-specific styles — each component has a `.module.css`, locally scoped
@@ -23,7 +25,7 @@
 | **Primitives** | None | Button, Input, Chip |
 | **Composed** | Domain types | TaskRow, CareStateStrip |
 | **Pages** | Full page + data fetching | TodayPage, TasksPage |
-| **Layout** | Routing, not domain data | VPNav, AppShell |
+| **Layout** | Routing, not domain data | AppNav, AppShell |
 
 ---
 
@@ -50,23 +52,23 @@ No domain knowledge. Could be dropped into any app.
 
 ### `AppShell`
 
-Root layout. Composes `VPNav` + content wrapper + `NotificationDrawer` portal.
+Root layout. Composes `AppNav` + content wrapper + `NotificationDrawer` portal.
 
 ```
 AppShell
-  ├── VPNav (left, fixed)
+  ├── AppNav (left, fixed)
   ├── .cw content wrapper (flex column, fills remaining width)
   └── NotificationDrawer portal (right edge, conditionally open)
 ```
 
 ---
 
-### `VPNav`
+### `AppNav`
 
 Fixed left sidebar. 210px expanded, 52px collapsed.
 
 ```
-VPNav
+AppNav
   ├── Brand row (logo + collapse toggle)
   ├── NavSection × 3
   │     └── NavItem × N (icon + label + badge count)
@@ -743,7 +745,7 @@ src/
 │   │
 │   ├── shell/                  # App structure
 │   │   ├── AppShell/
-│   │   ├── VPNav/
+│   │   ├── AppNav/
 │   │   │   ├── NavItem/
 │   │   │   ├── QuickActionsPanel/
 │   │   │   ├── GardenProfileCard/

@@ -1,5 +1,7 @@
 # Route Structure
 
+**Last updated:** 2026-06-20
+
 All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`.
 
 ```

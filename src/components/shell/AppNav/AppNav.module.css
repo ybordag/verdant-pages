@@ -1,0 +1,446 @@
+.nav {
+  width: 210px;
+  min-width: 210px;
+  background: var(--bg-nav);
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.22s ease, min-width 0.22s ease;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+.nav[data-collapsed='true'] {
+  width: 52px;
+  min-width: 52px;
+}
+
+/* Brand row */
+.brand {
+  display: flex;
+  align-items: center;
+  padding: 16px 14px 12px;
+  gap: 10px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--line);
+  min-height: 52px;
+}
+
+.nav[data-collapsed='true'] .brand {
+  padding: 16px 0 12px;
+  justify-content: center;
+  gap: 0;
+}
+
+.logoBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--chartreuse);
+  transition: opacity 0.15s;
+}
+.logoBtn:hover { opacity: 0.8; }
+
+.logoLetter {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-variation-settings: 'BNCE' var(--display-bounce);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.collapseBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+  margin-left: auto;
+  display: flex;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.collapseBtn:hover { color: var(--text-primary); }
+
+.wordmark {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: var(--display-weight);
+  font-variation-settings: 'BNCE' var(--display-bounce);
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  width: auto;
+  transition: opacity 0.15s, width 0.22s ease, margin 0.22s ease;
+}
+
+.nav[data-collapsed='true'] .wordmark {
+  opacity: 0;
+  width: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+/* Scroll area */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nav[data-collapsed='true'] .scroll { gap: 4px; }
+
+/* Section */
+.section { display: flex; flex-direction: column; }
+
+/* When collapsed, the section label disappears, so a divider takes over
+   as the visual separator between Orientation / Work / Operational groups. */
+.nav[data-collapsed='true'] .section + .section {
+  border-top: 1px solid var(--line);
+  padding-top: 4px;
+}
+
+.sectionLabel {
+  font-family: var(--font-label);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0 16px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.15s;
+}
+
+.nav[data-collapsed='true'] .sectionLabel {
+  opacity: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* NavItem — also reused by QuickActionsPanel, GardenProfileCard, NavFooter rows */
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  text-decoration: none;
+  background: none;
+  border: none;
+  width: 100%;
+  color: var(--text-secondary);
+  transition: background 0.12s, color 0.12s, box-shadow 0.12s;
+  white-space: nowrap;
+  font-family: var(--font-label);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  position: relative;
+  min-height: 36px;
+  text-align: left;
+  box-shadow: inset 2px 0 0 0 transparent;
+}
+
+.item:hover { background: var(--surface-muted); color: var(--text-primary); }
+
+.item[data-active='true'] {
+  color: var(--nav-accent);
+  box-shadow: inset 2px 0 0 0 var(--nav-accent);
+  background: var(--nav-active-bg);
+}
+
+.nav[data-collapsed='true'] .item {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+  gap: 0;
+  min-height: 30px;
+}
+
+/* Pending items stay "lit" when collapsed, since the badge count itself is hidden */
+.nav[data-collapsed='true'] .item[data-has-badge='true'] .itemIcon {
+  color: var(--text-primary);
+}
+
+.itemIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.itemLabel {
+  flex: 1;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.15s;
+}
+
+.nav[data-collapsed='true'] .itemLabel {
+  opacity: 0;
+  width: 0;
+  flex: 0;
+  pointer-events: none;
+}
+
+.badge {
+  background: var(--chartreuse);
+  color: var(--dark-fern);
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.nav[data-collapsed='true'] .badge {
+  opacity: 0;
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  pointer-events: none;
+}
+
+/* Sidebar widget wrappers (QuickActionsPanel, GardenProfileCard) */
+.widget {
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.nav[data-collapsed='true'] .widget { padding: 4px 0; }
+
+/* Card variant — QuickActionsPanel and GardenProfileCard when expanded */
+.card {
+  margin: 0 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-journal);
+  background: var(--surface-dark-card);
+}
+
+.cardLabel {
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--chartreuse);
+  white-space: nowrap;
+}
+
+/* Full-width row button — used by QuickActionsPanel, colors matching the mockup's tertiary/secondary/primary buttons */
+.cardBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-soft);
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: filter 0.12s;
+}
+
+.cardBtn:hover { filter: brightness(1.08); }
+
+.cardBtnTertiary {
+  border-color: var(--dark-clay);
+  color: rgb(var(--vellum-rgb) / 0.9);
+  background: rgb(var(--clay-rgb) / 0.16);
+}
+
+.cardBtnSecondary {
+  border-color: var(--clay);
+  color: var(--vellum-white);
+  background: var(--clay);
+}
+
+.cardBtnPrimary {
+  border-color: var(--chartreuse);
+  color: var(--dark-fern);
+  background: var(--chartreuse);
+}
+
+/* Uneven, puzzle-piece layout of icon+label buttons — used by GardenProfileCard.
+   Flex-wrap instead of a fixed grid: each button sizes to its own text (never clips),
+   and wraps naturally, with blank filler tiles filling the leftover space. */
+.cardGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cardGridBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 9px;
+  border-radius: var(--radius-soft);
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  transition: filter 0.12s;
+}
+
+.cardGridBtn:hover { filter: brightness(1.1); }
+
+.cardGridPine {
+  border: 1px solid var(--pine);
+  background: rgb(var(--pine-rgb) / 0.24);
+  color: color-mix(in srgb, var(--pine) 45%, var(--pale-herb) 55%);
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.cardGridChartreuse {
+  border: 1px solid var(--chartreuse);
+  background: rgb(var(--chartreuse-rgb) / 0.24);
+  color: var(--chartreuse);
+}
+
+/* Blank decorative tiles — puzzle-piece filler, no content */
+.cardGridFiller {
+  flex: 1 0 26px;
+  min-height: 26px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-tight);
+  background: rgb(var(--inkwell-rgb) / 0.18);
+}
+
+/* Guards icon SVGs in cardBtn/cardGridBtn from being flex-shrunk to nothing */
+.cardIcon {
+  flex-shrink: 0;
+  display: flex;
+}
+
+/* Footer */
+.footer {
+  border-top: 1px solid var(--line);
+  padding: 8px 0;
+  flex-shrink: 0;
+}
+
+.footerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 18px;
+}
+
+.nav[data-collapsed='true'] .footerRow {
+  flex-direction: column;
+  padding: 10px 0;
+  gap: 12px;
+}
+
+/* Theme toggle switch */
+.themeToggle {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.themeTrack {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5px;
+}
+
+/* Dark is the default state — thumb rests under the Moon (right) */
+.themeThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--chartreuse);
+  transition: transform 0.18s ease;
+  transform: translateX(22px);
+  z-index: 0;
+}
+
+.themeTrack[data-theme='light'] .themeThumb { transform: translateX(0); }
+
+.iconActive { color: var(--dark-fern); position: relative; z-index: 2; }
+.iconInactive { color: var(--text-muted); position: relative; z-index: 1; }
+
+/* Vertical orientation when nav is collapsed */
+.nav[data-collapsed='true'] .themeTrack {
+  flex-direction: column;
+  width: 26px;
+  height: 48px;
+  padding: 5px 0;
+}
+
+.nav[data-collapsed='true'] .themeThumb { transform: translateY(22px); }
+
+.nav[data-collapsed='true'] .themeTrack[data-theme='light'] .themeThumb {
+  transform: translateY(0);
+}
+
+/* Notification bell — compact icon button */
+.bellBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+  display: flex;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.bellBtn:hover { color: var(--text-primary); }

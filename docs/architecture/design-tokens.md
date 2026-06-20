@@ -1,5 +1,7 @@
 # Design Tokens & Theming
 
+**Last updated:** 2026-06-20
+
 `src/styles/tokens.css` is the single source of truth. All tokens come from `docs/design/mockup.html` — do not restyle or invent new values without explicit sign-off.
 
 ## Token file structure
@@ -157,7 +159,7 @@ Once the core frontend is built, consider migrating to self-hosted font files se
 
 ## Theme persistence
 
-`ThemeProvider` reads `localStorage.getItem('vp_theme')` on mount (default: `'dark'`), sets `document.documentElement.dataset.theme`, and persists on toggle. Theme preference is one of the few things that *should* go in localStorage — it's not sensitive data, and you don't want a flash of the wrong theme on every page load.
+`ThemeProvider` reads `localStorage.getItem('theme')` on mount (default: `'dark'`), sets `document.documentElement.dataset.theme`, and persists on toggle. Theme preference is one of the few things that *should* go in localStorage — it's not sensitive data, and you don't want a flash of the wrong theme on every page load.
 
 ## Styling approach
 

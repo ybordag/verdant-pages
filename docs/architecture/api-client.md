@@ -1,5 +1,7 @@
 # API Client
 
+**Last updated:** 2026-06-20
+
 All API communication goes through a single typed client layer in `src/lib/api/`. Page components never call `fetch()` directly — they use TanStack Query hooks that call these client functions.
 
 ---
