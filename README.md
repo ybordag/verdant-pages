@@ -1,95 +1,53 @@
 # Verdant Pages
 
-Verdant Pages is the frontend application for Rhizome.
+Verdant Pages is the React frontend for the Gardening Agent system. It is the primary interface through which users interact with Rhizome — managing their garden, tracking tasks, reviewing triage, chatting with the agent, and handling approvals.
 
-This repository is where the UI and client-side product experience will live.
-Rhizome remains the backend/domain engine in a separate repository and is
-responsible for planning, task tracking, triage, incidents, weather-aware task
-updates, and structured interaction handling.
+## Where it fits
 
-## Purpose
+```
+Browser → Verdant Pages → Cambium (:8080) → Rhizome (:8001)
+```
 
-This repo will provide the app-facing experience for:
+Verdant talks exclusively to **Cambium** (the Go API gateway). It has no knowledge of Rhizome internals, LangGraph, SQLAlchemy, or Postgres. Cambium owns auth; Rhizome owns domain logic.
 
-- daily triage and garden dashboard views
-- pending approvals and structured interaction cards
-- task lists, task details, and task actions
-- incidents and treatment plan reviews
-- weather snapshots and weather-driven task-change reviews
-- project proposal browsing and review
-- image/media upload flows for future visual-garden-understanding work
+## Tech stack
 
-## Relationship to Rhizome
+Vite 8 · React 19 · TypeScript (strict) · React Router v7 · TanStack Query v5 · TanStack Table v8 · Pragmatic Drag and Drop · CSS custom properties
 
-Verdant Pages should talk to Rhizome over a formal HTTP/JSON API.
+## Quick start
 
-Rhizome owns:
+```bash
+nvm use        # uses .nvmrc — requires Node 24
+npm install
+npm run dev    # dev server at localhost:5173, proxies /api + /auth to localhost:8080
+```
 
-- planner, tracker, triage, weather, and incident logic
-- database schema and persistence
-- authentication/session backend
-- structured DTOs and interaction payloads
-- media asset ingestion/storage contract
+Cambium must be running on `:8080` for API calls to work. The frontend itself can be developed without Cambium for pure UI work.
 
-Verdant Pages owns:
+## Commands
 
-- login and app shell UX
-- dashboard and navigation
-- rendering of triage, tasks, proposals, treatment plans, and weather reviews
-- interaction-resolution UI
-- media upload and display UX
+```bash
+npm run dev        # Vite dev server with HMR
+npm run build      # TypeScript check + production build to dist/
+npm run lint       # ESLint
+npm run test       # Vitest (watch mode)
+npm run test:run   # Vitest (single run — for CI)
+npm run test:e2e   # Playwright E2E against localhost:5173
+```
 
-## Initial product direction
+## Documentation
 
-The first UI slice should focus on core operations:
+Full docs are in [`docs/`](docs/SUMMARY.md):
 
-1. login/session
-2. startup triage
-3. pending interactions
-4. task list/detail/action flows
-5. incidents and treatment-plan review
-6. weather snapshot and weather-change review
+- [Purpose and design](docs/overview/purpose.md)
+- [Getting started](docs/getting-started/setup.md)
+- [Architecture](docs/README.md)
+- [Testing](docs/development/testing.md)
+- [Roadmap](docs/roadmap/overview.md)
+- [Current work](docs/current_work/phase1_scaffold.md)
 
-Proposal UI is part of the broader Epic 9 scope, but it can follow shortly
-after the core operations slice is stable.
+## Related repos
 
-## Recommended frontend approach
-
-Current assumption:
-
-- React-based frontend
-- web-first delivery target
-- architecture that can later support desktop/mobile packaging if needed
-
-The backend contract should be stable enough that the UI does not depend on
-CLI-formatted strings or Python internals from the Rhizome repo.
-
-## Repo structure
-
-This repo is intentionally lightweight right now. The initial structure is:
-
-- `README.md`
-- `docs/design/ui_design.md`
-
-As implementation begins, we should add:
-
-- app shell and route structure
-- API client layer
-- feature modules for triage, tasks, interactions, incidents, and weather
-- upload/media support
-- test setup
-
-## Related docs
-
-- Rhizome Epic 9 plan:
-  - `/Users/yashi/Documents/Work/Code/Gardening Agent/rhizome/docs/roadmap/epic_09_app_frontend_experience.md`
-- Rhizome long-term roadmap:
-  - `/Users/yashi/Documents/Work/Code/Gardening Agent/rhizome/docs/roadmap/long_term_roadmap.md`
-
-## Next steps
-
-1. scaffold the frontend app shell
-2. define the API client boundary against Rhizome
-3. build the startup triage + pending interaction dashboard
-4. build task and treatment-plan review flows
-5. add media upload support ahead of visual-garden-understanding work
+- **Cambium** (`../cambium`) — Go API gateway. Verdant's only backend.
+- **Rhizome** (`../rhizome`) — Python domain engine and agent. Never called directly from Verdant.
+- **Fairlead** (`../fairlead`) — Rust inference router. Rhizome talks to it; Verdant has no awareness of it.
