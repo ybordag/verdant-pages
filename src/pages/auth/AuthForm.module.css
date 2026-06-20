@@ -33,7 +33,7 @@
 }
 
 .toggleLink {
-  color: var(--pine);
+  color: var(--nav-accent);
   text-decoration: none;
 }
 .toggleLink:hover { text-decoration: underline; }
