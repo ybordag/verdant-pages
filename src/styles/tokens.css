@@ -99,11 +99,13 @@
   --bg: var(--vellum-whisper);
   --bg-nav: var(--vellum-light);
 
-  /* Marketing pages (landing, login, register) — flat --vellum throughout.
-     The card reads as a card from its border + radius alone, not a
-     background-color difference from the page. */
+  /* Marketing pages (landing, login, register). Dark mode's card-vs-page
+     subtlety (--bg #181510 vs --bg-nav #201C17) is just a ~7-8/255 nudge
+     within the same hue — no different color mixed in. This mirrors that:
+     a small color-mix toward --inkwell (10%) nudges --vellum slightly
+     darker for the card, same hue family, barely-there shift. */
   --bg-marketing: var(--vellum);
-  --card-marketing: var(--vellum);
+  --card-marketing: color-mix(in srgb, var(--vellum) 90%, var(--inkwell) 10%);
 
   /* Paper surfaces */
   --surface-primary: var(--vellum-light);
