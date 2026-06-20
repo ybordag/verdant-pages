@@ -99,13 +99,15 @@
   --bg: var(--vellum-whisper);
   --bg-nav: var(--vellum-light);
 
-  /* Marketing pages (landing, login, register). Dark mode's card-vs-page
-     subtlety (--bg #181510 vs --bg-nav #201C17) is just a ~7-8/255 nudge
-     within the same hue — no different color mixed in. This mirrors that:
-     a small color-mix toward --inkwell (10%) nudges --vellum slightly
-     darker for the card, same hue family, barely-there shift. */
+  /* Marketing pages (landing, login, register). Mixing toward --inkwell in
+     srgb desaturated the card into a muddy taupe — inkwell is a near-black
+     *neutral*, so even a small mix pulls chroma down much faster than
+     lightness. Mixing in oklch instead, toward plain black, keeps vellum's
+     exact hue (black is achromatic, so the result inherits vellum's hue
+     untouched) and only nudges lightness/chroma down a notch — the same
+     "barely-there, same-hue" subtlety dark mode gets from --bg/--bg-nav. */
   --bg-marketing: var(--vellum);
-  --card-marketing: color-mix(in srgb, var(--vellum) 90%, var(--inkwell) 10%);
+  --card-marketing: color-mix(in oklch, var(--vellum) 88%, black 12%);
 
   /* Paper surfaces */
   --surface-primary: var(--vellum-light);
