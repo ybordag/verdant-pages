@@ -19,6 +19,7 @@ Technical decisions, constraints, and implementation guides.
 | [Routes](architecture/routes.md) | Full route structure including task sub-routes |
 | [Build Phases](architecture/build-phases.md) | Phased migration plan — 6 phases from scaffold to SSE |
 | [CLAUDE.md Draft](architecture/claude-md.md) | Invariants, build commands, key files — copy to repo root when building |
+| [Notifications](architecture/notifications.md) | Real-time notification SSE stream, bell icon, job progress, alert/interaction push |
 | [Known API Gaps](architecture/api-gaps.md) | Gaps identified during design, GitHub issue links, blocked features |
 | [Open Questions](architecture/open-questions.md) | Decisions needed before implementation begins |
 

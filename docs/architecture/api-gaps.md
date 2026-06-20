@@ -46,12 +46,44 @@ Gaps identified during design sessions (2026-06-19). Each has a GitHub issue. Th
 | Project expenses model + CRUD + summary endpoint | [#124](https://github.com/ybordag/rhizome/issues/124) | [#14](https://github.com/ybordag/cambium/issues/14) |
 | Shopping list model (`ShoppingItem`) + CRUD + purchase action | [#125](https://github.com/ybordag/rhizome/issues/125) | [#15](https://github.com/ybordag/cambium/issues/15) |
 
+### Garden objects — creation and care
+
+| Gap | Rhizome | Cambium |
+|---|---|---|
+| Quick care recording — `POST /api/v1/garden/{type}/{id}/care` (find-or-create + complete care task) | [#128](https://github.com/ybordag/rhizome/issues/128) | [#17](https://github.com/ybordag/cambium/issues/17) |
+
+### Incidents page
+
+| Gap | Rhizome | Cambium |
+|---|---|---|
+| `PATCH /api/v1/incidents/{id}` — edit | [#129](https://github.com/ybordag/rhizome/issues/129) | [#18](https://github.com/ybordag/cambium/issues/18) |
+| `DELETE /api/v1/incidents/{id}` — delete | [#129](https://github.com/ybordag/rhizome/issues/129) | [#18](https://github.com/ybordag/cambium/issues/18) |
+| Incident list filters: severity, incident_type, since/before, subject | [#129](https://github.com/ybordag/rhizome/issues/129) | [#18](https://github.com/ybordag/cambium/issues/18) |
+| `POST /api/v1/incidents/{id}/treatment/manual` — user-authored treatment plan | [#129](https://github.com/ybordag/rhizome/issues/129) | [#18](https://github.com/ybordag/cambium/issues/18) |
+| `PATCH /api/v1/treatment-plans/{id}` — edit treatment steps | [#129](https://github.com/ybordag/rhizome/issues/129) | [#18](https://github.com/ybordag/cambium/issues/18) |
+| `DELETE /api/v1/treatment-plans/{id}` — delete draft plan | [#129](https://github.com/ybordag/rhizome/issues/129) | [#18](https://github.com/ybordag/cambium/issues/18) |
+
+### Notifications (app shell)
+
+| Gap | Rhizome | Cambium |
+|---|---|---|
+| `GET /api/v1/notifications/stream` — SSE with heartbeat, job events, alert/interaction push | [#130](https://github.com/ybordag/rhizome/issues/130) | [#19](https://github.com/ybordag/cambium/issues/19) |
+| `GET /api/v1/notifications` — sync snapshot (current alerts + pending interactions + active jobs) | [#130](https://github.com/ybordag/rhizome/issues/130) | [#19](https://github.com/ybordag/cambium/issues/19) |
+| Background job instrumentation — triage, weather, treatment, monitor jobs emit subtask events | [#130](https://github.com/ybordag/rhizome/issues/130) | — |
+
 ### Agent / Rhizome chat page
 
 | Gap | Rhizome | Cambium |
 |---|---|---|
 | Unified entity search (`GET /api/v1/search?q=X&types=plant,task,...`) | [#126](https://github.com/ybordag/rhizome/issues/126) | [#16](https://github.com/ybordag/cambium/issues/16) |
 | Thread pinned context — model, add/remove endpoints, `session_context_intake` integration | [#127](https://github.com/ybordag/rhizome/issues/127) | [#16](https://github.com/ybordag/cambium/issues/16) |
+
+### Account / Settings page
+
+| Gap | Rhizome | Cambium |
+|---|---|---|
+| `PATCH /auth/profile` — update preferred_provider, preferred_model | — | [#20](https://github.com/ybordag/cambium/issues/20) |
+| `POST /auth/password` — change password | — | [#20](https://github.com/ybordag/cambium/issues/20) |
 
 ## Gap descriptions
 

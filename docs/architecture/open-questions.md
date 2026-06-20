@@ -4,8 +4,8 @@ Decisions needed before implementation begins. Most are blockers for Phase 4 (au
 
 ## Auth
 
-**Q1 — Public registration.**
-Is `POST /auth/register` open to anyone, or is this effectively a single-user app? This affects whether we show a "Create account" link on the login page or gate registration behind an invite.
+**Q1 — Public registration.** ✅ RESOLVED
+Registration is public for now. Very few people know about the project, so obscurity acts as a natural gate. Show "Create account" link on the login page. Revisit if the project becomes more public.
 
 ## Streaming / RhizomePage
 
@@ -31,10 +31,11 @@ When the user navigates to `/app/rhizome` for the first time:
 **Q5 — Cambium local URL.**
 Vite proxy will forward `/api` and `/auth` to Cambium. Assumed `http://localhost:8080` from Cambium CLAUDE.md — please confirm.
 
-**Q6 — Production deploy target.**
-Where will the built frontend be served?
-- Static hosting (Vercel, Netlify, Cloudflare Pages)
-- Served by Cambium itself (Go static file handler)
-- Other
+**Q6 — Production deploy target.** ✅ RESOLVED
+Served on **spark-thor** (DGX Spark hardware). Cambium serves the built static files directly — a Go static file handler for all non-API routes, serving `index.html` for any unknown path (client-side routing). No nginx, no second service.
 
-This affects how `VITE_CAMBIUM_URL` is set and whether CORS needs configuring.
+Implications:
+- `VITE_CAMBIUM_URL` stays empty in production (same-origin, no CORS needed)
+- `npm run build` produces `dist/` — Cambium must be configured to serve from that path
+- A `Dockerfile` for verdant-pages (or a build step in the Cambium Dockerfile) handles the build
+- See build-phases.md Phase 8 for the deploy steps
