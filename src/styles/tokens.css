@@ -99,17 +99,13 @@
   --bg: var(--vellum-whisper);
   --bg-nav: var(--vellum-light);
 
-  /* Marketing pages (landing, login, register). color-mix toward ANY
-     achromatic point — black, white, --inkwell — interpolates chroma
-     toward zero, not just lightness. --vellum already has fairly low
-     chroma, so even a small mix desaturates it into visible grey fast.
-     That's true in oklch just as much as srgb — the color space wasn't
-     the problem, blending toward a neutral target inherently was.
-     Relative color syntax fixes this properly: it adjusts L alone and
-     leaves C (chroma) and H (hue) completely untouched, so the card is
-     provably the same color, just darker — not a different, flatter one. */
+  /* Marketing pages (landing, login, register). --card-marketing is
+     --vellum (#F2E8C9) scaled down uniformly across R/G/B, not mixed
+     toward black/grey/--inkwell — mixing toward any achromatic point
+     desaturates a low-chroma color like vellum into visible grey fast.
+     A flat, hand-picked value keeps the same hue/saturation, just darker. */
   --bg-marketing: var(--vellum);
-  --card-marketing: oklch(from var(--vellum) calc(l - 0.05) c h);
+  --card-marketing: #E9DEB7;
 
   /* Paper surfaces */
   --surface-primary: var(--vellum-light);
