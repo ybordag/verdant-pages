@@ -1,5 +1,7 @@
 # Notifications
 
+**Last updated:** 2026-06-20
+
 ## Overview
 
 A real-time notification system surfaced as a bell icon in the nav sidebar. Covers background job progress, new monitor alerts, and pending interactions requiring approval. Built on SSE — the same `fetch + ReadableStream` infrastructure as the chat stream.
@@ -8,7 +10,7 @@ A real-time notification system surfaced as a bell icon in the nav sidebar. Cove
 
 ## Nav bell icon
 
-Always visible in `VPNav`. Shows a badge count: total of unread alerts + pending interactions. Clicking opens the notification panel.
+Always visible in `AppNav`. Shows a badge count: total of unread alerts + pending interactions. Clicking opens the notification panel.
 
 Badge counts come from:
 - `alerts` array length from the last sync or stream event

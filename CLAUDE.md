@@ -1,23 +1,99 @@
 # Verdant Pages — Claude Code Memory
 
+**Last updated:** 2026-06-20
+
 ## What this is
 
-Verdant Pages is the React frontend for the Gardening Agent system.
-It talks to **Cambium** (the Go API gateway) — never directly to Rhizome.
-Rhizome is an internal ClusterIP service unreachable from outside the cluster.
+Verdant Pages is the React frontend for the Gardening Agent system — the only
+surface a user actually lives in. It talks to **Cambium** (the Go API gateway)
+— never directly to Rhizome. Rhizome is an internal ClusterIP service
+unreachable from outside the cluster.
+
+```
+Browser → Verdant Pages → Cambium (:8080) → Rhizome (:8001) → Fairlead
+```
+
+This file is the fast-orientation doc — invariants, current status, where
+things live. For *why* things are built this way, see
+[docs/overview/purpose.md](docs/overview/purpose.md) (design principles,
+ownership boundaries) and [docs/README.md](docs/README.md) (full doc index).
+
+## Related repos
+
+All siblings under the same parent directory:
+
+| Repo | Role | Verdant's relationship to it |
+|---|---|---|
+| `../cambium` | Go API gateway — auth, versioned JSON API | Verdant's *only* backend dependency. All calls go through it. |
+| `../rhizome` | Python agent + domain engine, Postgres | Never called directly. Cambium absorbs its API surface. |
+| `../fairlead` | Rust inference router (vLLM) | No awareness of this at all — it's behind Rhizome. |
 
 ## Build + run commands
 
+```bash
 npm install
-npm run dev       # Vite dev server (proxies /api + /auth to Cambium)
-npm run build     # Production build to dist/
-npm run lint      # ESLint
+npm run dev        # Vite dev server (proxies /api + /auth to Cambium), localhost:5173
+npm run build      # tsc -b + production build to dist/
+npm run lint       # ESLint
+npm run test       # Vitest, watch mode
+npm run test:run   # Vitest, single run (CI)
+npm run test:e2e   # Playwright, Chromium, auto-starts dev server
+```
 
-No other services needed for the frontend — just Cambium running on :8080.
+No other services needed for pure UI work — just Cambium running on `:8080` for real API calls. See [docs/getting-started/quickstart.md](docs/getting-started/quickstart.md) for the fast path or [setup.md](docs/getting-started/setup.md) for the full walkthrough + troubleshooting.
+
+Requires **Node 24** (`.nvmrc`) — `nvm use` before anything else. A stale Node 18 shell produces a `node:util`/`styleText` error from Vitest, not an obviously-Node-related one.
 
 ## Environment
 
+```
 VITE_CAMBIUM_URL=  # empty = use Vite proxy; set to full URL for production
+```
+
+## Project layout
+
+```
+src/
+├── components/
+│   ├── primitives/   Generic UI atoms (Button, Input, Modal, ...) — no domain knowledge
+│   └── shell/        AppShell, AppNav, NotificationDrawer, Toast, Breadcrumb
+├── lib/
+│   ├── api/          apiFetch + domain modules (garden.ts, tasks.ts, ...) — EMPTY, Phase 4
+│   ├── auth/         AuthContext, useAuth — EMPTY, Phase 4
+│   ├── query/        QueryClient setup — EMPTY, Phase 4/5
+│   ├── sse/          consumeSSEStream() — EMPTY, Phase 4/6
+│   └── theme/        ThemeProvider — built, Phase 2
+├── pages/            One file per route, 27 stubs today — built out per docs/pages/*.md, Phase 5+
+├── routes/           router.tsx, ProtectedRoute.tsx
+├── styles/           tokens.css (single source of truth), global.css, utilities.css
+└── test/             Vitest setup.ts
+e2e/                  Playwright specs
+docs/                 Architecture decisions, page designs, roadmap — see docs/README.md
+```
+
+`lib/api`, `lib/auth`, `lib/query`, `lib/sse` being empty is not an oversight —
+see [docs/development/deferred-work.md](docs/development/deferred-work.md).
+
+## Current status
+
+| Phase | Name | Status |
+|---|---|---|
+| 1 | Scaffold + build tooling | complete |
+| 2 | Tokens + theme + fonts | complete |
+| 3 | Primitives + app shell | complete (current — `cedar` branch) |
+| 4 | Auth + API client | not started — next up |
+| 5a–5e | Feature pages | not started |
+| 6a–6c | Today / Incidents / Agent chat | blocked on rhizome#120 P1 |
+
+Full detail: [docs/roadmap/overview.md](docs/roadmap/overview.md). Per-phase build records: [docs/current_work/](docs/current_work/).
+
+## Known issues / deferred work
+
+Untested primitives, empty `lib/` dirs, unwired `NotificationDrawer`/`Toast`,
+and the offline-banner/SSE-retry UI specified in `error-handling.md` are all
+*intentional* deferrals with documented re-enable conditions — see
+[docs/development/deferred-work.md](docs/development/deferred-work.md) before
+assuming any of these is a bug.
 
 ## Architecture
 
@@ -28,6 +104,10 @@ Server state: TanStack Query v5.
 Styling: CSS custom properties (src/styles/tokens.css).
 Tables: TanStack Table v8.
 Drag and drop: Pragmatic Drag and Drop (not @dnd-kit).
+
+Error handling contract (status codes, network failure, SSE drops →
+UI behavior) is fully specified in
+[docs/development/error-handling.md](docs/development/error-handling.md).
 
 ## Invariants — never violate
 
@@ -63,3 +143,4 @@ docs/                          — Architecture decisions and page design docs.
 Read docs/architecture/build-phases.md for the full phased plan.
 The architecture docs in docs/architecture/ cover every decision made.
 The page designs in docs/pages/ cover every page in the app.
+docs/README.md explains how the whole docs/ tree is organized if you're lost.

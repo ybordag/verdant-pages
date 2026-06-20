@@ -1,5 +1,7 @@
 # Build Phases
 
+**Last updated:** 2026-06-20
+
 Eight phases from scaffold to feature-complete. Each phase has a clear deliverable you can review before the next begins.
 
 **Dependency note:** Rhizome#120 P0 is already done — garden objects, tasks, and projects can be wired to real data immediately. Rhizome#120 P1 (triage, weather, interactions, incidents, threads) is still pending and blocks the Today page, Incidents page, and Agent chat. Phases 5a–5e can all proceed in parallel with P1 work.
@@ -51,7 +53,7 @@ npm install -D eslint prettier typescript
 - `src/styles/global.css` — reset, body, scrollbar, shared keyframes (`pIn`, `vsA`, `acceptGlow`)
 - `src/styles/utilities.css` — `.dg`, `.gg`, `.chip`, `.hr`, `.cd`, `.nb`
 - Google Fonts `<link>` in `index.html`
-- `ThemeProvider` — reads/writes `localStorage('vp_theme')`, sets `data-theme` on `<html>`, defaults to `'dark'`
+- `ThemeProvider` — reads/writes `localStorage('theme')`, sets `data-theme` on `<html>`, defaults to `'dark'`
 - `App.tsx` wrapped in `ThemeProvider`
 
 **Smoke test:**
@@ -74,8 +76,8 @@ npm install -D eslint prettier typescript
 - `StatusBadge`, `ProgressBar`
 
 **Layout:**
-- `AppShell` (VPNav + content wrapper)
-- `VPNav` — all 7 nav items with icons, badge slots, collapse to 52px, pending-state color dim
+- `AppShell` (AppNav + content wrapper)
+- `AppNav` — all 7 nav items with icons, badge slots, collapse to 52px, pending-state color dim
   - `QuickActionsPanel` (3 buttons, collapses to icons)
   - `GardenProfileCard` (mini plot, zone, links; collapses to icon)
   - `NavFooter` (avatar placeholder, theme toggle, notification bell)

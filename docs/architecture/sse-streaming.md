@@ -1,5 +1,7 @@
 # SSE & Agent Chat Streaming
 
+**Last updated:** 2026-06-20
+
 ## The EventSource problem
 
 The native `EventSource` API cannot be used for Cambium's streaming endpoints because:

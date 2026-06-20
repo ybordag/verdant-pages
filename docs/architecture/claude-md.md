@@ -1,6 +1,10 @@
-# CLAUDE.md Draft
+# CLAUDE.md Draft (historical)
 
-Copy this to the repo root as `CLAUDE.md` when starting the build.
+**Status:** Superseded. The repo root [`/CLAUDE.md`](../../CLAUDE.md) is now the canonical, actively-maintained file — it has since diverged from this draft (added invariants like "no drawers," current phase status, project layout, links to error-handling.md and deferred-work.md). This draft is kept only as a record of what was planned before Phase 0. Don't edit this file to keep it in sync — edit the root one.
+
+---
+
+Original draft, written before the repo existed, intended to be copied to the repo root when starting the build:
 
 ---
 

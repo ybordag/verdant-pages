@@ -37,14 +37,14 @@ npm run test:e2e   # Playwright E2E against localhost:5173
 
 ## Documentation
 
-Full docs are in [`docs/`](docs/SUMMARY.md):
+Full docs are in [`docs/`](docs/README.md), which also explains how the docs tree itself is organized:
 
 - [Purpose and design](docs/overview/purpose.md)
-- [Getting started](docs/getting-started/setup.md)
-- [Architecture](docs/README.md)
-- [Testing](docs/development/testing.md)
+- [Quickstart](docs/getting-started/quickstart.md) · [full setup](docs/getting-started/setup.md)
+- [Architecture index](docs/README.md)
+- [Testing](docs/development/testing.md) · [error handling](docs/development/error-handling.md) · [deferred work](docs/development/deferred-work.md)
 - [Roadmap](docs/roadmap/overview.md)
-- [Current work](docs/current_work/phase1_scaffold.md)
+- [Current work](docs/current_work/)
 
 ## Related repos
 

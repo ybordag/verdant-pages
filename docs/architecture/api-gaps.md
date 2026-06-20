@@ -1,5 +1,7 @@
 # Known API Gaps
 
+**Last updated:** 2026-06-20
+
 Gaps identified during design sessions (2026-06-19). Each has a GitHub issue. The frontend build is blocked on these for the affected pages.
 
 ## Issue tracker

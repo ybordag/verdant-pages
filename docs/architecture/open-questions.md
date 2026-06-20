@@ -1,5 +1,7 @@
 # Open Questions
 
+**Last updated:** 2026-06-20
+
 Decisions needed before implementation begins. Most are blockers for Phase 4 (auth) or later.
 
 ## Auth

@@ -1,6 +1,8 @@
 # Setup
 
-How to run Verdant Pages locally.
+**Last updated:** 2026-06-20
+
+How to run Verdant Pages locally. For the condensed version, see [quickstart.md](quickstart.md).
 
 ---
 
@@ -122,6 +124,18 @@ npm run build
 ```
 
 TypeScript compiles first (`tsc -b`), then Vite bundles. The `dist/` output is served by Cambium as static files in production — see [`docs/architecture/build-phases.md`](../architecture/build-phases.md) (Phase 8) for the deploy process.
+
+---
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `nvm use` fails with "no such version" | Node 24 not installed yet | `nvm install` first, then `nvm use` |
+| API calls return connection refused | Cambium isn't running | Start it per step 4 above — the frontend itself runs fine without it, but `/api`/`/auth` calls will fail |
+| `npm run test:e2e` hangs on startup | Port `5173` already in use by another `npm run dev` | Stop the other dev server, or let Playwright reuse it (it detects an already-running server) |
+| Vitest fails with a `node:util` / `styleText` error | Wrong Node version active in this shell | Re-run `nvm use` — Node 18 (the system default in some shells) doesn't support what Vite/Vitest need |
+| Styles look wrong after pulling new changes | Stale Vite cache | `rm -rf node_modules/.vite` and restart `npm run dev` |
 
 ---
 
