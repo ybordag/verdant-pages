@@ -1,6 +1,6 @@
 import type { TokenResponse } from '@/lib/types/cambium'
 
-const BASE = import.meta.env.VITE_CAMBIUM_URL ?? ''
+export const BASE = import.meta.env.VITE_CAMBIUM_URL ?? ''
 
 let accessToken: string | null = null
 

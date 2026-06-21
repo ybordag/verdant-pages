@@ -1,11 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import * as client from './client'
+import * as stream from '@/lib/sse/stream'
 import * as notifications from './notifications'
 
 vi.mock('./client', async () => {
   const actual = await vi.importActual<typeof client>('./client')
   return { ...actual, apiFetch: vi.fn() }
 })
+
+vi.mock('@/lib/sse/stream', () => ({ consumeNotificationStream: vi.fn() }))
 
 describe('notifications API', () => {
   beforeEach(() => {
@@ -24,5 +27,10 @@ describe('notifications API', () => {
   it('getNotifications builds a query string from since', async () => {
     await notifications.getNotifications({ since: '2026-06-20T00:00:00Z' })
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/notifications?since=2026-06-20T00%3A00%3A00Z')
+  })
+
+  it('streamNotifications delegates to consumeNotificationStream', () => {
+    notifications.streamNotifications()
+    expect(stream.consumeNotificationStream).toHaveBeenCalledTimes(1)
   })
 })

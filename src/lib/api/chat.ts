@@ -1,6 +1,7 @@
 import { apiFetch } from './client'
+import { consumeSSEStream } from '@/lib/sse/stream'
 import type { ContextObject, CreateThreadRequest, ThreadMessagesResponse, ThreadView } from '@/lib/types/rhizome'
-import type { ThreadIDResponse } from '@/lib/types/cambium'
+import type { SSEEvent, ThreadIDResponse } from '@/lib/types/cambium'
 
 export function createThread(data: CreateThreadRequest): Promise<ThreadIDResponse> {
   return apiFetch('/api/v1/threads', { method: 'POST', body: JSON.stringify(data) })
@@ -31,6 +32,10 @@ export function removeThreadContext(threadId: string, subjectType: string, subje
   return apiFetch(`/api/v1/threads/${threadId}/context/${subjectType}/${subjectId}`, { method: 'DELETE' })
 }
 
-// streamChat/streamResume (SSE) are intentionally not implemented yet — both
-// depend on src/lib/sse/stream.ts (consumeSSEStream), which is still empty
-// pending Phase 6c. See deferred-work.md.
+export function streamChat(threadId: string, message: string): AsyncGenerator<SSEEvent> {
+  return consumeSSEStream(`/api/v1/chat/stream?thread_id=${threadId}`, { message })
+}
+
+export function streamResume(threadId: string, resolution: string): AsyncGenerator<SSEEvent> {
+  return consumeSSEStream('/api/v1/chat/resume/stream', { thread_id: threadId, resolution })
+}

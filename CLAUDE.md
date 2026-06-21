@@ -64,7 +64,7 @@ src/
 │   │                 still blocked and which individual functions are intentionally omitted
 │   ├── auth/         AuthContext, useAuth — built, Phase 4
 │   ├── query/        still EMPTY — QueryClientProvider is wired directly in App.tsx instead
-│   ├── sse/          consumeSSEStream() — EMPTY, needed Phase 4/6
+│   ├── sse/          consumeSSEStream() + consumeNotificationStream() — built
 │   └── theme/        ThemeProvider — built, Phase 2
 ├── pages/            One file per route, 27 stubs today — built out per docs/pages/*.md, Phase 5+
 ├── routes/           router.tsx, ProtectedRoute.tsx
@@ -74,8 +74,9 @@ e2e/                  Playwright specs
 docs/                 Architecture decisions, page designs, roadmap — see docs/README.md
 ```
 
-`lib/api`, `lib/auth`, `lib/query`, `lib/sse` being empty is not an oversight —
-see [docs/development/deferred-work.md](docs/development/deferred-work.md).
+`lib/query` is still empty (not an oversight — `QueryClientProvider` is wired directly into
+`App.tsx` instead). See [docs/development/deferred-work.md](docs/development/deferred-work.md)
+for the remaining `lib/api` domain modules still blocked on rhizome backend work.
 
 ## Current status
 
@@ -136,7 +137,7 @@ UI behavior) is fully specified in
 src/styles/tokens.css          — ALL design tokens (both themes). Single source of truth.
 src/lib/api/client.ts          — Base fetch wrapper, in-memory token, 401 handling, refresh retry.
 src/lib/auth/context.tsx       — AuthContext, useAuth hook.
-src/lib/sse/stream.ts          — consumeSSEStream() async generator.
+src/lib/sse/stream.ts          — consumeSSEStream() + consumeNotificationStream() async generators.
 src/routes/router.tsx          — All routes.
 src/routes/ProtectedRoute.tsx  — Auth guard.
 docs/                          — Architecture decisions and page design docs.
