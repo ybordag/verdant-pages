@@ -34,6 +34,17 @@ describe('activity API', () => {
     )
   })
 
+  it('listActivity includes date bounds and pagination cursor', async () => {
+    await activity.listActivity({
+      since: '2026-06-01T00:00:00',
+      before_timestamp: '2026-06-21T12:00:00',
+      limit: 20,
+    })
+    expect(client.apiFetch).toHaveBeenCalledWith(
+      '/api/v1/activity?since=2026-06-01T00%3A00%3A00&before_timestamp=2026-06-21T12%3A00%3A00&limit=20',
+    )
+  })
+
   it('getActivityStats builds a query string from params', async () => {
     await activity.getActivityStats({
       since: '2026-06-01T00:00:00',
