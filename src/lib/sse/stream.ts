@@ -31,21 +31,34 @@ async function* readSSEEvents<T>(res: Response): AsyncGenerator<T> {
 // Never use EventSource — it only supports GET and can't send a custom
 // Authorization header, and a token in a query param would leak into browser
 // history, server logs, and Referer headers. fetch + ReadableStream instead.
-export async function* consumeSSEStream(url: string, body: unknown): AsyncGenerator<SSEEvent> {
+//
+// `signal` lets a caller cancel an in-flight stream (route change, component
+// unmount, logout) — without it, an open connection has no way to be torn
+// down client-side and keeps yielding events on a token that may no longer
+// be valid.
+export async function* consumeSSEStream(
+  url: string,
+  body: unknown,
+  signal?: AbortSignal,
+): AsyncGenerator<SSEEvent> {
+  const token = getAccessToken()
   const res = await fetch(BASE + url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${getAccessToken()}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(body),
+    signal,
   })
   yield* readSSEEvents<SSEEvent>(res)
 }
 
-export async function* consumeNotificationStream(): AsyncGenerator<NotificationEvent> {
+export async function* consumeNotificationStream(signal?: AbortSignal): AsyncGenerator<NotificationEvent> {
+  const token = getAccessToken()
   const res = await fetch(BASE + '/api/v1/notifications/stream', {
-    headers: { Authorization: `Bearer ${getAccessToken()}` },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    signal,
   })
   yield* readSSEEvents<NotificationEvent>(res)
 }

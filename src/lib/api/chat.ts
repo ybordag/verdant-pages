@@ -32,10 +32,10 @@ export function removeThreadContext(threadId: string, subjectType: string, subje
   return apiFetch(`/api/v1/threads/${threadId}/context/${subjectType}/${subjectId}`, { method: 'DELETE' })
 }
 
-export function streamChat(threadId: string, message: string): AsyncGenerator<SSEEvent> {
-  return consumeSSEStream(`/api/v1/chat/stream?thread_id=${threadId}`, { message })
+export function streamChat(threadId: string, message: string, signal?: AbortSignal): AsyncGenerator<SSEEvent> {
+  return consumeSSEStream(`/api/v1/chat/stream?thread_id=${threadId}`, { message }, signal)
 }
 
-export function streamResume(threadId: string, resolution: string): AsyncGenerator<SSEEvent> {
-  return consumeSSEStream('/api/v1/chat/resume/stream', { thread_id: threadId, resolution })
+export function streamResume(threadId: string, resolution: string, signal?: AbortSignal): AsyncGenerator<SSEEvent> {
+  return consumeSSEStream('/api/v1/chat/resume/stream', { thread_id: threadId, resolution }, signal)
 }

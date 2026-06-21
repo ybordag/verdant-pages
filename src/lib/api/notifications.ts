@@ -7,6 +7,6 @@ export function getNotifications(params?: { since?: string }): Promise<Notificat
   return apiFetch(`/api/v1/notifications${toQueryString(params)}`)
 }
 
-export function streamNotifications(): AsyncGenerator<NotificationEvent> {
-  return consumeNotificationStream()
+export function streamNotifications(signal?: AbortSignal): AsyncGenerator<NotificationEvent> {
+  return consumeNotificationStream(signal)
 }

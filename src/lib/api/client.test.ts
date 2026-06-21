@@ -92,4 +92,34 @@ describe('apiFetch', () => {
     expect(getAccessToken()).toBeNull()
     expect(window.location.replace).toHaveBeenCalledWith('/login')
   })
+
+  it('shares one in-flight refresh across concurrent 401s instead of racing two refresh calls', async () => {
+    setAccessToken('expired-tok')
+    let refreshCalls = 0
+    const seenOnce = new Set<string>()
+    vi.mocked(fetch).mockImplementation(async (url) => {
+      const u = String(url)
+      if (u.endsWith('/auth/refresh')) {
+        refreshCalls++
+        // Simulate a real network round-trip so both 401s are in flight
+        // before either refresh call resolves.
+        await new Promise((r) => setTimeout(r, 5))
+        return jsonResponse({ access_token: 'new-tok' })
+      }
+      // First hit per URL is the stale-token 401; the retry (after refresh) succeeds.
+      if (!seenOnce.has(u)) {
+        seenOnce.add(u)
+        return jsonResponse({ message: 'expired' }, 401)
+      }
+      return jsonResponse({ ok: true, url: u })
+    })
+
+    // Two requests both hit the expired token at once.
+    const [resultA, resultB] = await Promise.all([apiFetch('/api/v1/tasks'), apiFetch('/api/v1/garden/profile')])
+
+    expect(refreshCalls).toBe(1)
+    expect(resultA).toMatchObject({ ok: true })
+    expect(resultB).toMatchObject({ ok: true })
+    expect(getAccessToken()).toBe('new-tok')
+  })
 })

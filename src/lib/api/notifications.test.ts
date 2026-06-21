@@ -31,6 +31,12 @@ describe('notifications API', () => {
 
   it('streamNotifications delegates to consumeNotificationStream', () => {
     notifications.streamNotifications()
-    expect(stream.consumeNotificationStream).toHaveBeenCalledTimes(1)
+    expect(stream.consumeNotificationStream).toHaveBeenCalledWith(undefined)
+  })
+
+  it('streamNotifications forwards an AbortSignal when given', () => {
+    const controller = new AbortController()
+    notifications.streamNotifications(controller.signal)
+    expect(stream.consumeNotificationStream).toHaveBeenCalledWith(controller.signal)
   })
 })

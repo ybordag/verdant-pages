@@ -24,18 +24,34 @@ export class ApiError extends Error {
 // apiFetch needs to call this on 401, and auth.ts's apiFetch-based functions
 // need to import apiFetch from this module. auth.ts's exported
 // tryRefreshToken() is a thin wrapper around this.
+//
+// Concurrent callers share one in-flight refresh instead of each firing
+// their own POST /auth/refresh: the refresh token rotates on every use, so
+// two simultaneous refreshes would race and the loser would fail, forcing a
+// spurious logout even though the session was fine. This happens for real —
+// e.g. several components 401 at once right as the access token expires.
+let refreshInFlight: Promise<boolean> | null = null
+
 export async function refreshAccessToken(): Promise<boolean> {
-  const res = await fetch(BASE + '/auth/refresh', {
-    method: 'POST',
-    credentials: 'include',
-  })
-  if (!res.ok) {
-    setAccessToken(null)
-    return false
-  }
-  const data = (await res.json()) as TokenResponse
-  setAccessToken(data.access_token)
-  return true
+  if (refreshInFlight) return refreshInFlight
+  refreshInFlight = (async () => {
+    try {
+      const res = await fetch(BASE + '/auth/refresh', {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (!res.ok) {
+        setAccessToken(null)
+        return false
+      }
+      const data = (await res.json()) as TokenResponse
+      setAccessToken(data.access_token)
+      return true
+    } finally {
+      refreshInFlight = null
+    }
+  })()
+  return refreshInFlight
 }
 
 // Builds a query string from a params object, skipping null/undefined values

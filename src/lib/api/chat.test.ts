@@ -66,16 +66,29 @@ describe('chat API', () => {
 
   it('streamChat delegates to consumeSSEStream with the thread_id query param and message body', () => {
     chat.streamChat('thread-1', 'hello')
-    expect(stream.consumeSSEStream).toHaveBeenCalledWith('/api/v1/chat/stream?thread_id=thread-1', {
-      message: 'hello',
-    })
+    expect(stream.consumeSSEStream).toHaveBeenCalledWith(
+      '/api/v1/chat/stream?thread_id=thread-1',
+      { message: 'hello' },
+      undefined,
+    )
+  })
+
+  it('streamChat forwards an AbortSignal when given', () => {
+    const controller = new AbortController()
+    chat.streamChat('thread-1', 'hello', controller.signal)
+    expect(stream.consumeSSEStream).toHaveBeenCalledWith(
+      '/api/v1/chat/stream?thread_id=thread-1',
+      { message: 'hello' },
+      controller.signal,
+    )
   })
 
   it('streamResume delegates to consumeSSEStream with thread_id and resolution in the body', () => {
     chat.streamResume('thread-1', 'confirm')
-    expect(stream.consumeSSEStream).toHaveBeenCalledWith('/api/v1/chat/resume/stream', {
-      thread_id: 'thread-1',
-      resolution: 'confirm',
-    })
+    expect(stream.consumeSSEStream).toHaveBeenCalledWith(
+      '/api/v1/chat/resume/stream',
+      { thread_id: 'thread-1', resolution: 'confirm' },
+      undefined,
+    )
   })
 })
