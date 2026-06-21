@@ -58,7 +58,10 @@ src/
 │   ├── primitives/   Generic UI atoms (Button, Input, Modal, ...) — no domain knowledge
 │   └── shell/        AppShell, AppNav, NotificationDrawer, Toast, Breadcrumb
 ├── lib/
-│   ├── api/          client.ts + auth.ts built; domain modules (garden.ts, tasks.ts, ...) — EMPTY, Phase 4 follow-up
+│   ├── api/          client.ts + auth.ts built. 12/16 domain modules built (garden, plants,
+│   │                 tasks, calendar, shopping, search, alerts, notifications, interactions,
+│   │                 chat, triage, weather) — see docs/development/deferred-work.md for what's
+│   │                 still blocked and which individual functions are intentionally omitted
 │   ├── auth/         AuthContext, useAuth — built, Phase 4
 │   ├── query/        still EMPTY — QueryClientProvider is wired directly in App.tsx instead
 │   ├── sse/          consumeSSEStream() — EMPTY, needed Phase 4/6

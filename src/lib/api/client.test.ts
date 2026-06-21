@@ -1,5 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { apiFetch, ApiError, getAccessToken, setAccessToken } from './client'
+import { apiFetch, ApiError, getAccessToken, setAccessToken, toQueryString } from './client'
+
+describe('toQueryString', () => {
+  it('returns an empty string for undefined params', () => {
+    expect(toQueryString(undefined)).toBe('')
+  })
+
+  it('returns an empty string when all values are null/undefined', () => {
+    expect(toQueryString({ a: undefined, b: null })).toBe('')
+  })
+
+  it('serializes string/number/boolean values', () => {
+    expect(toQueryString({ q: 'tomatoes', limit: 5, available: true })).toBe('?q=tomatoes&limit=5&available=true')
+  })
+
+  it('omits individual null/undefined values while keeping the rest', () => {
+    expect(toQueryString({ status: 'pending', project_id: undefined })).toBe('?status=pending')
+  })
+})
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

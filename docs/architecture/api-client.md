@@ -297,17 +297,17 @@ streamResume(threadId: string, resolution: string): AsyncGenerator<SSEEvent>
 
 ```typescript
 runTriage(threadId: string): Promise<ChatResponse>       // AI trigger
-getLatestTriage(): Promise<TriageSnapshotView>
-getTriageRecommendations(): Promise<TriageSnapshotView>
+getLatestTriage(): Promise<TriageSnapshotView | null>    // null if no snapshot exists yet
+getTriageRecommendations(): Promise<TriageSnapshotView>  // NOTE: not implemented in Rhizome — no GET /triage/recommendations route exists server-side
 ```
 
 ### `weather.ts`
 
 ```typescript
-getLatestWeather(): Promise<WeatherSnapshotView>
-refreshWeather(): Promise<WeatherSnapshotView>
-listWeatherImpactedTasks(params?: { project_id?: string }): Promise<WeatherImpactView[]>
-approveWeatherChangeset(changesetId: string): Promise<void>
+getLatestWeather(): Promise<WeatherSnapshotView | null>
+refreshWeather(): Promise<WeatherSnapshotView>             // 400 if garden profile has no location set
+listWeatherImpactedTasks(params?: { project_id?: string }): Promise<WeatherImpactedTaskView[]>
+approveWeatherChangeset(changesetId: string): Promise<WeatherTaskChangeSetView>  // 404 not found, 400 already approved
 draftWeatherTasks(threadId: string): Promise<ChatResponse>  // AI trigger
 ```
 
@@ -336,7 +336,9 @@ getIncidentActivity(id: string): Promise<ActivityEventView[]>
 getPendingInteraction(): Promise<InteractionEnvelopeView | null>
 listRecentInteractions(params?: { limit?: number }): Promise<InteractionEnvelopeView[]>
 getInteraction(id: string): Promise<InteractionEnvelopeView>
-resolveInteraction(id: string, data: { action: string; notes?: string }): Promise<void>
+resolveInteraction(id: string, data: { action: string; notes?: string }): Promise<InteractionEnvelopeView>
+  // rhizome#136 made this return the updated envelope, not just 200 OK — use it
+  // to update local state directly instead of refetching.
 ```
 
 ### `activity.ts`
@@ -530,17 +532,68 @@ export interface ProjectSummaryView {
 export interface ProjectDetailView extends ProjectSummaryView {
   approved_plan?: Record<string, unknown>;
 }
+
+export interface TriageSnapshotView {
+  id: string; created_at: string;
+  reasoning_summary: string; user_focus_summary?: string;
+  weather_snapshot_id?: string;
+  urgent_tasks: TaskSummaryView[]; routine_tasks: TaskSummaryView[]; project_tasks: TaskSummaryView[];
+}
+
+export interface WeatherDayImpactView {
+  date: string; impact_type: string; severity: string; summary: string;
+  reason?: string; timing_advice?: string;
+}
+
+export interface WeatherRecommendedActionView { date: string; action: string }
+
+export interface WeatherSnapshotView {
+  id: string; created_at: string;
+  location_label: string; timezone: string;
+  forecast_start_date: string; forecast_end_date: string;
+  conditions_summary: string; alerts_summary?: string;
+  derived_impacts: WeatherDayImpactView[]; recommended_actions: WeatherRecommendedActionView[];
+}
+
+export interface WeatherImpactedTaskView {
+  task_id: string; task_title: string; project_id?: string;
+  impact_type: string; impact_kind: string; impact_date?: string; summary: string;
+}
+
+export interface WeatherTaskChangeSetView {
+  id: string; status: string; summary: string; weather_snapshot_id: string;
+  created_at: string; approved_at?: string;
+  affected_tasks: TaskSummaryView[];
+}
+
+export interface InteractionActionView {
+  id: string; label: string; kind: string;
+  style_hint: string; input_schema?: Record<string, unknown>[];
+}
+
+export interface InteractionEnvelopeView {
+  id: string; interaction_type: string; status: string;
+  title: string; summary: string; body?: string;
+  sections: Record<string, unknown>[]; actions: InteractionActionView[];
+  context: Record<string, unknown>;
+  created_at: string; resolved_at?: string;
+  resolution_action?: string; resolution_summary?: string;
+}
 ```
 
-### P1 types (pending rhizome#120 P1)
+### P1/P2 types (partially shipped, partially pending)
 
-These need to be added once the P1 view models land in Rhizome:
+`TriageSnapshotView`, `WeatherSnapshotView`, `WeatherImpactedTaskView`, `WeatherTaskChangeSetView`,
+and `InteractionEnvelopeView` are now shipped (rhizome#133, rhizome#136 — defined above). These
+still need to be added once the remaining P1/P2 view models land in Rhizome — tracked per-feature
+in [rhizome#134](https://github.com/ybordag/rhizome/issues/134) (activity feed),
+[#135](https://github.com/ybordag/rhizome/issues/135) (incidents/treatment plans),
+[#137](https://github.com/ybordag/rhizome/issues/137) (projects), and
+[#139](https://github.com/ybordag/rhizome/issues/139) (ThreadView, lower priority). The original
+umbrella issue, #132, was closed in favor of this per-feature split — see #132 for why:
 
 ```typescript
 // Still needed in views.py → types:
-TriageSnapshotView
-WeatherSnapshotView
-InteractionEnvelopeView
 IncidentView, IncidentDetailView
 TreatmentPlanView
 ActivityEventView

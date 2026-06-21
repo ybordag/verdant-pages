@@ -38,6 +38,19 @@ export async function refreshAccessToken(): Promise<boolean> {
   return true
 }
 
+// Builds a query string from a params object, skipping null/undefined values
+// and coercing booleans/numbers to strings (Cambium/Rhizome query params are
+// always plain strings).
+export function toQueryString<T extends object>(params?: T): string {
+  if (!params) return ''
+  const entries = Object.entries(params as Record<string, unknown>).filter(
+    ([, v]) => v !== undefined && v !== null,
+  )
+  if (entries.length === 0) return ''
+  const qs = new URLSearchParams(entries.map(([k, v]) => [k, String(v)]))
+  return `?${qs.toString()}`
+}
+
 export async function apiFetch<T>(path: string, options: RequestInit = {}, skipRefresh = false): Promise<T> {
   const token = accessToken
 

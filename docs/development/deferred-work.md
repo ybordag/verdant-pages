@@ -10,13 +10,23 @@ If you're auditing test coverage or docs completeness and find something not lis
 
 ### `src/lib/api/` domain modules, `src/lib/sse/`, `src/lib/query/` tuning
 
-**What's deferred:** Auth is done — `src/lib/api/client.ts` (`apiFetch`, `ApiError`, in-memory token, 401→refresh→retry), `src/lib/api/auth.ts` (`login`, `register`, `logout`, `tryRefreshToken`, `getSession`), and `src/lib/auth/context.tsx` (`AuthProvider`, `useAuth`, proactive refresh) are all built and tested against a real Cambium instance. `ProtectedRoute` does a real check. `LoginPage`/`RegisterPage` call the real API and handle 401/409 inline. `QueryClientProvider` is wired into `App.tsx` with default options.
+**What's deferred:** Auth core is done (see the previous entry's history). As of 2026-06-21, 12 of 16 domain modules are also built and tested against the documented contract in [api-client.md](../architecture/api-client.md): `garden.ts`, `plants.ts`, `tasks.ts`, `calendar.ts`, `shopping.ts`, `search.ts`, `alerts.ts`, `notifications.ts`, `interactions.ts`, `chat.ts` (non-streaming parts only), `triage.ts`, `weather.ts`. `src/lib/types/rhizome.ts` now exists with the view/request types these modules need.
 
-Still empty: the 16 domain modules (`garden.ts`, `plants.ts`, `tasks.ts`, `projects.ts`, `chat.ts`, `triage.ts`, `weather.ts`, `incidents.ts`, `interactions.ts`, `activity.ts`, `alerts.ts`, `notifications.ts`, `shopping.ts`, `search.ts`, `calendar.ts`, `media.ts`) and `src/lib/types/rhizome.ts` — only `src/lib/types/cambium.ts`'s auth types (`TokenResponse`, `SessionResponse`) exist so far. `src/lib/api/stream.ts` (`consumeSSEStream`, `consumeNotificationStream`) is also unbuilt — not needed until chat (Phase 6c) or notifications (Phase 7).
+`triage.ts`/`weather.ts` were the last to land — rhizome#133 was independently verified (code review + a from-scratch happy-path test covering the actual point of the fix: resolving task IDs into full `TaskSummaryView` objects, which had zero coverage anywhere before) rather than trusted at face value, the same standard `#136`/`#138` got. `triage.ts` omits `getTriageRecommendations` — confirmed `GET /triage/recommendations` doesn't exist anywhere in Rhizome's `data_router`; Cambium's `routes.go` still proxies to it (a dead route that will always 404), separate finding, not filed as its own issue since it's cheap to just not call.
 
-**Why deferred:** This was a deliberate scope split within Phase 4 — auth core first and verified working end-to-end, domain modules as a follow-up, since the domain modules are large in count but mechanical (signatures fully specified in [api-client.md](../architecture/api-client.md)) and don't block verifying the auth plumbing.
+**Still genuinely empty:** `projects.ts`, `incidents.ts`, `activity.ts`, `media.ts` — blocked on rhizome backend work (see below). `src/lib/api/stream.ts` (`consumeSSEStream`, `consumeNotificationStream`) is also unbuilt, which is why `chat.ts`'s `streamChat`/`streamResume` and `notifications.ts`'s `streamNotifications` aren't implemented either — not needed until chat (Phase 6c) or notifications (Phase 7).
 
-**Re-enable when:** Starting the Phase 5 feature pages — each domain module gets built (or the relevant subset does) as the page that needs it gets built, rather than all 16 up front with no caller.
+**Functions intentionally omitted from the 12 "done" modules** (the backend endpoint still returns `{"result": "<string>"}` instead of structured JSON, confirmed by reading `agent/api/routers.py` directly — not by trusting a closed-issue label):
+- `garden.ts`: `updateGardenProfile`, `updateBed`, `createContainer`, `updateContainer`
+- `plants.ts`: `getPlant`, `createPlant`, `updatePlant`, `createPlantBatch`, `getPlantActivity`
+- `tasks.ts`: `listTasksBlocked`, `updateTask`, `getTaskActivity`, `updateTaskSeries`
+- `triage.ts`: `getTriageRecommendations` (route doesn't exist server-side at all, not a string-wrap issue)
+
+Tracked in a rhizome issue for the garden/plants/tasks create+update gap (filed by the project owner directly, not by Claude — confirm the issue number before linking it here). These omissions don't block the rest of each module; everything else in each file is real and safe to use.
+
+**Why deferred:** This was a deliberate scope split within Phase 4 — auth core first and verified working end-to-end, domain modules as a follow-up. Within that follow-up, modules were split further by actual backend readiness (verified per-endpoint, not per-module) rather than built all-or-nothing against a spec that assumed full backend support.
+
+**Re-enable when:** `incidents.ts`/`activity.ts`/`projects.ts` once rhizome#134/#135/#137 land; the omitted create/update functions above once the garden/plants/tasks write-endpoint gap is fixed; `media.ts` once rhizome#117 lands (not started at all, separate from the structured-JSON backlog).
 
 ---
 

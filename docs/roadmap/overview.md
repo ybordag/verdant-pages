@@ -111,8 +111,11 @@ Done:
 - Closed a coverage audit's findings: added unit tests for `auth.ts` (previously only covered indirectly through mocks), `NavContext` (collapse/persist, mirroring `ThemeProvider.test.tsx`), `ThemeToggle` (the one primitive without a test), and `AppNav` (Garden Profile/Quick Actions cards, log-out button, collapse behavior)
 - Tests: full suite now 125 unit + 19 E2E, all passing against a live Cambium instance. `auth.spec.ts` covers register→logout→login, direct login to an existing account, wrong-password rejection, registering an already-taken email (with the "Log in instead" redirect), and the unauthenticated-redirect case.
 
+**Domain modules — 12/16 built (2026-06-21):** `garden.ts`, `plants.ts`, `tasks.ts`, `calendar.ts`, `shopping.ts`, `search.ts`, `alerts.ts`, `notifications.ts`, `interactions.ts`, `chat.ts` (non-streaming parts), `triage.ts`, `weather.ts`, plus `src/lib/types/rhizome.ts`. Built only against endpoints confirmed (by reading `agent/api/routers.py` directly) to return real structured JSON — a handful of individual functions within these modules are intentionally omitted where the specific endpoint is still string-wrapped; see [deferred-work.md](../development/deferred-work.md) for the exact list. `triage.ts`/`weather.ts` landed last, after independently verifying rhizome#133 (code review + a new happy-path test for triage's task-ID resolution, which had no coverage anywhere before) rather than trusting the closed-issue label. 27 new unit test files, 81 new tests (209 total, up from 128).
+
 **Not started:**
-- All 16 domain API modules (`garden.ts`, `plants.ts`, `tasks.ts`, …) + `src/lib/types/rhizome.ts`
+- `projects.ts`, `incidents.ts`, `activity.ts` — blocked on rhizome backend work (structured-JSON gaps, tracked as rhizome issues split by feature)
+- `media.ts` — genuinely not started in rhizome at all (rhizome#117), separate from the structured-JSON backlog
 - `src/lib/api/stream.ts` — `consumeSSEStream`, `consumeNotificationStream` (needed for Phase 6c chat, Phase 7 notifications — not needed yet)
 
 See [deferred-work.md](../development/deferred-work.md) for the full breakdown of what's deferred and why.
