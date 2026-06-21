@@ -63,8 +63,7 @@ src/
 │   ├── api/          client.ts + auth.ts built. 15/16 domain modules built (garden, plants,
 │   │                 tasks, calendar, shopping, search, alerts, notifications, interactions,
 │   │                 chat, triage, weather, incidents, projects, activity) — see docs/development/deferred-work.md
-│   │                 for what's still blocked and which individual functions are intentionally
-│   │                 omitted
+│   │                 for the remaining media blocker and intentional non-contracts
 │   ├── auth/         AuthContext, useAuth — built, Phase 4
 │   ├── connectivity/ Offline detection (reportNetworkFailure/Success, useConnectivity) — built
 │   ├── query/        createQueryClient() — custom retry (skips ApiError, retries network
@@ -81,7 +80,7 @@ docs/                 Architecture decisions, page designs, roadmap — see docs
 ```
 
 See [docs/development/deferred-work.md](docs/development/deferred-work.md)
-for the remaining `lib/api` endpoint-level deferrals.
+for the remaining intentional deferrals and re-enable conditions.
 
 ## Current status
 
@@ -90,7 +89,7 @@ for the remaining `lib/api` endpoint-level deferrals.
 | 1 | Scaffold + build tooling | complete |
 | 2 | Tokens + theme + fonts | complete |
 | 3 | Primitives + app shell | complete |
-| 4 | Auth + API client | in progress (`birch` branch) — auth core + 15/16 domain modules + SSE streaming built |
+| 4 | Auth + API client | complete (`birch` branch) — auth core, 15/16 domain modules, SSE, and structured cleanup built; media intentionally deferred |
 | 5 | Chat and context (Agent chat, Today, Incidents, Activity) | not started — no real blockers |
 | 6 | Tasks and projects (Tasks, Calendar, Projects) | not started — no real blockers |
 | 7a–7b | Garden hub & objects, Plants | not started — no blockers |
@@ -100,20 +99,20 @@ Renumbered 2026-06-21 — the old 5a–5e/6a–6c/7/8 split is gone; see [docs/r
 
 ## Currently working on
 
-- Phase 4 domain modules: 15/16 built (`garden`, `plants`, `tasks`, `calendar`, `shopping`, `search`, `alerts`, `notifications`, `interactions`, `chat`, `triage`, `weather`, `incidents`, `projects`, `activity`). `projects.ts`/`activity.ts` landed 2026-06-21 after rhizome#134/#137 were verified and closed. `media.ts` remains blocked on rhizome#117.
+- Phase 4 API implementation is complete: auth core, SSE, query/connectivity plumbing, and 15/16 domain modules are built and tested. `media.ts` remains intentionally deferred until rhizome#117 lands. `GET /triage/recommendations` is intentionally absent; use `getLatestTriage()`.
 - [rhizome#140](https://github.com/ybordag/rhizome/issues/140) closed (verified — code review, tests, live curl checks) — unblocked almost every previously-omitted function in `garden.ts`/`plants.ts`/`tasks.ts`: `updateGardenProfile`, `updateBed`, `createContainer`, `updateContainer`, `getPlant`, `createPlant`, `updatePlant`, `createPlantBatch`, `batchUpdatePlants`, `updateTask`, plus per-entity activity feeds (`getBedActivity`, `getContainerActivity`, `getPlantActivity`, `getBatchActivity`, `getTaskActivity`) and `updateTaskSeries`. `listTasksBlocked` and `batchRemovePlants` are now also built against structured backend responses, so the small structured endpoint cleanup bucket is closed.
-- [rhizome#141](https://github.com/ybordag/rhizome/issues/141) (streaming chat 200'd with zero bytes for every provider — sync-only LangGraph checkpointer) and [rhizome#135](https://github.com/ybordag/rhizome/issues/135) (incidents/treatment-plan structured JSON) are both fixed, live-verified against the running stack, and closed (2026-06-21). Note: the live stream still shows a duplicate-reply quirk, tracked separately as [rhizome#142](https://github.com/ybordag/rhizome/issues/142) — doesn't block building Phase 5's agent chat, just don't be surprised by it.
+- [rhizome#141](https://github.com/ybordag/rhizome/issues/141) (streaming chat 200'd with zero bytes for every provider — sync-only LangGraph checkpointer), [rhizome#142](https://github.com/ybordag/rhizome/issues/142) (duplicate/internal chat-stream tokens), and [rhizome#135](https://github.com/ybordag/rhizome/issues/135) (incidents/treatment-plan structured JSON) are fixed and covered. Agent chat streaming is clear for Phase 5.
 - Offline banner + retry-visibility toasts built (2026-06-21): `lib/connectivity`, `lib/toast`, `lib/query` now hold real code. The notification-stream auto-reconnect-with-backoff that `error-handling.md` previously claimed was built actually wasn't (`stream.ts` had no reconnect logic) — corrected; it's spec'd, scheduled for Phase 8 (its only real dependency, rhizome#130, is closed). The chat SSE manual-retry button is also still deferred — documented in `docs/pages/05-agent.md`'s "Connection handling" section, but there's no chat UI yet to attach it to (that's Phase 5).
 - Roadmap re-planned 2026-06-21: most of the structured-JSON backlog (#132's split) closed since the original 5a–5e/6/7/8 phase plan was written, so phases were regrouped around product usability instead of backend-unblock order. See [docs/roadmap/overview.md](docs/roadmap/overview.md).
-- Latest verification: `npm run lint`, `npm run test:run` (317 tests), and `npm run build` all pass on Node 24.
+- Latest verification: `npm run lint`, `npm run test:run` (323 Vitest tests), `npm run build`, and `npm run test:e2e` (20 Playwright tests) all pass on Node 24.
 
 ## Known issues / deferred work
 
-Untested primitives, empty `lib/` dirs, unwired `NotificationDrawer`/`Toast`,
-and the offline-banner/SSE-retry UI specified in `error-handling.md` are all
-*intentional* deferrals with documented re-enable conditions — see
-[docs/development/deferred-work.md](docs/development/deferred-work.md) before
-assuming any of these is a bug.
+Current intentional deferrals are documented in
+[docs/development/deferred-work.md](docs/development/deferred-work.md). The
+important ones: `media.ts` is blocked on rhizome#117; `NotificationDrawer` real
+content and notification-stream auto-reconnect are scheduled for Phase 8; SSE
+manual retry and 409 invalidation wait for real Phase 5+ UI flows.
 
 ## Architecture
 

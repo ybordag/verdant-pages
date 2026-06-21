@@ -32,7 +32,7 @@ The garden hub is a portfolio-style overview page for the entire garden. It is t
 
 ### Map / plan view
 
-A spatial plan of the garden rendered from `GET /api/v1/garden/layout` *(requires [rhizome#118](https://github.com/ybordag/rhizome/issues/118))*.
+A spatial plan of the garden rendered from `GET /api/v1/garden/layout`.
 
 **Default state (minimap):** A compact plan view showing bed shapes, container positions, and area labels. Sized to fit within the hero without scrolling.
 
@@ -59,7 +59,7 @@ Compact data grid from `GET /api/v1/garden/profile`:
 | First frost | Dec 1 |
 | Mapped objects | 18 |
 
-"Edit profile →" link opens the profile edit drawer.
+"Edit profile →" scrolls focus to the editable profile and constraints section.
 
 ### Constraints section (below hero, full width)
 
@@ -141,19 +141,21 @@ Garden hub
 
 ## API endpoints
 
-| Endpoint | Used for | Status |
-|---|---|---|
-| `GET /api/v1/garden/profile` | Profile panel + constraints | ✅ |
-| `PATCH /api/v1/garden/profile` | Constraint editing | ✅ exists |
-| `GET /api/v1/garden/layout` | Map hero | Blocked on [#118](https://github.com/ybordag/rhizome/issues/118) |
-| `GET /api/v1/garden/beds` | Areas/Beds tab | ✅ |
-| `POST /api/v1/garden/beds` | Add bed | ✅ |
-| `GET /api/v1/garden/locations/{location}` | Area grouping | ✅ |
-| `GET /api/v1/garden/containers` | Containers tab | ✅ |
-| `POST /api/v1/garden/containers` | Add container | ✅ exists |
-| `GET /api/v1/garden/plants` | Plants tab | ✅ |
-| `POST /api/v1/garden/plants` | Add plant | ✅ exists |
-| `GET /api/v1/activity?category=care` | Activity tab | ✅ |
+| Endpoint | Used for |
+|---|---|
+| `GET /api/v1/garden/profile` | Profile panel + constraints |
+| `PATCH /api/v1/garden/profile` | Constraint editing |
+| `GET /api/v1/garden/layout` | Map hero |
+| `GET /api/v1/garden/beds` | Areas/Beds tab |
+| `POST /api/v1/garden/beds` | Add bed |
+| `GET /api/v1/garden/locations/{location}` | Area grouping |
+| `GET /api/v1/garden/containers` | Containers tab |
+| `POST /api/v1/garden/containers` | Add container |
+| `GET /api/v1/garden/plants` | Plants tab |
+| `POST /api/v1/garden/plants` | Add plant |
+| `GET /api/v1/activity?category=care` | Activity tab |
+
+**Blocked capability:** advanced spatial layout/map rendering depends on rhizome#118.
 
 ---
 

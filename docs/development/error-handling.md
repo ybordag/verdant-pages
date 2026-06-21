@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-21
 
-How the frontend responds to every failure mode it can encounter — API errors, network failures, and SSE stream drops. Written before Phase 4 wires up `apiFetch` so the contract is settled before the code exists, not reverse-engineered from whatever `try/catch` ends up scattered through page components.
+How the frontend responds to every failure mode it can encounter — API errors, network failures, and SSE stream drops. Originally written before Phase 4 wired up `apiFetch`; now maintained as the contract for Phase 4's API client and later page-level flows.
 
 ---
 
@@ -47,10 +47,10 @@ The `reader.read()` loop simply ends (`done: true`) without ever seeing a `{ typ
 **3. Malformed event (unparseable JSON after `data: `).**
 Per the implementation in [api-client.md](../architecture/api-client.md), malformed lines are silently skipped (`catch { /* malformed — skip */ }`). This is intentional — a single garbled line shouldn't kill the whole stream — but it means a malformed `done` event would cause case 2's behavior. Acceptable trade-off; not worth instrumenting further until it's observed in practice.
 
-**4. Notification stream specifically** (`consumeNotificationStream`, no `done` event ever sent — it's long-lived) *should* reconnect automatically on drop with exponential backoff (1s, 2s, 4s, capped at 30s) — silent reconnection is correct here, since losing a few seconds of notifications is low-stakes, unlike losing part of an agent response. **Not built yet** — `stream.ts` today is a single `fetch` + read loop with no reconnect logic at all. This is the spec for when it gets wired up (blocked on rhizome#130, same as the rest of the notification drawer — see [deferred-work.md](deferred-work.md)).
+**4. Notification stream specifically** (`consumeNotificationStream`, no `done` event ever sent — it's long-lived) *should* reconnect automatically on drop with exponential backoff (1s, 2s, 4s, capped at 30s) — silent reconnection is correct here, since losing a few seconds of notifications is low-stakes, unlike losing part of an agent response. **Not built yet** — `stream.ts` today is a single `fetch` + read loop with no reconnect logic at all. This is the spec for when it gets wired up in Phase 8; the backend notification dependency is closed, so this is sequencing work rather than a blocker.
 
 ---
 
 ## What's deliberately not handled yet
 
-See [deferred-work.md](deferred-work.md) for the full list with rationale. Still outstanding: the SSE manual-retry button (no chat UI exists yet to attach it to — contract specified in [pages/05-agent.md](../pages/05-agent.md)), notification-stream auto-reconnect (item 4 above, blocked on rhizome#130), and 409-triggered query invalidation. The offline banner and retry-visibility toasts described above **are** built (2026-06-21) — `src/lib/connectivity/connectivity.ts`, `src/lib/toast/toastStore.ts`, `src/lib/query/queryClient.ts`.
+See [deferred-work.md](deferred-work.md) for the full list with rationale. Still outstanding: the SSE manual-retry button (no chat UI exists yet to attach it to — contract specified in [pages/05-agent.md](../pages/05-agent.md)), notification-stream auto-reconnect (item 4 above, scheduled with notification UI wiring in Phase 8), and 409-triggered query invalidation. The offline banner and retry-visibility toasts described above **are** built (2026-06-21) — `src/lib/connectivity/connectivity.ts`, `src/lib/toast/toastStore.ts`, `src/lib/query/queryClient.ts`.

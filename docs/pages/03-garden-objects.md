@@ -50,7 +50,7 @@ Each step shows a progress indicator. "Back" and "Next/Finish" buttons. Any step
 
 ### Bed creation (`/app/beds/new`)
 
-Static form at `/app/beds/new`: name (required), location/area, size, sunlight, soil type, notes. Calls `POST /api/v1/garden/beds` *(rhizome#116)*.
+Static form at `/app/beds/new`: name (required), location/area, size, sunlight, soil type, notes. Calls `POST /api/v1/garden/beds`.
 
 ### Container creation (`/app/containers/new`)
 
@@ -118,7 +118,7 @@ All three detail pages share this layout:
 
 Name, type badge (Bed / Container / Plant), location breadcrumb (links back to the parent area/location), status badge.
 
-Actions: Edit (opens inline edit form or drawer), Delete/Remove (plants have soft `remove` and hard `delete` options; beds/containers have hard delete). Destructive actions prompt confirmation.
+Actions: Edit (opens inline editing), Delete/Remove (plants have soft `remove` and hard `delete` options; beds/containers have hard delete). Destructive actions prompt confirmation.
 
 ### 2. Care state strip
 
@@ -165,26 +165,26 @@ Built from `GET /api/v1/garden/{type}/{id}/activity?event_type=X` filtered to li
 The `ObjectLifecycleTimeline` component is shared across all three types — it accepts a `milestones: Milestone[]` prop regardless of how the data was derived.
 
 Source:
-- Plants: lifecycle fields from `GET /api/v1/garden/plants/{id}` *(rhizome#116)*
+- Plants: lifecycle fields from `GET /api/v1/garden/plants/{id}`
 - Beds/Containers: `GET /api/v1/garden/{type}/{id}/activity?event_type=bed_amended&event_type=...`
 
 ### 4. Linked projects
 
 Chips showing which projects this object is part of. Clicking a chip navigates to `/app/projects/:id`.
 
-Source: embedded `projects` array in the detail endpoint response *(rhizome#116 addendum)*
+Source: embedded `projects` array in the detail endpoint response
 
 ### 5. Current plants *(beds and containers only)*
 
 A compact plant list showing what is currently growing in this bed or container. Each entry: plant name, status badge, sow date. Clicking navigates to `/app/plants/:id`.
 
-Source: embedded `current_plants` array in bed/container detail response *(rhizome#116)*
+Source: embedded `current_plants` array in bed/container detail response
 
 ### 6. Media gallery
 
 Image grid with thumbnail previews. Clicking an image opens a full-size lightbox with caption. An `+` button opens a file picker to upload a new image.
 
-Requires [rhizome#117](https://github.com/ybordag/rhizome/issues/117).
+This gallery is part of the media endpoint work tracked in the blocked capability note below.
 
 ### 7. Linked tasks
 
@@ -196,7 +196,7 @@ Source: `GET /api/v1/tasks?subject_type=X&subject_id=Y`
 
 Full scrollable event feed, newest first. Each row: date, event type label, summary text, actor (Rhizome/User). Cursor-paginated via `before_timestamp`.
 
-Source: `GET /api/v1/garden/{type}/{id}/activity?before_timestamp=X&limit=20` *(structured JSON and pagination params require [rhizome#120](https://github.com/ybordag/rhizome/issues/120))*
+Source: `GET /api/v1/garden/{type}/{id}/activity?before_timestamp=X&limit=20`
 
 ---
 
@@ -226,42 +226,44 @@ Source: `GET /api/v1/garden/{type}/{id}/activity?before_timestamp=X&limit=20` *(
 
 ### Plant
 
-| Endpoint | Used for | Status |
-|---|---|---|
-| `GET /api/v1/garden/plants/{id}` | Header, lifecycle fields, linked projects, current batch | ✅ |
-| `PATCH /api/v1/garden/plants/{id}` | Edit | ✅ |
-| `PATCH /api/v1/garden/plants/{id}/remove` | Soft delete | ✅ |
-| `DELETE /api/v1/garden/plants/{id}` | Hard delete | ✅ |
-| `GET /api/v1/garden/plants/{id}/care/state` | Care state strip | ✅ |
-| `GET /api/v1/garden/plants/{id}/care/history` | *(future: care history panel)* | ✅ exists |
-| `GET /api/v1/garden/plants/{id}/activity` | Activity history + lifecycle timeline | ✅ |
-| `GET /api/v1/tasks?subject_type=plant&subject_id=X` | Linked tasks | ✅ |
-| `GET /api/v1/garden/plants/{id}/media` | Media gallery | Blocked on [#117](https://github.com/ybordag/rhizome/issues/117) |
-| `POST /api/v1/garden/plants/{id}/media` | Upload image | Blocked on [#117](https://github.com/ybordag/rhizome/issues/117) |
+| Endpoint | Used for |
+|---|---|
+| `GET /api/v1/garden/plants/{id}` | Header, lifecycle fields, linked projects, current batch |
+| `PATCH /api/v1/garden/plants/{id}` | Edit |
+| `PATCH /api/v1/garden/plants/{id}/remove` | Soft delete |
+| `DELETE /api/v1/garden/plants/{id}` | Hard delete |
+| `GET /api/v1/garden/plants/{id}/care/state` | Care state strip |
+| `GET /api/v1/garden/plants/{id}/care/history` | Future care history panel |
+| `GET /api/v1/garden/plants/{id}/activity` | Activity history + lifecycle timeline |
+| `GET /api/v1/tasks?subject_type=plant&subject_id=X` | Linked tasks |
+| `GET /api/v1/garden/plants/{id}/media` | Media gallery |
+| `POST /api/v1/garden/plants/{id}/media` | Upload image |
 
 ### Bed
 
-| Endpoint | Used for | Status |
-|---|---|---|
-| `GET /api/v1/garden/beds/{id}` | Header, current plants, linked projects | ✅ |
-| `PATCH /api/v1/garden/beds/{id}` | Edit | ✅ |
-| `DELETE /api/v1/garden/beds/{id}` | Delete | ✅ |
-| `GET /api/v1/garden/beds/{id}/care/state` | Care state strip | ✅ |
-| `GET /api/v1/garden/beds/{id}/activity` | Activity history + lifecycle timeline | ✅ |
-| `GET /api/v1/tasks?subject_type=bed&subject_id=X` | Linked tasks | ✅ |
-| `GET /api/v1/garden/beds/{id}/media` | Media gallery | Blocked on [#117](https://github.com/ybordag/rhizome/issues/117) |
+| Endpoint | Used for |
+|---|---|
+| `GET /api/v1/garden/beds/{id}` | Header, current plants, linked projects |
+| `PATCH /api/v1/garden/beds/{id}` | Edit |
+| `DELETE /api/v1/garden/beds/{id}` | Delete |
+| `GET /api/v1/garden/beds/{id}/care/state` | Care state strip |
+| `GET /api/v1/garden/beds/{id}/activity` | Activity history + lifecycle timeline |
+| `GET /api/v1/tasks?subject_type=bed&subject_id=X` | Linked tasks |
+| `GET /api/v1/garden/beds/{id}/media` | Media gallery |
 
 ### Container
 
-| Endpoint | Used for | Status |
-|---|---|---|
-| `GET /api/v1/garden/containers/{id}` | Header, current plant, linked projects | ✅ |
-| `PATCH /api/v1/garden/containers/{id}` | Edit | ✅ |
-| `DELETE /api/v1/garden/containers/{id}` | Delete | ✅ |
-| `GET /api/v1/garden/containers/{id}/care/state` | Care state strip | ✅ |
-| `GET /api/v1/garden/containers/{id}/activity` | Activity history + lifecycle timeline | ✅ |
-| `GET /api/v1/tasks?subject_type=container&subject_id=X` | Linked tasks | ✅ |
-| `GET /api/v1/garden/containers/{id}/media` | Media gallery | Blocked on [#117](https://github.com/ybordag/rhizome/issues/117) |
+| Endpoint | Used for |
+|---|---|
+| `GET /api/v1/garden/containers/{id}` | Header, current plant, linked projects |
+| `PATCH /api/v1/garden/containers/{id}` | Edit |
+| `DELETE /api/v1/garden/containers/{id}` | Delete |
+| `GET /api/v1/garden/containers/{id}/care/state` | Care state strip |
+| `GET /api/v1/garden/containers/{id}/activity` | Activity history + lifecycle timeline |
+| `GET /api/v1/tasks?subject_type=container&subject_id=X` | Linked tasks |
+| `GET /api/v1/garden/containers/{id}/media` | Media gallery |
+
+**Blocked capability:** media gallery/upload endpoints depend on rhizome#117.
 
 ---
 

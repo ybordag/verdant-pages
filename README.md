@@ -41,7 +41,7 @@ Full docs are in [`docs/`](docs/README.md), which also explains how the docs tre
 
 - [Purpose and design](docs/overview/purpose.md)
 - [Quickstart](docs/getting-started/quickstart.md) · [full setup](docs/getting-started/setup.md)
-- [Architecture index](docs/README.md)
+- [Codebase tour](docs/architecture/codebase-tour.md) · [architecture index](docs/README.md)
 - [Testing](docs/development/testing.md) · [error handling](docs/development/error-handling.md) · [deferred work](docs/development/deferred-work.md)
 - [Roadmap](docs/roadmap/overview.md)
 

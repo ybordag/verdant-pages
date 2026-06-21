@@ -159,20 +159,20 @@ Rhizome can reference these directly without the user re-describing them. The su
 
 ## API endpoints
 
-| Endpoint | Used for | Status |
-|---|---|---|
-| `POST /api/v1/threads` | Create thread (+ initial_context) | ✅ |
-| `GET /api/v1/threads?limit=20` | Thread list in topbar | ✅ |
-| `GET /api/v1/threads/{id}/messages` | Load thread history | ✅ |
-| `DELETE /api/v1/threads/{id}` | Delete thread | ✅ |
-| `POST /api/v1/chat/stream` | Send message (SSE) | ✅ |
-| `POST /api/v1/chat/resume/stream` | Resume after interaction approval | ✅ |
-| `GET /api/v1/interactions/pending` | Populate interaction panel | ✅ |
-| `POST /api/v1/threads/{id}/context` | Pin context object | ✅ |
-| `DELETE /api/v1/threads/{id}/context/{type}/{id}` | Remove context chip | ✅ |
-| `GET /api/v1/search?q=X&types=Y` | Context search modal | ✅ |
-| `POST /api/v1/triage/run` | "Run Triage" button in topbar | ✅ |
-| `POST /api/v1/incidents` | "New Incident" button in topbar | ✅ |
+| Endpoint | Used for |
+|---|---|
+| `POST /api/v1/threads` | Create thread (+ initial_context) |
+| `GET /api/v1/threads?limit=20` | Thread list in topbar |
+| `GET /api/v1/threads/{id}/messages` | Load thread history |
+| `DELETE /api/v1/threads/{id}` | Delete thread |
+| `POST /api/v1/chat/stream` | Send message (SSE) |
+| `POST /api/v1/chat/resume/stream` | Resume after interaction approval |
+| `GET /api/v1/interactions/pending` | Populate interaction panel |
+| `POST /api/v1/threads/{id}/context` | Pin context object |
+| `DELETE /api/v1/threads/{id}/context/{type}/{id}` | Remove context chip |
+| `GET /api/v1/search?q=X&types=Y` | Context search modal |
+| `POST /api/v1/triage/run` | "Run Triage" button in topbar |
+| `POST /api/v1/incidents` | "New Incident" button in topbar |
 
 ---
 

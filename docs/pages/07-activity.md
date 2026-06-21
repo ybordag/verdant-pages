@@ -36,14 +36,14 @@ Infinite scroll via `before_timestamp` cursor. "Load more" fallback for accessib
 
 ### API coverage
 
-All requirements are covered by existing endpoints:
+Endpoint needs:
 
-| Requirement | Endpoint | Status |
-|---|---|---|
-| Global feed with filters | `GET /api/v1/activity` | ✅ |
-| Cursor pagination | `before_timestamp` param | ✅ |
-| Per-object feeds | `GET /api/v1/garden/{type}/{id}/activity` | ✅ |
-| Velocity stats | `GET /api/v1/activity/stats` | ✅ |
+| Requirement | Endpoint |
+|---|---|
+| Global feed with filters | `GET /api/v1/activity` |
+| Cursor pagination | `before_timestamp` param |
+| Per-object feeds | `GET /api/v1/garden/{type}/{id}/activity` |
+| Velocity stats | `GET /api/v1/activity/stats` |
 
 ---
 

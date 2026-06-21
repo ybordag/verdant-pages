@@ -82,8 +82,8 @@ All views share the same page component (`TasksPage`). The active view is determ
 | `/app/tasks/week` | This Week | `GET /api/v1/tasks/due?days_ahead=7` |
 | `/app/tasks/project/:id` | By Project | `GET /api/v1/tasks?project_id=X` |
 | `/app/tasks/kind/:type` | By Kind | `GET /api/v1/tasks?type=X` |
-| `/app/tasks/area` | By Area | `GET /api/v1/tasks?subject_type=X&subject_id=Y` *(requires [rhizome#112](https://github.com/ybordag/rhizome/issues/112))* |
-| `/app/tasks/progress` | Progress | `GET /api/v1/activity/stats` *(requires [rhizome#115](https://github.com/ybordag/rhizome/issues/115))* |
+| `/app/tasks/area` | By Area | `GET /api/v1/tasks?subject_type=X&subject_id=Y` |
+| `/app/tasks/progress` | Progress | `GET /api/v1/activity/stats` |
 
 ### Layout
 
@@ -112,8 +112,6 @@ Four summary cards shown across the top of the ledger area on the Today view:
 | Current streak | Consecutive days with ≥1 completion (computed from stats) |
 | Deferred rate | Deferrals vs completions ratio this week |
 | Triage alignment | % of today's completed tasks that Rhizome recommended |
-
-Requires [rhizome#115](https://github.com/ybordag/rhizome/issues/115).
 
 ### Ledger rows
 
@@ -166,7 +164,7 @@ Requires [rhizome#115](https://github.com/ybordag/rhizome/issues/115).
 
 **"Make recurring" toggle** — expands additional series fields: cadence (daily / weekly / every N days / custom), start date, end date, window days (how long the materialized instance stays open). On save, creates a `TaskSeries` via `POST /api/v1/tasks/series`.
 
-**Series editing** — editing an existing series rule lives at `/app/tasks/series/:id`, not in the creation drawer. This is a separate page because changing a rule has forward-only implications (it doesn't retroactively change existing instances).
+**Series editing** — editing an existing series rule lives at `/app/tasks/series/:id`, not in the task creation route. This is a separate page because changing a rule has forward-only implications (it doesn't retroactively change existing instances).
 
 ### Progress view (`/app/tasks/progress`)
 
@@ -187,19 +185,19 @@ Uses `GET /api/v1/activity/stats`.
 | `GET /api/v1/tasks/due?days_ahead=7` | This Week view |
 | `GET /api/v1/tasks?project_id=X` | By Project view |
 | `GET /api/v1/tasks?type=X` | By Kind view |
-| `GET /api/v1/tasks?subject_type=X&subject_id=Y` | By Area view *(rhizome#112)* |
+| `GET /api/v1/tasks?subject_type=X&subject_id=Y` | By Area view |
 | `GET /api/v1/tasks/:id` | Task detail panel + full page |
 | `POST /api/v1/tasks/:id/complete` | Complete action |
 | `POST /api/v1/tasks/:id/defer` | Defer action |
 | `POST /api/v1/tasks/:id/skip` | Skip action |
 | `POST /api/v1/tasks/:id/start` | Start action |
 | `PUT /api/v1/tasks/:id` | Inline edit / reprioritize |
-| `DELETE /api/v1/tasks/:id` | Delete *(rhizome#112)* |
-| `POST /api/v1/tasks` | Create task *(rhizome#112)* |
-| `POST /api/v1/tasks/series` | Create series *(rhizome#113)* |
+| `DELETE /api/v1/tasks/:id` | Delete |
+| `POST /api/v1/tasks` | Create task |
+| `POST /api/v1/tasks/series` | Create series |
 | `PATCH /api/v1/tasks/series/:id` | Edit series |
-| `DELETE /api/v1/tasks/series/:id` | Delete series *(rhizome#113)* |
-| `GET /api/v1/activity/stats` | Velocity strip + Progress view *(rhizome#115)* |
+| `DELETE /api/v1/tasks/series/:id` | Delete series |
+| `GET /api/v1/activity/stats` | Velocity strip + Progress view |
 
 ---
 
@@ -218,7 +216,7 @@ The temporal view across all entity types. Not a task list in calendar form — 
 | Weather tasks | Same endpoint | Cornflower blue chip |
 | Incidents | `GET /api/v1/incidents` | Distinct incident chip |
 | Weather events | `GET /api/v1/weather/latest` | Day cell weather icon |
-| Annotations | `GET /api/v1/calendar/annotations` | Text preview below chips *(rhizome#114)* |
+| Annotations | `GET /api/v1/calendar/annotations` | Text preview below chips |
 
 ### Layout
 
@@ -268,7 +266,7 @@ Each cell contains:
 
 **Click an incident chip** — navigates to `/app/incidents/:id`.
 
-**Annotate a day** — click an empty area inside a day cell (or the annotation preview). An inline text input appears. Supports content + optional category (note/observation/plan/reminder). Saves on blur. Requires [rhizome#114](https://github.com/ybordag/rhizome/issues/114).
+**Annotate a day** — click an empty area inside a day cell (or the annotation preview). An inline text input appears. Supports content + optional category (note/observation/plan/reminder). Saves on blur.
 
 ### Filters
 
@@ -289,10 +287,10 @@ Month (default) / Week toggle (segmented control in the topbar). Week view shows
 | `GET /api/v1/tasks/due?days_ahead=30` | Task chips across month |
 | `GET /api/v1/incidents` | Incident chips |
 | `GET /api/v1/weather/latest` | Day cell weather icons |
-| `GET /api/v1/calendar/annotations?since=X&before=Y` | Annotation text *(rhizome#114)* |
-| `POST /api/v1/calendar/annotations` | Create annotation *(rhizome#114)* |
-| `PATCH /api/v1/calendar/annotations/:id` | Edit annotation *(rhizome#114)* |
-| `DELETE /api/v1/calendar/annotations/:id` | Delete annotation *(rhizome#114)* |
+| `GET /api/v1/calendar/annotations?since=X&before=Y` | Annotation text |
+| `POST /api/v1/calendar/annotations` | Create annotation |
+| `PATCH /api/v1/calendar/annotations/:id` | Edit annotation |
+| `DELETE /api/v1/calendar/annotations/:id` | Delete annotation |
 | `PUT /api/v1/tasks/:id` | Drag-to-reschedule |
 
 ---

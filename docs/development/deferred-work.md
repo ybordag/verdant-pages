@@ -8,9 +8,9 @@ If you're auditing test coverage or docs completeness and find something not lis
 
 ---
 
-### `src/lib/api/` endpoint-level deferrals
+### `src/lib/api/` post-Phase 4 deferrals
 
-**What's deferred:** Auth core, SSE parsing, query retry/connectivity plumbing, and 15 of 16 domain modules are built and tested against the documented contract in [api-client.md](../architecture/api-client.md): `garden.ts`, `plants.ts`, `tasks.ts`, `calendar.ts`, `shopping.ts`, `search.ts`, `alerts.ts`, `notifications.ts`, `interactions.ts`, `chat.ts`, `triage.ts`, `weather.ts`, `incidents.ts`, `projects.ts`, and `activity.ts`. `src/lib/types/rhizome.ts` has the view/request types these modules need.
+**Built:** Auth core, SSE parsing, query retry/connectivity plumbing, and 15 of 16 domain modules are built and tested against the documented contract in [api-client.md](../architecture/api-client.md): `garden.ts`, `plants.ts`, `tasks.ts`, `calendar.ts`, `shopping.ts`, `search.ts`, `alerts.ts`, `notifications.ts`, `interactions.ts`, `chat.ts`, `triage.ts`, `weather.ts`, `incidents.ts`, `projects.ts`, and `activity.ts`. `src/lib/types/rhizome.ts` has the view/request types these modules need.
 
 `triage.ts`/`weather.ts` were the last to land — rhizome#133 was independently verified (code review + a from-scratch happy-path test covering the actual point of the fix: resolving task IDs into full `TaskSummaryView` objects, which had zero coverage anywhere before) rather than trusted at face value, the same standard `#136`/`#138` got. `triage.ts` omits `getTriageRecommendations` — confirmed `GET /triage/recommendations` doesn't exist in Rhizome's `data_router`; the stale Cambium proxy has been removed, and `getLatestTriage()` is the structured replacement.
 
@@ -20,9 +20,9 @@ If you're auditing test coverage or docs completeness and find something not lis
 
 Unit-tested (fake `ReadableStream`, no live backend needed for these): token ordering, interaction events, malformed-line skipping, chunk-split-across-reads, non-2xx → `ApiError`, omitting the Authorization header instead of sending the literal string `"Bearer null"` when logged out (a real bug found and fixed in the same pass — `stream.ts` previously interpolated the token unconditionally, unlike `apiFetch`'s conditional pattern), a network drop mid-stream surfacing as a rejection rather than a silent stop, `AbortSignal`-driven cancellation mid-stream (simulates logout/unmount — rejects with `AbortError`, stops yielding further events), and that a stream already open keeps its original token through a token refresh while a *new* stream call afterward picks up the refreshed one.
 
-**Still genuinely empty:** `media.ts` — blocked on rhizome#117. The media/image endpoints are not started server-side and are separate from the structured-JSON backlog.
+**Only real API module deferral:** `media.ts` — blocked on rhizome#117. The media/image endpoints are not started server-side and are separate from the structured-JSON backlog.
 
-**rhizome#135 closed (2026-06-21) — incidents/treatment-plan structured JSON.** `incidents.ts` built: full CRUD on incidents (`listIncidents`, `getIncident`, `createIncident`, `updateIncident`, `deleteIncident`, `resolveIncident`) plus treatment plans (`getIncidentTreatment`, `createManualTreatmentPlan`, `updateTreatmentPlan`, `deleteTreatmentPlan`, `approveTreatmentPlan`) and `getIncidentActivity`. Also added `draftTreatmentPlan(id, threadId): Promise<ChatResponse>` — confirmed via `cambium/internal/api/triggers.go` that `POST /api/v1/incidents/{id}/treatment` is a distinct AI-trigger handler (`triggerTreatmentDraft`, calls `h.rhizome.RunAgent(...)` with a synthesized message and returns a `ChatResponse`), not a plain CRUD proxy — same pattern as `triage.ts`'s `runTriage`. New types added to `rhizome.ts`: `IncidentView`, `IncidentDetailView`, `IncidentSubjectView`, `TreatmentPlanView`, plus the matching request types. Typecheck clean, 15 new tests, full suite at 300/300.
+**rhizome#135 closed (2026-06-21) — incidents/treatment-plan structured JSON.** `incidents.ts` built: full CRUD on incidents (`listIncidents`, `getIncident`, `createIncident`, `updateIncident`, `deleteIncident`, `resolveIncident`) plus treatment plans (`getIncidentTreatment`, `createManualTreatmentPlan`, `updateTreatmentPlan`, `deleteTreatmentPlan`, `approveTreatmentPlan`) and `getIncidentActivity`. Also added `draftTreatmentPlan(id, threadId): Promise<ChatResponse>` — confirmed via `cambium/internal/api/triggers.go` that `POST /api/v1/incidents/{id}/treatment` is a distinct AI-trigger handler (`triggerTreatmentDraft`, calls `h.rhizome.RunAgent(...)` with a synthesized message and returns a `ChatResponse`), not a plain CRUD proxy — same pattern as `triage.ts`'s `runTriage`. New types added to `rhizome.ts`: `IncidentView`, `IncidentDetailView`, `IncidentSubjectView`, `TreatmentPlanView`, plus the matching request types. Typecheck clean, 15 new tests; the final Phase 4 completion suite is 323 Vitest tests plus 20 Playwright tests.
 
 **rhizome#140 closed (2026-06-21) — garden/plants/tasks CRUD writes + remaining activity feeds.** This unblocked almost everything that was previously omitted. Now built, code-reviewed, test-verified (50 new rhizome tests + the full 798-test suite), and live-curled against a running instance:
 - `garden.ts`: `updateGardenProfile`, `updateBed`, `createContainer`, `updateContainer`, `getBedActivity`, `getContainerActivity`
@@ -31,7 +31,7 @@ Unit-tested (fake `ReadableStream`, no live backend needed for these): token ord
 
 `ActivityEventView`/`ActivitySubjectView`/`PlantBatchResultView` added to `rhizome.ts`; several existing request types (`CreateContainerRequest`, `CreatePlantRequest`, `UpdateTaskRequest`, `UpdateTaskSeriesRequest`) were also corrected against the actual rhizome tool signatures while wiring these — a couple of fields were missing or wrongly marked optional/required.
 
-**Intentionally absent:**
+**Intentionally absent, not deferred:**
 - `triage.ts`: no `getTriageRecommendations` by design; use `getLatestTriage()` for structured grouped recommendations
 
 `projects.ts` is built against the structured routes from rhizome#137, including briefs, proposals, progress, task graph, expenses, shopping, assignments, and `GET /projects/{id}/activity`. Assignment endpoints still return Rhizome's `{"result": "<string>"}` envelope because Cambium proxies the existing tool result; the wrappers expose that envelope explicitly as `ResultResponse` rather than pretending those calls are `void`.
@@ -39,9 +39,9 @@ Unit-tested (fake `ReadableStream`, no live backend needed for these): token ord
 `tasks.ts` now includes `listTasksBlocked` — Rhizome's `GET /tasks/blocked` returns `TaskSummaryView[]` with `blocked: true`.
 `plants.ts` now includes `batchRemovePlants` — Rhizome's `PATCH /garden/plants/batch/remove` returns `PlantSummaryView[]` for the plants actually marked `removed`.
 
-**Why deferred:** This was a deliberate scope split within Phase 4 — auth core first and verified working end-to-end, domain modules as a follow-up. Within that follow-up, modules were split further by actual backend readiness (verified per-endpoint, not per-module) rather than built all-or-nothing against a spec that assumed full backend support.
+**Why anything remains:** This was a deliberate scope split within Phase 4 — auth core first and verified working end-to-end, domain modules as a follow-up. Within that follow-up, modules were split further by actual backend readiness (verified per-endpoint, not per-module) rather than built all-or-nothing against a spec that assumed full backend support. Phase 4 is complete; only backend-missing media remains outside the phase.
 
-**Re-enable when:** `media.ts` once rhizome#117 lands. `getTriageRecommendations` is no longer deferred — the old proxy is removed from the contract, and `getLatestTriage()` is the supported structured path.
+**Re-enable when:** `media.ts` once rhizome#117 lands. Do not add `getTriageRecommendations`; the old proxy is removed from the contract, and `getLatestTriage()` is the supported structured path.
 
 ---
 
@@ -51,7 +51,7 @@ Unit-tested (fake `ReadableStream`, no live backend needed for these): token ord
 
 **Why deferred:** Coverage thresholds are only meaningful once there's a stable baseline of real feature code to measure against. Gating on coverage during Phase 1–3 (scaffold and shell) would mostly just penalize legitimate stub pages.
 
-**Re-enable when:** Phase 4 lands with its own tests (auth, API client) — this has now happened (125 unit + 19 E2E, including a full audit pass that closed gaps in `auth.ts`, `NavContext`, `ThemeToggle`, and `AppNav`). Still no `@vitest/coverage-v8` wired into `vite.config.ts`'s `test` block, and no CI to gate on it (CI itself is also on hold — see project notes). Worth adding the coverage tool itself now to get visibility, but hold off on enforcing a threshold until CI exists to enforce it against.
+**Re-enable when:** Phase 4 lands with its own tests (auth, API client) — this has now happened (323 Vitest tests + 20 Playwright tests at completion, including audit passes that closed gaps in `auth.ts`, `NavContext`, `ThemeToggle`, `AppNav`, `NotificationDrawer`, `PasswordStrengthMeter`, and direct token refresh behavior). Still no `@vitest/coverage-v8` wired into `vite.config.ts`'s `test` block, and no CI to gate on it (CI itself is also on hold — see project notes). Worth adding the coverage tool itself now to get visibility, but hold off on enforcing a threshold until CI exists to enforce it against.
 
 ---
 

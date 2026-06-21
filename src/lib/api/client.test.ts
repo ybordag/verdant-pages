@@ -7,7 +7,7 @@ vi.mock('@/lib/connectivity/connectivity', () => ({
   reportNetworkSuccess: (...args: unknown[]) => reportNetworkSuccess(...args),
 }))
 
-import { apiFetch, ApiError, getAccessToken, setAccessToken, toQueryString } from './client'
+import { apiFetch, ApiError, getAccessToken, refreshAccessToken, setAccessToken, toQueryString } from './client'
 
 describe('toQueryString', () => {
   it('returns an empty string for undefined params', () => {
@@ -146,5 +146,52 @@ describe('apiFetch', () => {
     expect(resultA).toMatchObject({ ok: true })
     expect(resultB).toMatchObject({ ok: true })
     expect(getAccessToken()).toBe('new-tok')
+  })
+})
+
+describe('refreshAccessToken', () => {
+  beforeEach(() => {
+    setAccessToken(null)
+    vi.stubGlobal('fetch', vi.fn())
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    setAccessToken(null)
+  })
+
+  it('POSTs to /auth/refresh with credentials and stores the returned token', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({ access_token: 'fresh-tok' }))
+
+    await expect(refreshAccessToken()).resolves.toBe(true)
+
+    expect(fetch).toHaveBeenCalledWith('/auth/refresh', {
+      method: 'POST',
+      credentials: 'include',
+    })
+    expect(getAccessToken()).toBe('fresh-tok')
+  })
+
+  it('returns false and clears the token when refresh is rejected', async () => {
+    setAccessToken('stale-tok')
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({ message: 'invalid refresh' }, 401))
+
+    await expect(refreshAccessToken()).resolves.toBe(false)
+
+    expect(getAccessToken()).toBeNull()
+  })
+
+  it('shares one in-flight direct refresh call across concurrent callers', async () => {
+    let refreshCalls = 0
+    vi.mocked(fetch).mockImplementation(async () => {
+      refreshCalls++
+      await new Promise((r) => setTimeout(r, 5))
+      return jsonResponse({ access_token: 'shared-fresh-tok' })
+    })
+
+    await expect(Promise.all([refreshAccessToken(), refreshAccessToken()])).resolves.toEqual([true, true])
+
+    expect(refreshCalls).toBe(1)
+    expect(getAccessToken()).toBe('shared-fresh-tok')
   })
 })

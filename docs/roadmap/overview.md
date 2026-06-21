@@ -4,7 +4,7 @@
 
 ## How we work
 
-Work is organised into **phases** — each phase has a clear deliverable and a smoke test. Phases 1–4 are sequential and Phase 4 is still in progress.
+Work is organised into **phases** — each phase has a clear deliverable and a smoke test. Phases 1–4 are complete; remaining incomplete items are explicit backend-blocked or phase-sequenced deferrals, not hidden Phase 4 work.
 
 **Phases 5–8 were re-planned on 2026-06-21**, replacing the original 5a–5e/6/7/8 split. The original split was organized by *what the backend would unblock next* (it assumed most pages stayed blocked until rhizome#120's P1 tier landed). Re-checking every cited blocker found that picture was stale — #112–#130 and the relevant #132 follow-up issues (#133/#134/#137) are now closed. With nearly everything unblocked, the new split is organized by *what makes the product usable soonest*: agent chat first (it exercises the full stack top to bottom and is the product's differentiator), then the daily-operations pages, then garden/plant management, then polish. See each phase below for current per-feature blocker status — don't trust old "blocked on #120" citations anywhere else in this repo's docs without rechecking.
 
@@ -20,7 +20,7 @@ This file is the single source of truth for phase planning and status — what t
 | 1 | Scaffold + build tooling | **complete** | `willow` |
 | 2 | Tokens + theme + fonts | **complete** | `aspen` |
 | 3 | Primitives + app shell | **complete** | `cedar` |
-| 4 | Auth + API client foundation | **in progress** — auth core + 15/16 domain modules + SSE streaming done; structured cleanup complete; only media deferred | `birch` |
+| 4 | Auth + API client foundation | **complete** — auth core + 15/16 domain modules + SSE streaming done; structured cleanup complete; media intentionally deferred | `birch` |
 | 5 | Chat and context (Agent chat, Today, Incidents, Activity) | not started | — |
 | 6 | Tasks and projects (Tasks, Calendar, Projects) | not started | — |
 | 7a | Garden hub & objects (beds, containers) | not started | — |
@@ -60,7 +60,7 @@ Done:
 - **Vitest + @testing-library/react** — unit/component test scaffold
 - **Playwright** — E2E scaffold with Chromium
 
-**Smoke test:** `npm run dev` starts without errors; `fetch('/health')` from the browser console returns `{"status":"ok"}`; `npm run build` produces a clean dist; App renders, `npm run build` clean.
+**Smoke test:** `npm run dev` starts without errors; `curl http://localhost:8080/health` returns `{"status":"ok"}` against Cambium; `npm run build` produces a clean dist; App renders.
 
 ---
 
@@ -97,7 +97,7 @@ Done:
 
 ---
 
-## Phase 4 — Auth + API client foundation 🚧 in progress (`birch`)
+## Phase 4 — Auth + API client foundation ✅ complete (`birch`)
 
 **Deliverable:** Login and register work against the real Cambium API. Protected routes redirect correctly. Proactive token refresh runs. All API modules are written and typed.
 
@@ -116,7 +116,7 @@ Done:
 - Fixed a real StrictMode bug in `context.tsx`: the mount effect was double-invoked in dev, firing `/auth/refresh` twice and racing one cookie rotation against the other's revoke. Fixed with a `hasMountedRef` guard; regression test added under `<StrictMode>`.
 - Tests: full suite now 229 unit + 19 E2E, all passing against a live Cambium instance. `auth.spec.ts` covers register→logout→login, direct login, wrong-password rejection, registering an already-taken email, and the unauthenticated-redirect case.
 
-**Domain modules — 15/16 built:** `garden.ts`, `plants.ts`, `tasks.ts`, `calendar.ts`, `shopping.ts`, `search.ts`, `alerts.ts`, `notifications.ts`, `interactions.ts`, `chat.ts`, `triage.ts`, `weather.ts`, `incidents.ts`, `projects.ts`, `activity.ts`, plus `src/lib/types/rhizome.ts`. Built only against endpoints confirmed (by reading `agent/api/routers.py` directly) to return real structured JSON — see [deferred-work.md](../development/deferred-work.md) for the exact list of individually-omitted functions where a specific endpoint is still string-wrapped or missing. `triage.ts`/`weather.ts` landed after independently verifying rhizome#133, and `projects.ts`/`activity.ts` landed after rhizome#134/#137 were verified and closed.
+**Domain modules — 15/16 built:** `garden.ts`, `plants.ts`, `tasks.ts`, `calendar.ts`, `shopping.ts`, `search.ts`, `alerts.ts`, `notifications.ts`, `interactions.ts`, `chat.ts`, `triage.ts`, `weather.ts`, `incidents.ts`, `projects.ts`, `activity.ts`, plus `src/lib/types/rhizome.ts`. Built only against endpoints confirmed to return real structured JSON. `triage.ts`/`weather.ts` landed after independently verifying rhizome#133, `projects.ts`/`activity.ts` landed after rhizome#134/#137 were verified and closed, and the final structured cleanup (`listTasksBlocked`, `batchRemovePlants`, intentionally absent `getTriageRecommendations`) is complete.
 
 **`src/lib/sse/stream.ts` is also built** (`consumeSSEStream`, `consumeNotificationStream`), unblocking `chat.ts`'s `streamChat`/`streamResume` and `notifications.ts`'s `streamNotifications`. Both accept an optional `AbortSignal` for client-side cancellation (logout, route change, unmount) — added after a coverage audit found there was previously no way to cancel an open stream.
 
@@ -134,19 +134,21 @@ Done:
 
 259 total tests (14 new this pass).
 
-**Offline banner + retry-visibility toasts (2026-06-21):** built the connectivity/toast plumbing that `error-handling.md` had specified since before Phase 4 started but never had anything to attach to. `src/lib/toast/toastStore.ts` (generic module-level toast store), `src/lib/connectivity/connectivity.ts` (offline detection: native `online`/`offline` events + a three-consecutive-failure fallback), `OfflineBanner` in `AppShell`, and `src/lib/query/queryClient.ts` (custom `retry`: skips `ApiError` entirely, retries a raw network failure up to 3x with a toast per attempt) — this also fills in `lib/query/`, previously empty. Also corrected a stale claim in `error-handling.md`: the notification stream's auto-reconnect-with-backoff was documented as built but `stream.ts` never had any reconnect logic — re-spec'd as not-yet-built, blocked on rhizome#130 like the rest of the notification drawer.
+**Offline banner + retry-visibility toasts (2026-06-21):** built the connectivity/toast plumbing that `error-handling.md` had specified since before Phase 4 started but never had anything to attach to. `src/lib/toast/toastStore.ts` (generic module-level toast store), `src/lib/connectivity/connectivity.ts` (offline detection: native `online`/`offline` events + a three-consecutive-failure fallback), `OfflineBanner` in `AppShell`, and `src/lib/query/queryClient.ts` (custom `retry`: skips `ApiError` entirely, retries a raw network failure up to 3x with a toast per attempt) — this also fills in `lib/query/`, previously empty. Also corrected a stale claim in `error-handling.md`: the notification stream's auto-reconnect-with-backoff was documented as built but `stream.ts` never had any reconnect logic — re-spec'd as not-yet-built and scheduled with notification UI wiring in Phase 8.
 
 285 total tests (26 new this pass).
 
 **`incidents.ts` built (2026-06-21), unblocked by rhizome#135's closure.** Full incident CRUD (`listIncidents`, `getIncident`, `createIncident`, `updateIncident`, `deleteIncident`, `resolveIncident`) plus treatment-plan management (`getIncidentTreatment`, `createManualTreatmentPlan`, `updateTreatmentPlan`, `deleteTreatmentPlan`, `approveTreatmentPlan`), `getIncidentActivity`, and the AI-trigger `draftTreatmentPlan(id, threadId)` (Cambium's `triggerTreatmentDraft`, same pattern as `triage.ts`'s `runTriage`). New types in `rhizome.ts`. 15 new tests.
 
-300 total tests (15 new this pass).
+300 total tests at this checkpoint (15 new this pass).
 
 **`projects.ts` and `activity.ts` built (2026-06-21), unblocked by rhizome#134/#137.** Projects covers project CRUD, progress, briefs, proposals, project tasks/task graph, task generation trigger, series, bed/container/plant assignment envelopes, activity, expenses, expense summary, and shopping. Activity covers the global activity feed and stats. 17 focused API tests added.
 
 **Structured cleanup complete:** `listTasksBlocked` is built against structured `GET /tasks/blocked`, and `batchRemovePlants` is built against structured `PATCH /garden/plants/batch/remove`. There is intentionally no `getTriageRecommendations` because `getLatestTriage()` is the supported structured path.
 
-**Not started:** `media.ts` — genuinely not started in Rhizome at all (rhizome#117), separate from the structured-JSON backlog.
+**Completion verification (2026-06-21):** `npm run lint`, `npm run test:run` (323 Vitest tests), `npm run build`, and `npm run test:e2e` (20 Playwright tests) all pass on Node 24. The final test audit added direct `refreshAccessToken` coverage for success, rejected refresh, and concurrent refresh de-duplication.
+
+**Intentionally deferred:** `media.ts` — genuinely not started in Rhizome at all (rhizome#117), separate from the structured-JSON backlog.
 
 See [deferred-work.md](../development/deferred-work.md) for the full breakdown of what's deferred and why.
 
@@ -156,15 +158,13 @@ See [deferred-work.md](../development/deferred-work.md) for the full breakdown o
 
 **Deliverable:** Agent chat fully functional end to end (streaming, interaction approval, context-aware entry from other pages), Today page live with real briefing data, Incidents fully CRUD-able with the treatment plan flow, and the global Activity feed with filtering. This phase deliberately exercises the full stack — auth, SSE, multi-page context-passing — before building out the rest of the app, and gives a way to both *direct* Rhizome (chat) and *verify* what it did (Activity).
 
-**No real blockers left.** #136 (interactions), #126/#127 (search + pinned context), #135 (incidents), #141 (SSE streaming), and #134 (global activity) are all closed.
+**No real blockers left.** #136 (interactions), #126/#127 (search + pinned context), #135 (incidents), #141 (SSE streaming), #142 (duplicate/internal chat-stream tokens), and #134 (global activity) are all closed.
 
 ### Agent chat (Rhizome)
 
 `SessionStrip`, `ContextStrip` + `ContextSearchModal` (unified + typed search, #126/#127 closed), `ChatThread` (`StreamingMessage`, `MessageBubble`, day separators), `Composer`, `InteractionPanel` (`PendingInteractionList` + `InteractionCard`), thread list/switcher in the page header, context-aware entry (URL params → pre-fill + new/existing thread choice). **Page:** `RhizomePage`
 
 Whether a new thread auto-opens on first visit, or the user sees a thread list/picker first, is still an open product decision — see [pages/05-agent.md](../pages/05-agent.md). That doc also specifies (but doesn't yet build) the SSE manual-retry contract and a future model-dropdown/active-model indicator — both deferred, not blockers.
-
-Known rough edge, not a blocker: rhizome#142 — a single chat turn can stream the same reply twice (and occasionally a raw provider content block) before `done`. Build the chat UI assuming a clean single reply; revisit once #142 closes rather than working around it in the frontend.
 
 **Smoke test:** Send a message → tokens stream in real time; receive an interaction event → panel slides open with review card; accept a proposal → stream resumes, follow-up message appears; "Ask Rhizome about Cherry Tomatoes" from plant detail → opens pre-seeded thread.
 
@@ -318,7 +318,6 @@ Items with a real backend blocker still open, or deliberately out of scope for P
 | Media galleries | rhizome#117 | `MediaGallery` upload + lightbox on plants/beds/containers/incidents. Not started server-side at all. |
 | Garden spatial map | rhizome#118 | `GardenMap` minimap + `ExpandedMapOverlay` on the Garden hub. Not started server-side at all. |
 | Visual garden understanding | rhizome roadmap initiative | Image-based plant/disease/pest identification. The reason Plants got split into its own phase (7b) — this will extend that page significantly once it lands. |
-| Duplicate chat-stream replies | rhizome#142 | A single `/agent/stream` turn can emit the same reply twice. Doesn't block Phase 5's agent chat build, but revisit before considering chat "done." |
 
 ---
 
@@ -328,7 +327,7 @@ Items with a real backend blocker still open, or deliberately out of scope for P
 Phase 1   Scaffold + Vite config
 Phase 2   Tokens + theme + fonts
 Phase 3   Primitives + app shell (can use before auth)
-Phase 4   Auth + API client foundation              ← in progress now
+Phase 4   Auth + API client foundation              ✓ complete
           ↓
 Phase 5   Chat and context                          ← no real blockers
             Agent chat · Today · Incidents · Activity

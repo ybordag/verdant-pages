@@ -4,7 +4,7 @@
 
 Frontend for the Gardening Agent system. Talks to **Cambium** (Go gateway) — never directly to Rhizome. This file is both the index and the explanation of how this `docs/` tree is organized — read the "How these docs are organized" section once, then use the tables below as a reference.
 
-Read in order if you're new here: [overview/purpose.md](overview/purpose.md) → [getting-started/quickstart.md](getting-started/quickstart.md) → [architecture/](architecture/) for how it's built → [pages/](pages/) for what each screen does → [roadmap/overview.md](roadmap/overview.md) for what's done and what's next. By the end of that path you should understand the whole repo without reading code.
+Read in order if you're new here: [overview/purpose.md](overview/purpose.md) → [getting-started/quickstart.md](getting-started/quickstart.md) → [architecture/codebase-tour.md](architecture/codebase-tour.md) for where things live → [pages/](pages/) for what each screen does → [roadmap/overview.md](roadmap/overview.md) for what's done and what's next. By the end of that path you should understand the whole repo without reading code.
 
 ---
 
@@ -29,7 +29,7 @@ There is deliberately no `current_work/` or per-phase history folder. `roadmap/o
 - **`**Last updated:**` tag** under the H1 on every doc — a quick staleness check. If a doc you're reading is months old and contradicts the code, trust the code and fix the doc.
 - **Rationale, not just specification.** Architecture docs explain *why*, not just *what* — e.g. [architecture/tech-stack.md](architecture/tech-stack.md)'s "why not Next.js" section. A doc that only says what to build without why is incomplete.
 - **Deferred work is documented, not silent.** Anything intentionally unbuilt or untested — not a bug, a conscious choice — goes in [development/deferred-work.md](development/deferred-work.md) with a re-enable condition. If something looks unfinished and isn't in that doc, it's a real gap worth flagging.
-- **GitHub issue links for backend blockers.** Where a frontend feature is blocked on Rhizome or Cambium work, the doc links the issue directly (e.g. `rhizome#120`) rather than describing the blocker in prose that can drift out of sync.
+- **GitHub issue links for backend blockers.** Where a frontend feature is blocked on Rhizome or Cambium work, the doc links the issue directly (for example, `rhizome#117`) rather than describing the blocker in prose that can drift out of sync.
 - **No frozen, point-in-time docs living in a "living" folder.** If a doc only made sense before some milestone (a design question, a gap list), it gets resolved into the relevant living doc and deleted once that milestone passes — not left behind to go stale.
 
 ---
@@ -53,10 +53,12 @@ Technical decisions, constraints, and implementation guides — how the codebase
 
 | Document | Contents |
 |---|---|
+| [Codebase Tour](architecture/codebase-tour.md) | How the source tree is wired: entry points, providers, routes, shell, API modules, auth, SSE, tests |
 | [Tech Stack](architecture/tech-stack.md) | Vite, React, TypeScript, React Router, TanStack Query — decisions and rationale |
 | [Design Tokens & Theming](architecture/design-tokens.md) | CSS custom properties, light/dark system, font loading — the technical reference (exact values) |
 | [Component Library](architecture/components.md) | Directory layout, primitives vs composed vs pages, styling approach, DnD, tables |
-| [API Client & Types](architecture/api-client.md) | Base fetch wrapper, TypeScript types, page→endpoint mapping |
+| [API Client & Types](architecture/api-client.md) | Base fetch wrapper, auth/error rules, SSE, TypeScript type conventions |
+| [API Modules](architecture/api-modules.md) | Exported function catalog for `src/lib/api/` modules |
 | [Auth & Session](architecture/auth.md) | In-memory token, httpOnly refresh cookie, login/register screens |
 | [SSE & Agent Chat](architecture/sse-streaming.md) | fetch + ReadableStream, async generator, component implications |
 | [Routes](architecture/routes.md) | Full route structure including task sub-routes |
