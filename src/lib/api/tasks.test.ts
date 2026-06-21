@@ -52,6 +52,14 @@ describe('tasks API', () => {
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/tasks/task-1', { method: 'DELETE' })
   })
 
+  it('updateTask patches the task', async () => {
+    await tasks.updateTask('task-1', { status: 'in_progress' })
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/tasks/task-1', {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'in_progress' }),
+    })
+  })
+
   it('startTask posts optional notes', async () => {
     await tasks.startTask('task-1', 'starting now')
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/tasks/task-1/start', {
@@ -99,6 +107,11 @@ describe('tasks API', () => {
     expect(result).toBe('Blocked by task-2.')
   })
 
+  it('getTaskActivity builds a query string from params', async () => {
+    await tasks.getTaskActivity('task-1', { limit: 5 })
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/tasks/task-1/activity?limit=5')
+  })
+
   it('bulkUpdateTaskDates PATCHes the project tasks/bulk endpoint', async () => {
     const updates = [{ task_id: 'task-1', scheduled_date: '2026-07-01' }]
     await tasks.bulkUpdateTaskDates('proj-1', updates)
@@ -125,6 +138,14 @@ describe('tasks API', () => {
     const data = { project_id: 'proj-1', title_template: 'Water', type: 'maintenance', cadence: 'weekly' }
     await tasks.createTaskSeries(data)
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/tasks/series', { method: 'POST', body: JSON.stringify(data) })
+  })
+
+  it('updateTaskSeries patches the series', async () => {
+    await tasks.updateTaskSeries('series-1', { cadence: 'biweekly' })
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/tasks/series/series-1', {
+      method: 'PATCH',
+      body: JSON.stringify({ cadence: 'biweekly' }),
+    })
   })
 
   it('deleteTaskSeries issues a DELETE with optional params', async () => {

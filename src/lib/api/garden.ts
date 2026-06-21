@@ -1,21 +1,27 @@
 import { apiFetch, toQueryString } from './client'
 import type {
+  ActivityEventView,
   BedView,
   CareRecordResult,
   CareStateView,
   ContainerView,
   CreateBedRequest,
+  CreateContainerRequest,
   GardenProfileView,
   LocationResultsView,
   RecordCareRequest,
+  UpdateBedRequest,
+  UpdateContainerRequest,
+  UpdateGardenProfileRequest,
 } from '@/lib/types/rhizome'
 
 export function getGardenProfile(): Promise<GardenProfileView> {
   return apiFetch('/api/v1/garden/profile')
 }
 
-// updateGardenProfile is intentionally not implemented yet — PATCH /garden/profile
-// still returns {"result": "<string>"} on the backend. See deferred-work.md.
+export function updateGardenProfile(data: UpdateGardenProfileRequest): Promise<GardenProfileView> {
+  return apiFetch('/api/v1/garden/profile', { method: 'PATCH', body: JSON.stringify(data) })
+}
 
 export function listBeds(params?: { available?: boolean }): Promise<BedView[]> {
   return apiFetch(`/api/v1/garden/beds${toQueryString(params)}`)
@@ -29,8 +35,9 @@ export function createBed(data: CreateBedRequest): Promise<BedView> {
   return apiFetch('/api/v1/garden/beds', { method: 'POST', body: JSON.stringify(data) })
 }
 
-// updateBed is intentionally not implemented yet — PATCH /garden/beds/{id}
-// still returns {"result": "<string>"}. See deferred-work.md.
+export function updateBed(id: string, data: UpdateBedRequest): Promise<BedView> {
+  return apiFetch(`/api/v1/garden/beds/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
 
 export function deleteBed(id: string): Promise<void> {
   return apiFetch(`/api/v1/garden/beds/${id}`, { method: 'DELETE' })
@@ -44,6 +51,10 @@ export function recordBedCare(id: string, data: RecordCareRequest): Promise<Care
   return apiFetch(`/api/v1/garden/beds/${id}/care`, { method: 'POST', body: JSON.stringify(data) })
 }
 
+export function getBedActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]> {
+  return apiFetch(`/api/v1/garden/beds/${id}/activity${toQueryString(params)}`)
+}
+
 export function listContainers(params?: { available?: boolean }): Promise<ContainerView[]> {
   return apiFetch(`/api/v1/garden/containers${toQueryString(params)}`)
 }
@@ -52,8 +63,13 @@ export function getContainer(id: string): Promise<ContainerView> {
   return apiFetch(`/api/v1/garden/containers/${id}`)
 }
 
-// createContainer/updateContainer are intentionally not implemented yet —
-// POST/PATCH /garden/containers still return {"result": "<string>"}. See deferred-work.md.
+export function createContainer(data: CreateContainerRequest): Promise<ContainerView> {
+  return apiFetch('/api/v1/garden/containers', { method: 'POST', body: JSON.stringify(data) })
+}
+
+export function updateContainer(id: string, data: UpdateContainerRequest): Promise<ContainerView> {
+  return apiFetch(`/api/v1/garden/containers/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
 
 export function deleteContainer(id: string): Promise<void> {
   return apiFetch(`/api/v1/garden/containers/${id}`, { method: 'DELETE' })
@@ -65,6 +81,10 @@ export function getContainerCareState(id: string): Promise<CareStateView> {
 
 export function recordContainerCare(id: string, data: RecordCareRequest): Promise<CareRecordResult> {
   return apiFetch(`/api/v1/garden/containers/${id}/care`, { method: 'POST', body: JSON.stringify(data) })
+}
+
+export function getContainerActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]> {
+  return apiFetch(`/api/v1/garden/containers/${id}/activity${toQueryString(params)}`)
 }
 
 export function getLocations(location: string): Promise<LocationResultsView> {

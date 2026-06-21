@@ -179,24 +179,26 @@ Each module exports typed async functions. TanStack Query hooks wrap these — t
 
 ```typescript
 getGardenProfile(): Promise<GardenProfileView>
-updateGardenProfile(data: Partial<GardenProfileView>): Promise<GardenProfileView>
+updateGardenProfile(data: UpdateGardenProfileRequest): Promise<GardenProfileView>  // rhizome#140 ✅
 getGardenLayout(): Promise<GardenLayoutView | null>           // rhizome#118
 
 listBeds(params?: { available?: boolean }): Promise<BedView[]>
 getBed(id: string): Promise<BedView>
 createBed(data: CreateBedRequest): Promise<BedView>
-updateBed(id: string, data: Partial<BedView>): Promise<BedView>
+updateBed(id: string, data: UpdateBedRequest): Promise<BedView>  // rhizome#140 ✅
 deleteBed(id: string): Promise<void>
 getBedCareState(id: string): Promise<CareStateView>
-recordBedCare(id: string, data: CareRequest): Promise<CareRecordResult>  // rhizome#128
+recordBedCare(id: string, data: RecordCareRequest): Promise<CareRecordResult>  // rhizome#128 ✅
+getBedActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]>  // rhizome#140 ✅
 
 listContainers(params?: { available?: boolean }): Promise<ContainerView[]>
 getContainer(id: string): Promise<ContainerView>
-createContainer(data: CreateContainerRequest): Promise<ContainerView>
-updateContainer(id: string, data: Partial<ContainerView>): Promise<ContainerView>
+createContainer(data: CreateContainerRequest): Promise<ContainerView>  // rhizome#140 ✅
+updateContainer(id: string, data: UpdateContainerRequest): Promise<ContainerView>  // rhizome#140 ✅
 deleteContainer(id: string): Promise<void>
 getContainerCareState(id: string): Promise<CareStateView>
-recordContainerCare(id: string, data: CareRequest): Promise<CareRecordResult>  // rhizome#128
+recordContainerCare(id: string, data: RecordCareRequest): Promise<CareRecordResult>  // rhizome#128 ✅
+getContainerActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]>  // rhizome#140 ✅
 ```
 
 ### `plants.ts`
@@ -205,41 +207,46 @@ recordContainerCare(id: string, data: CareRequest): Promise<CareRecordResult>  /
 listPlants(params?: PlantListParams): Promise<PlantSummaryView[]>
   // params: status, project_id, batch_id, bed_id, container_id, location
 getPlant(id: string): Promise<PlantDetailView>
-createPlant(data: CreatePlantRequest): Promise<PlantDetailView>
-createPlantBatch(data: BatchCreateRequest): Promise<PlantSummaryView[]>
-updatePlant(id: string, data: Partial<PlantDetailView>): Promise<PlantDetailView>
+createPlant(data: CreatePlantRequest): Promise<PlantDetailView>  // rhizome#140 ✅
+createPlantBatch(data: BatchCreatePlantRequest): Promise<PlantBatchResultView>  // rhizome#140 ✅
+batchUpdatePlants(data: BatchUpdatePlantsRequest): Promise<PlantSummaryView[]>  // rhizome#140 ✅
+updatePlant(id: string, data: UpdatePlantRequest): Promise<PlantDetailView>  // rhizome#140 ✅
 removePlant(id: string, reason: string): Promise<void>    // soft delete
 deletePlant(id: string): Promise<void>                    // hard delete
 getPlantCareState(id: string): Promise<CareStateView>
-recordPlantCare(id: string, data: CareRequest): Promise<CareRecordResult>  // rhizome#128
-getPlantActivity(id: string, params?: ActivityParams): Promise<ActivityEventView[]>
+recordPlantCare(id: string, data: RecordCareRequest): Promise<CareRecordResult>  // rhizome#128 ✅
+getPlantActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]>  // rhizome#140 ✅
+getBatchActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]>  // rhizome#140 ✅
+
+// batchRemovePlants — PATCH /garden/plants/batch/remove still returns
+// {"result": "<string>"}. Not implemented yet.
 ```
 
 ### `tasks.ts`
 
 ```typescript
-listTasksDaily(params?: { project_id?: string; limit?: number }): Promise<DailyTaskView[]>
-listTasksDue(params?: { project_id?: string; days_ahead?: number }): Promise<DueTaskView[]>
-listTasksBlocked(): Promise<TaskSummaryView[]>
+listTasksDaily(params?: { project_id?: string; limit?: number }): Promise<TaskSummaryView[]>
+listTasksDue(params?: { project_id?: string; days_ahead?: number }): Promise<TaskSummaryView[]>
+listTasksBlocked(): Promise<TaskSummaryView[]>  // GET /tasks/blocked still returns {"result": "<string>"} — not implemented yet
 listTasks(params: TaskListParams): Promise<TaskSummaryView[]>
   // params: project_id?, type?, subject_type?, subject_id?, status?
 getTask(id: string): Promise<TaskDetailView>
 createTask(data: CreateTaskRequest): Promise<TaskDetailView>          // rhizome#112 ✅
 deleteTask(id: string): Promise<void>                                  // rhizome#112 ✅
-updateTask(id: string, data: Partial<TaskDetailView>): Promise<TaskDetailView>
+updateTask(id: string, data: UpdateTaskRequest): Promise<TaskDetailView>  // rhizome#140 ✅
 startTask(id: string, notes?: string): Promise<void>
 completeTask(id: string, data?: { actual_minutes?: number; notes?: string }): Promise<void>
 deferTask(id: string, data: { deferred_until: string; reason?: string }): Promise<void>
 skipTask(id: string, reason: string): Promise<void>
 getTaskBlockers(id: string): Promise<string>
-getTaskActivity(id: string, params?: ActivityParams): Promise<ActivityEventView[]>
+getTaskActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]>  // rhizome#140 ✅
 bulkUpdateTaskDates(projectId: string, updates: TaskDateUpdate[]): Promise<TaskSummaryView[]>  // rhizome#122
 createTaskDependency(taskId: string, blockingTaskId: string): Promise<void>                    // rhizome#121
 deleteTaskDependency(taskId: string, blockingTaskId: string): Promise<void>                    // rhizome#121
-createTaskSeries(data: CreateSeriesRequest): Promise<TaskSeriesView>                           // rhizome#113
-updateTaskSeries(id: string, data: Partial<TaskSeriesView>): Promise<TaskSeriesView>
+createTaskSeries(data: CreateTaskSeriesRequest): Promise<TaskSeriesView>                       // rhizome#113
+updateTaskSeries(id: string, data: UpdateTaskSeriesRequest): Promise<TaskSeriesView>  // rhizome#140 ✅
 deleteTaskSeries(id: string, params?: { delete_pending_tasks?: boolean }): Promise<void>       // rhizome#113
-materializeSeries(): Promise<void>
+materializeSeries(params?: { project_id?: string; days_ahead?: number }): Promise<void>
 ```
 
 ### `projects.ts`

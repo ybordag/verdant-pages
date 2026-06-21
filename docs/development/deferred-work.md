@@ -22,17 +22,23 @@ Unit-tested (fake `ReadableStream`, no live backend needed for these): token ord
 
 **Still genuinely empty:** `projects.ts`, `incidents.ts`, `activity.ts`, `media.ts` — blocked on rhizome backend work (see below).
 
-**Functions intentionally omitted from the 12 "done" modules** (the backend endpoint still returns `{"result": "<string>"}` instead of structured JSON, confirmed by reading `agent/api/routers.py` directly — not by trusting a closed-issue label):
-- `garden.ts`: `updateGardenProfile`, `updateBed`, `createContainer`, `updateContainer`
-- `plants.ts`: `getPlant`, `createPlant`, `updatePlant`, `createPlantBatch`, `getPlantActivity`
-- `tasks.ts`: `listTasksBlocked`, `updateTask`, `getTaskActivity`, `updateTaskSeries`
+**rhizome#140 closed (2026-06-21) — garden/plants/tasks CRUD writes + remaining activity feeds.** This unblocked almost everything that was previously omitted. Now built, code-reviewed, test-verified (50 new rhizome tests + the full 798-test suite), and live-curled against a running instance:
+- `garden.ts`: `updateGardenProfile`, `updateBed`, `createContainer`, `updateContainer`, `getBedActivity`, `getContainerActivity`
+- `plants.ts`: `getPlant` (was already structured from earlier #116 work, just never wired), `createPlant`, `updatePlant`, `createPlantBatch`, `batchUpdatePlants`, `getPlantActivity`, `getBatchActivity`
+- `tasks.ts`: `updateTask`, `getTaskActivity`, `updateTaskSeries`
+
+`ActivityEventView`/`ActivitySubjectView`/`PlantBatchResultView` added to `rhizome.ts`; several existing request types (`CreateContainerRequest`, `CreatePlantRequest`, `UpdateTaskRequest`, `UpdateTaskSeriesRequest`) were also corrected against the actual rhizome tool signatures while wiring these — a couple of fields were missing or wrongly marked optional/required.
+
+**Still omitted** (different, smaller endpoints #140 didn't cover):
+- `tasks.ts`: `listTasksBlocked` — `GET /tasks/blocked` still returns `{"result": "<string>"}`
+- `plants.ts`: `batchRemovePlants` — `PATCH /garden/plants/batch/remove` still returns `{"result": "<string>"}`
 - `triage.ts`: `getTriageRecommendations` (route doesn't exist server-side at all, not a string-wrap issue)
 
-Tracked in a rhizome issue for the garden/plants/tasks create+update gap (filed by the project owner directly, not by Claude — confirm the issue number before linking it here). These omissions don't block the rest of each module; everything else in each file is real and safe to use.
+`GET /projects/{id}/activity` is also now structured (`ActivityEventView[]`) per #140, but isn't wired anywhere yet — `projects.ts` doesn't exist as a module until rhizome#137 lands; pick it up there.
 
 **Why deferred:** This was a deliberate scope split within Phase 4 — auth core first and verified working end-to-end, domain modules as a follow-up. Within that follow-up, modules were split further by actual backend readiness (verified per-endpoint, not per-module) rather than built all-or-nothing against a spec that assumed full backend support.
 
-**Re-enable when:** `incidents.ts`/`activity.ts`/`projects.ts` once rhizome#134/#135/#137 land; the omitted create/update functions above once the garden/plants/tasks write-endpoint gap is fixed; `media.ts` once rhizome#117 lands (not started at all, separate from the structured-JSON backlog).
+**Re-enable when:** `incidents.ts`/`activity.ts`/`projects.ts` once rhizome#134/#135/#137 land; `listTasksBlocked`/`batchRemovePlants` once those two specific endpoints get structured responses; `media.ts` once rhizome#117 lands (not started at all, separate from the structured-JSON backlog).
 
 ---
 

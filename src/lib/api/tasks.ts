@@ -1,10 +1,13 @@
 import { apiFetch, toQueryString } from './client'
 import type {
+  ActivityEventView,
   CreateTaskRequest,
   CreateTaskSeriesRequest,
   TaskDetailView,
   TaskSeriesView,
   TaskSummaryView,
+  UpdateTaskRequest,
+  UpdateTaskSeriesRequest,
 } from '@/lib/types/rhizome'
 
 export function listTasksDaily(params?: { project_id?: string; limit?: number }): Promise<TaskSummaryView[]> {
@@ -42,8 +45,9 @@ export function deleteTask(id: string): Promise<void> {
   return apiFetch(`/api/v1/tasks/${id}`, { method: 'DELETE' })
 }
 
-// updateTask is intentionally not implemented yet — PATCH /tasks/{id}
-// still returns {"result": "<string>"}. See deferred-work.md.
+export function updateTask(id: string, data: UpdateTaskRequest): Promise<TaskDetailView> {
+  return apiFetch(`/api/v1/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
 
 export function startTask(id: string, notes?: string): Promise<void> {
   return apiFetch(`/api/v1/tasks/${id}/start`, { method: 'POST', body: JSON.stringify({ notes }) })
@@ -72,8 +76,9 @@ export async function getTaskBlockers(id: string): Promise<string> {
   return res.result
 }
 
-// getTaskActivity is intentionally not implemented yet — GET /tasks/{id}/activity
-// still returns {"result": "<string>"}. See deferred-work.md.
+export function getTaskActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]> {
+  return apiFetch(`/api/v1/tasks/${id}/activity${toQueryString(params)}`)
+}
 
 export function bulkUpdateTaskDates(
   projectId: string,
@@ -100,8 +105,9 @@ export function createTaskSeries(data: CreateTaskSeriesRequest): Promise<TaskSer
   return apiFetch('/api/v1/tasks/series', { method: 'POST', body: JSON.stringify(data) })
 }
 
-// updateTaskSeries is intentionally not implemented yet — PATCH /tasks/series/{id}
-// still returns {"result": "<string>"}. See deferred-work.md.
+export function updateTaskSeries(id: string, data: UpdateTaskSeriesRequest): Promise<TaskSeriesView> {
+  return apiFetch(`/api/v1/tasks/series/${id}`, { method: 'PATCH', body: JSON.stringify(data) })
+}
 
 export function deleteTaskSeries(id: string, params?: { delete_pending_tasks?: boolean }): Promise<void> {
   return apiFetch(`/api/v1/tasks/series/${id}${toQueryString(params)}`, { method: 'DELETE' })

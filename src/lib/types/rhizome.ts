@@ -123,16 +123,47 @@ export interface CreateBedRequest {
 
 export interface CreateContainerRequest {
   name: string
-  container_type?: string
-  size_gallons?: number
-  location?: string
+  container_type: string
+  size_gallons: number
+  location: string
   is_mobile?: boolean
+  notes?: string
+}
+
+export interface UpdateGardenProfileRequest {
+  climate_zone?: string
+  frost_date_last_spring?: string
+  frost_date_first_fall?: string
+  soil_type?: string
+  tray_capacity?: number
+  tray_indoor_capacity?: number
+  location_label?: string
+  latitude?: number
+  longitude?: number
+  hard_constraints?: Record<string, unknown>
+  soft_preferences?: Record<string, unknown>
+  remove_hard_constraints?: string[]
+  remove_soft_preferences?: string[]
+  notes?: string
+}
+
+export interface UpdateBedRequest {
+  soil_type?: string
+  sunlight?: string
+  dimensions_sqft?: number
+  location?: string
+  notes?: string
+}
+
+export interface UpdateContainerRequest {
+  location?: string
   notes?: string
 }
 
 export interface CreatePlantRequest {
   name: string
   variety?: string
+  quantity?: number
   bed_id?: string
   container_id?: string
   source?: string
@@ -142,6 +173,34 @@ export interface CreatePlantRequest {
 
 export interface BatchCreatePlantRequest extends CreatePlantRequest {
   quantity: number
+}
+
+export interface UpdatePlantRequest {
+  status?: string
+  is_flowering?: boolean
+  is_fruiting?: boolean
+  last_fertilized_at?: string
+  fertilizing_schedule?: string
+  special_instructions?: string
+  notes?: string
+}
+
+export interface BatchUpdatePlantsRequest {
+  name: string
+  project_id?: string
+  variety?: string
+  current_status?: string
+  quantity?: number
+  new_status?: string
+  is_flowering?: boolean
+  is_fruiting?: boolean
+  red_cup_date?: string
+  transplant_date?: string
+  last_fertilized_at?: string
+  fertilizing_schedule?: string
+  special_instructions?: string
+  update_reason?: string
+  notes?: string
 }
 
 export interface RecordCareRequest {
@@ -232,11 +291,18 @@ export interface CreateTaskRequest {
 export interface UpdateTaskRequest {
   title?: string
   description?: string
-  priority?: string
   scheduled_date?: string
+  earliest_start?: string
+  window_start?: string
+  window_end?: string
   deadline?: string
   estimated_minutes?: number
   notes?: string
+  status?: string
+  reversible?: boolean
+  what_happens_if_skipped?: string
+  what_happens_if_delayed?: string
+  priority?: string
 }
 
 export interface TaskDateUpdate {
@@ -262,10 +328,13 @@ export interface CreateTaskSeriesRequest {
 }
 
 export interface UpdateTaskSeriesRequest {
+  title?: string
+  description?: string
   cadence?: string
   cadence_days?: number
+  next_generation_date?: string
+  default_estimated_minutes?: number
   active?: boolean
-  notes?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -524,4 +593,42 @@ export interface WeatherTaskChangeSetView {
   created_at: string
   approved_at?: string
   affected_tasks: TaskSummaryView[]
+}
+
+// ---------------------------------------------------------------------------
+// Activity
+// ---------------------------------------------------------------------------
+
+export interface ActivitySubjectView {
+  subject_type: string
+  subject_id: string
+  role?: string
+}
+
+export interface ActivityEventView {
+  id: string
+  created_at: string
+  actor_type: string
+  actor_label?: string
+  event_type: string
+  category: string
+  summary: string
+  notes?: string
+  project_id?: string
+  subjects: ActivitySubjectView[]
+}
+
+// ---------------------------------------------------------------------------
+// Plant batches
+// ---------------------------------------------------------------------------
+
+export interface PlantBatchResultView {
+  batch_id: string
+  batch_name: string
+  plant_name: string
+  variety?: string
+  quantity_sown: number
+  project_id?: string
+  created_at: string
+  plants: PlantSummaryView[]
 }

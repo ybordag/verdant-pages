@@ -21,6 +21,14 @@ describe('garden API', () => {
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/profile')
   })
 
+  it('updateGardenProfile patches the profile', async () => {
+    await garden.updateGardenProfile({ climate_zone: '9b' })
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/profile', {
+      method: 'PATCH',
+      body: JSON.stringify({ climate_zone: '9b' }),
+    })
+  })
+
   it('listBeds builds a query string from params', async () => {
     await garden.listBeds({ available: true })
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/beds?available=true')
@@ -44,6 +52,14 @@ describe('garden API', () => {
     })
   })
 
+  it('updateBed patches the bed', async () => {
+    await garden.updateBed('bed-1', { sunlight: 'full sun' })
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/beds/bed-1', {
+      method: 'PATCH',
+      body: JSON.stringify({ sunlight: 'full sun' }),
+    })
+  })
+
   it('deleteBed issues a DELETE', async () => {
     await garden.deleteBed('bed-1')
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/beds/bed-1', { method: 'DELETE' })
@@ -62,6 +78,11 @@ describe('garden API', () => {
     })
   })
 
+  it('getBedActivity builds a query string from params', async () => {
+    await garden.getBedActivity('bed-1', { limit: 5 })
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/beds/bed-1/activity?limit=5')
+  })
+
   it('listContainers builds a query string from params', async () => {
     await garden.listContainers({ available: false })
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/containers?available=false')
@@ -70,6 +91,23 @@ describe('garden API', () => {
   it('getContainer fetches a single container by id', async () => {
     await garden.getContainer('container-1')
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/containers/container-1')
+  })
+
+  it('createContainer posts the container payload', async () => {
+    const data = { name: 'Big Pot', container_type: 'pot', size_gallons: 10, location: 'patio' }
+    await garden.createContainer(data)
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/containers', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  })
+
+  it('updateContainer patches the container', async () => {
+    await garden.updateContainer('container-1', { location: 'greenhouse' })
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/containers/container-1', {
+      method: 'PATCH',
+      body: JSON.stringify({ location: 'greenhouse' }),
+    })
   })
 
   it('deleteContainer issues a DELETE', async () => {
@@ -88,6 +126,11 @@ describe('garden API', () => {
       method: 'POST',
       body: JSON.stringify({ care_type: 'fertilized' }),
     })
+  })
+
+  it('getContainerActivity builds a query string from params', async () => {
+    await garden.getContainerActivity('container-1', { limit: 5 })
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/containers/container-1/activity?limit=5')
   })
 
   it('getLocations URL-encodes the location and fetches', async () => {
