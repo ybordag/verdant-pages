@@ -96,8 +96,9 @@ Full detail, including what shipped phase-by-phase and bugs found along the way:
 ## Currently working on
 
 - Phase 4 domain modules: 12/16 built (`garden`, `plants`, `tasks`, `calendar`, `shopping`, `search`, `alerts`, `notifications`, `interactions`, `chat`, `triage`, `weather`). `projects.ts`/`incidents.ts`/`activity.ts`/`media.ts` still blocked on rhizome backend gaps.
+- [rhizome#140](https://github.com/ybordag/rhizome/issues/140) closed (verified — code review, tests, live curl checks) — unblocked almost every previously-omitted function in `garden.ts`/`plants.ts`/`tasks.ts`: `updateGardenProfile`, `updateBed`, `createContainer`, `updateContainer`, `getPlant`, `createPlant`, `updatePlant`, `createPlantBatch`, `batchUpdatePlants`, `updateTask`, plus per-entity activity feeds (`getBedActivity`, `getContainerActivity`, `getPlantActivity`, `getBatchActivity`, `getTaskActivity`) and `updateTaskSeries`. All now built and live-verified. Only `listTasksBlocked` and `batchRemovePlants` remain omitted from those three modules.
 - `src/lib/sse/stream.ts` is built and unit-tested, but live-testing it against the real Cambium → Rhizome stack found a real backend bug: streaming chat (`/internal/agent/stream`) fails before any LLM call for every provider, because the LangGraph checkpointer is wired sync-only. Filed as [rhizome#141](https://github.com/ybordag/rhizome/issues/141) — Phase 6c (agent chat) can't be live-verified until it's fixed.
-- 229 tests passing (unit + E2E).
+- 259 tests passing (unit + E2E).
 
 ## Known issues / deferred work
 

@@ -125,8 +125,20 @@ Done:
 
 229 total tests (101 new this pass).
 
+**rhizome#140 closed — garden/plants/tasks CRUD writes + remaining activity feeds, verified before closing (code review, 50 new rhizome tests, full 798-test suite, live curl checks against a running instance — including a real route-ordering bug found and fixed: `PATCH /garden/plants/batch` was unreachable because it was registered after `{plant_id}`).** Unblocked almost everything that was previously omitted from `garden.ts`/`plants.ts`/`tasks.ts`: `updateGardenProfile`, `updateBed`, `createContainer`, `updateContainer`, `getBedActivity`, `getContainerActivity`, `getPlant`, `createPlant`, `updatePlant`, `createPlantBatch`, `batchUpdatePlants`, `getPlantActivity`, `getBatchActivity`, `updateTask`, `getTaskActivity`, `updateTaskSeries` — all now built, typed, tested, and live-verified against a running instance. New types: `ActivityEventView`, `ActivitySubjectView`, `PlantBatchResultView`; corrected a few existing request types (`CreateContainerRequest`, `CreatePlantRequest`, `UpdateTaskRequest`, `UpdateTaskSeriesRequest`) against the actual rhizome tool signatures.
+
+245 total tests (16 new this pass).
+
+**Coverage audit (2026-06-21):** cross-referenced every exported function in all 16 domain modules against its test file — full coverage confirmed, no gaps. Found and closed two real component-level gaps that had nothing to do with the recent backend work:
+- `NotificationDrawer` had a `useEffect`-registered Escape-key listener with zero test coverage (the classic stale-closure/missed-cleanup bug shape) — E2E only covered open + close-via-button. New `NotificationDrawer.test.tsx` (8 tests) covers Escape, backdrop-click, click-inside-doesn't-close, and listener cleanup on unmount.
+- `PasswordStrengthMeter`'s own rendering (bar count, color level, Weak/Fair/Good/Strong label, per-requirement met/unmet) was only indirectly exercised once through `RegisterPage.test.tsx`'s single "Strong" assertion — the scoring logic itself (`passwordStrength.ts`) was well-tested, but the component's render branches weren't. New `PasswordStrengthMeter.test.tsx` (6 tests) covers all four strength levels plus per-requirement met/unmet state.
+
+259 total tests (14 new this pass).
+
+**Still omitted:** `listTasksBlocked` (`GET /tasks/blocked`) and `batchRemovePlants` (`PATCH /garden/plants/batch/remove`) — different, smaller endpoints #140 didn't cover, still string-wrapped. `getTriageRecommendations` stays omitted — the route doesn't exist server-side at all.
+
 **Not started:**
-- `projects.ts`, `incidents.ts`, `activity.ts` — blocked on rhizome backend work (structured-JSON gaps, tracked as rhizome issues split by feature: #134/#135/#137)
+- `projects.ts`, `incidents.ts`, `activity.ts` — blocked on rhizome backend work (structured-JSON gaps, tracked as rhizome issues split by feature: #134/#135/#137). Note `GET /projects/{id}/activity` is already structured per #140 — pick it up once `projects.ts` itself gets built.
 - `media.ts` — genuinely not started in rhizome at all (rhizome#117), separate from the structured-JSON backlog
 
 See [deferred-work.md](../development/deferred-work.md) for the full breakdown of what's deferred and why.
