@@ -1,0 +1,39 @@
+.feed {
+  min-width: 0;
+}
+
+.state {
+  display: flex;
+  min-height: 240px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-soft);
+  padding: 28px;
+  background: var(--surface-dark-card);
+}
+
+.stateTitle {
+  color: var(--text-primary);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.stateBody {
+  max-width: 52ch;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding: 22px 0 4px;
+}
