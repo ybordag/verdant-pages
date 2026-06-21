@@ -172,17 +172,16 @@ Startup intake remains a backend contract gap tracked as rhizome#146: Rhizome in
 
 ### Phase 5 subphases
 
-Each subphase should be a separate branch and PR so Phase 5 stays reviewable. Branch names branch from `maple` and use maple species.
+`maple` is the Phase 5 planning/spec branch. Each implementation subphase below should be a separate branch and PR so Phase 5 stays reviewable. Branch names branch from `maple` and use maple species.
 
 | Subphase | Branch | Tangible output | Smoke test |
 |---|---|---|---|
-| 5.0 Roadmap/spec lock | `maple` | Phase 5 plan, Rhizome workbench decisions, backend gap issue for startup intake | Docs clearly specify thread home/list, model selector, omitted upload photo, and subphase sequence |
-| 5.1 Activity foundation | `sugar-maple` | `FilterRail`, `ObjectActivityFeed`, `ActivityPage` with real `GET /api/v1/activity` data and cursor pagination | Global feed renders recent events; category filter narrows results; Load more uses `before_timestamp` |
-| 5.2 Thread home and streaming chat | `red-maple` | `/app/rhizome` thread home/list, `/app/rhizome/:threadId`, composer, streaming messages, topbar thread switcher, read-only model display | No-thread state can start a thread; existing threads are selectable; sending a message streams tokens and ends cleanly |
-| 5.3 Interactions and context | `silver-maple` | Interaction panel, compact interaction summaries, resume stream actions, context strip/search/pinning, context-aware entry modal | Pending interaction opens review panel; approve resumes stream; adding/removing context updates chips and backend |
-| 5.4 Incidents and treatment plans | `japanese-maple` | Incidents list/detail/new route, filters, manual treatment plan editor, Rhizome draft trigger, approve/resolve flows | Create incident; add manual plan; approve plan generates tasks; resolve incident updates status |
-| 5.5 Today page integration | `vine-maple` | Real Today page using weather, latest triage, pending interactions, active projects, top tasks, mini calendar | Today shows real briefing/conditions/tasks; pending interaction is actionable; links navigate to Rhizome/Tasks/Calendar |
-| 5.6 Phase 5 hardening | `bigleaf-maple` | Cross-page polish, loading/error/empty states, E2E coverage for core Phase 5 flows, docs finalization | Full Phase 5 smoke suite passes against live Cambium/Rhizome |
+| 5a Activity foundation | `sugar-maple` | `FilterRail`, `ObjectActivityFeed`, `ActivityPage` with real `GET /api/v1/activity` data and cursor pagination | Global feed renders recent events; category filter narrows results; Load more uses `before_timestamp` |
+| 5b Thread home and streaming chat | `red-maple` | `/app/rhizome` thread home/list, `/app/rhizome/:threadId`, composer, streaming messages, topbar thread switcher, read-only model display | No-thread state can start a thread; existing threads are selectable; sending a message streams tokens and ends cleanly |
+| 5c Interactions and context | `silver-maple` | Interaction panel, compact interaction summaries, resume stream actions, context strip/search/pinning, context-aware entry modal | Pending interaction opens review panel; approve resumes stream; adding/removing context updates chips and backend |
+| 5d Incidents and treatment plans | `japanese-maple` | Incidents list/detail/new route, filters, manual treatment plan editor, Rhizome draft trigger, approve/resolve flows | Create incident; add manual plan; approve plan generates tasks; resolve incident updates status |
+| 5e Today page integration | `vine-maple` | Real Today page using weather, latest triage, pending interactions, active projects, top tasks, mini calendar | Today shows real briefing/conditions/tasks; pending interaction is actionable; links navigate to Rhizome/Tasks/Calendar |
+| 5f Phase 5 hardening | `bigleaf-maple` | Cross-page polish, loading/error/empty states, E2E coverage for core Phase 5 flows, docs finalization | Full Phase 5 smoke suite passes against live Cambium/Rhizome |
 
 ### Today page
 
