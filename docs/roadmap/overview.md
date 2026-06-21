@@ -183,6 +183,15 @@ Startup intake remains a backend contract gap tracked as rhizome#146: Rhizome in
 | 5e Today page integration | `vine-maple` | Real Today page using weather, latest triage, pending interactions, active projects, top tasks, mini calendar | Today shows real briefing/conditions/tasks; pending interaction is actionable; links navigate to Rhizome/Tasks/Calendar |
 | 5f Phase 5 hardening | `bigleaf-maple` | Cross-page polish, loading/error/empty states, E2E coverage for core Phase 5 flows, docs finalization | Full Phase 5 smoke suite passes against live Cambium/Rhizome |
 
+#### 5a implementation slices
+
+1. **API and shape audit:** Confirm `activity.ts`, `ActivityEventView`, supported list params, and existing tests. Fix small API/type drift before UI work.
+2. **Static Activity page skeleton:** Replace the placeholder `/app/activity` with the final responsive layout using local sample data: left `FilterRail`, main chronological feed, event rows, and loading/empty/error placeholders.
+3. **Real data wiring:** Connect `ActivityPage` to `listActivity()`, including initial load, loading state, error/retry, empty state, and real event rendering.
+4. **Filters:** Wire the filter rail to supported activity query params, starting with category, event type, since/before dates, and reset behavior.
+5. **Cursor pagination:** Add explicit `Load more` pagination using `before_timestamp`, appending results without duplicates while preserving active filters.
+6. **Test and polish pass:** Add focused API/page/component coverage for rendering, filters, retry, empty state, and pagination; finish responsive polish and update docs to mark 5a implemented.
+
 ### Today page
 
 `TodayConditionsPanel` (weather), `RhizomeBriefingPanel` (triage + inline `InteractionCard` for pending approvals), `TodayOverviewPanel` (projects + `MiniCalendar`), `TodayTasksStrip` (top 5 with quick-complete), `ThisWeekStrip`. **Page:** `TodayPage`
