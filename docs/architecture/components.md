@@ -564,11 +564,31 @@ Populated from `GET /api/v1/garden/plants?project_id=X`.
 
 ## 11. Agent / Chat
 
+### `ThreadHome`
+
+Landing state for `/app/rhizome` when no specific thread is selected. Shows a scrollable recent-thread list when threads exist and a blank new-thread composer state when none exist. Does not create a backend thread until the user sends the first message or explicitly starts a thread.
+
+---
+
+### `ThreadSwitcher`
+
+Compact topbar control for `/app/rhizome/:threadId`. Lists recent threads from `GET /api/v1/threads?limit=20`, navigates between threads, and exposes a "New thread" entrypoint.
+
+---
+
+### `ModelSelector`
+
+Topbar control showing the active provider/model from `GET /auth/session`. It is read-only until `PATCH /auth/profile` lands in Cambium; once editable, it updates `preferred_provider`/`preferred_model`.
+
+---
+
 ### `SessionStrip`
 
 Narrow strip below topbar on the Rhizome page. Two panels side by side:
 - **Startup intake** — Rhizome's session-start questions (time available, energy, focus). Shown once answered.
 - **System status** — weather snapshot timestamp, pending review count.
+
+Startup intake display depends on rhizome#146. Until that lands, show unset/inferred placeholders rather than client-only state.
 
 ---
 

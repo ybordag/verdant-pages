@@ -17,8 +17,8 @@ Three vertical regions:
 
 ```
 ┌──────────────────────────────────────────────────────────────┬──────────────┐
-│  TOPBAR: "June 14, 2026 · Saturday"  [Upload Photo] [New    │              │
-│          Incident] [Run Triage]                              │              │
+│  TOPBAR: "June 14, 2026 · Saturday"  [Model ▾] [New         │              │
+│          Incident] [Run Triage] [New Thread]                 │              │
 ├──────────────────────────────────────────────────────────────┤  INTERACTION │
 │  SESSION STRIP                                               │  PANEL       │
 │  Startup intake: Time 45min · Energy Medium · Focus Seeds   │  (open when  │
@@ -41,9 +41,23 @@ Three vertical regions:
 
 A persistent narrow strip at the top of the chat area (below the topbar) showing the session context that Rhizome loaded at startup.
 
-**Left — Startup intake:** Rhizome asks three questions at the beginning of a session: "How much time do you have? What's your energy level? What do you want to focus on?" The user answers via the chat, and their responses are shown here as compact tiles. These ground Rhizome's recommendations for the session.
+**Left — Startup intake:** Rhizome should expose three structured session context values: "How much time do you have?", "What's your energy level?", and "What do you want to focus on?" Display them as compact tiles. These ground Rhizome's recommendations for the session.
+
+Current backend note: Rhizome infers time/energy/focus from opener text internally, but Verdant does not yet have a structured thread/session intake contract to read or update. Tracked as rhizome#146. In Phase 5, render the strip with "Not set" / inferred-summary placeholders until the backend contract lands; do not invent client-only state that Rhizome cannot use.
 
 **Right — System status:** Weather snapshot timestamp, count of pending reviews needing approval. Clicking the review count jumps to the interaction panel.
+
+---
+
+## Thread home and thread list
+
+`/app/rhizome` without a `threadId` is a thread home, not a silently auto-created conversation.
+
+**No threads yet:** show a blank new-thread state with the composer centered in the chat area, a short empty-state line, and a primary "Start new thread" action. Sending the first message creates the thread, streams the response, and navigates to `/app/rhizome/:threadId`.
+
+**Existing threads:** show a scrollable recent-thread list plus a new-thread entrypoint. The list uses `GET /api/v1/threads?limit=20`, sorted by `last_active_at`, and each row shows thread name, last activity, and a short preview if available. Selecting a thread navigates to `/app/rhizome/:threadId`; "New thread" switches to the blank composer state without creating anything until the user sends.
+
+The active thread page (`/app/rhizome/:threadId`) keeps a compact thread switcher in the topbar so the user can move between conversations without leaving the workbench.
 
 ---
 
@@ -82,7 +96,7 @@ The main conversation area. Dot-grid background matching the v2 prototype.
 
 **Streaming:** `StreamingMessage` component renders tokens as they arrive. Blinking cursor during generation. Replaced by static `MessageBubble` on completion.
 
-**Thread list:** A collapsible sidebar or dropdown in the topbar showing recent threads (from `GET /api/v1/threads?limit=20`), sorted by `last_active_at`. "New thread" button creates a fresh conversation.
+**Thread switcher:** A compact dropdown in the topbar showing recent threads from `GET /api/v1/threads?limit=20`. The dedicated `/app/rhizome` thread home owns the full scrollable list.
 
 ---
 
@@ -93,6 +107,8 @@ A `<textarea>` at the bottom. Enter sends (Shift+Enter newline). "Send" button b
 Placeholder: *"Ask Rhizome about tasks, plants, projects, weather, or incidents…"*
 
 Status line below: zone + model indicator ("Zone 9b · Rhizome is listening").
+
+**Model selector:** A compact selector belongs in the topbar, not the composer. It shows provider + model from `GET /auth/session` (`preferred_provider`, `preferred_model`) and saves changes through `PATCH /auth/profile` when cambium#20 lands. Until that endpoint exists, render the current provider/model as read-only with a disabled selector affordance and a tooltip.
 
 ---
 
@@ -173,11 +189,13 @@ Rhizome can reference these directly without the user re-describing them. The su
 | `GET /api/v1/search?q=X&types=Y` | Context search modal |
 | `POST /api/v1/triage/run` | "Run Triage" button in topbar |
 | `POST /api/v1/incidents` | "New Incident" button in topbar |
+| `GET /auth/session` | Current provider/model display |
+| `PATCH /auth/profile` | Save provider/model selection once cambium#20 lands |
 
 ---
 
 ## Open design questions
 
-**Thread UX on first open.** When the user navigates to `/app/rhizome` for the first time, should the page (a) auto-create a new thread and start a fresh conversation, or (b) show a thread list/picker so the user selects or creates one? Not yet decided — pick this before building Phase 5 chat.
+**Thread preview source.** The thread list needs a preview line. If `ThreadView` does not include one, either omit previews in the first build or add a backend field later; do not fetch every thread's messages just to render the list.
 
-**Model selection.** A dropdown to pick the active rhizome backend model/provider (`preferred_provider`/`preferred_model`, already settable via `PATCH /auth/profile`), plus a visual indicator in the composer status line of which model is currently active for the session — extends the existing "Zone 9b · Rhizome is listening" line rather than replacing it. Not yet decided where the dropdown lives (composer status line vs. topbar) or whether switching mid-thread is allowed. Pick this before building Phase 5 chat.
+**Model switching semantics.** The selector should save the user's preferred default. Whether switching model mid-thread should affect only future turns or require a new thread is still a product decision.

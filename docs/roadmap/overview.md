@@ -162,11 +162,27 @@ See [deferred-work.md](../development/deferred-work.md) for the full breakdown o
 
 ### Agent chat (Rhizome)
 
-`SessionStrip`, `ContextStrip` + `ContextSearchModal` (unified + typed search, #126/#127 closed), `ChatThread` (`StreamingMessage`, `MessageBubble`, day separators), `Composer`, `InteractionPanel` (`PendingInteractionList` + `InteractionCard`), thread list/switcher in the page header, context-aware entry (URL params → pre-fill + new/existing thread choice). **Page:** `RhizomePage`
+`SessionStrip`, thread home + scrollable thread list, topbar thread switcher, model selector display, `ContextStrip` + `ContextSearchModal` (unified + typed search, #126/#127 closed), `ChatThread` (`StreamingMessage`, `MessageBubble`, day separators), `Composer`, `InteractionPanel` (`PendingInteractionList` + `InteractionCard`), context-aware entry (URL params → pre-fill + new/existing thread choice). **Page:** `RhizomePage`
 
-Whether a new thread auto-opens on first visit, or the user sees a thread list/picker first, is still an open product decision — see [pages/05-agent.md](../pages/05-agent.md). That doc also specifies (but doesn't yet build) the SSE manual-retry contract and a future model-dropdown/active-model indicator — both deferred, not blockers.
+`/app/rhizome` is the thread home. It does not silently auto-create a thread. With no threads, show a blank new-thread composer state; with existing threads, show a scrollable recent-thread list plus a new-thread entrypoint. `Upload Photo` is omitted until media endpoints land. The model selector lives in the topbar; it displays `preferred_provider`/`preferred_model` from session now and becomes editable once cambium#20 lands.
+
+Startup intake remains a backend contract gap tracked as rhizome#146: Rhizome infers time/energy/focus from opener text internally, but Verdant needs a structured thread/session intake shape to display and edit those values in `SessionStrip`.
 
 **Smoke test:** Send a message → tokens stream in real time; receive an interaction event → panel slides open with review card; accept a proposal → stream resumes, follow-up message appears; "Ask Rhizome about Cherry Tomatoes" from plant detail → opens pre-seeded thread.
+
+### Phase 5 subphases
+
+Each subphase should be a separate branch and PR so Phase 5 stays reviewable. Branch names continue the tree theme.
+
+| Subphase | Branch | Tangible output | Smoke test |
+|---|---|---|---|
+| 5.0 Roadmap/spec lock | `maple` | Phase 5 plan, Rhizome workbench decisions, backend gap issue for startup intake | Docs clearly specify thread home/list, model selector, omitted upload photo, and subphase sequence |
+| 5.1 Activity foundation | `alder` | `FilterRail`, `ObjectActivityFeed`, `ActivityPage` with real `GET /api/v1/activity` data and cursor pagination | Global feed renders recent events; category filter narrows results; Load more uses `before_timestamp` |
+| 5.2 Thread home and streaming chat | `rowan` | `/app/rhizome` thread home/list, `/app/rhizome/:threadId`, composer, streaming messages, topbar thread switcher, read-only model display | No-thread state can start a thread; existing threads are selectable; sending a message streams tokens and ends cleanly |
+| 5.3 Interactions and context | `laurel` | Interaction panel, compact interaction summaries, resume stream actions, context strip/search/pinning, context-aware entry modal | Pending interaction opens review panel; approve resumes stream; adding/removing context updates chips and backend |
+| 5.4 Incidents and treatment plans | `hawthorn` | Incidents list/detail/new route, filters, manual treatment plan editor, Rhizome draft trigger, approve/resolve flows | Create incident; add manual plan; approve plan generates tasks; resolve incident updates status |
+| 5.5 Today page integration | `juniper` | Real Today page using weather, latest triage, pending interactions, active projects, top tasks, mini calendar | Today shows real briefing/conditions/tasks; pending interaction is actionable; links navigate to Rhizome/Tasks/Calendar |
+| 5.6 Phase 5 hardening | `cypress` | Cross-page polish, loading/error/empty states, E2E coverage for core Phase 5 flows, docs finalization | Full Phase 5 smoke suite passes against live Cambium/Rhizome |
 
 ### Today page
 
