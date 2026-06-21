@@ -123,7 +123,7 @@ npm run build
 # → dist/
 ```
 
-TypeScript compiles first (`tsc -b`), then Vite bundles. The `dist/` output is served by Cambium as static files in production — see [`docs/architecture/build-phases.md`](../architecture/build-phases.md) (Phase 8) for the deploy process.
+TypeScript compiles first (`tsc -b`), then Vite bundles. The `dist/` output is served by Cambium as static files in production — see [`docs/roadmap/overview.md`](../roadmap/overview.md) (Phase 8) for the deploy process.
 
 ---
 

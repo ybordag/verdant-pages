@@ -278,3 +278,13 @@ Source: `GET /api/v1/garden/{type}/{id}/activity?before_timestamp=X&limit=20` *(
 **`LinkedTasksList`** — compact task list with quick-complete. Same `TaskRow` component used in the Tasks page.
 
 **`ObjectActivityFeed`** — cursor-paginated event feed. Shared with the Activity group.
+
+---
+
+## Open design questions
+
+Carried over from earlier design exploration, not yet resolved by the spec above:
+
+- Should the Plants page default to showing all plants, only active plants, or only plants with current work?
+- Do plants belong in one flat inventory, grouped by area, or grouped by lifecycle stage?
+- How should plant varieties/cultivars be represented in the card/ledger views?

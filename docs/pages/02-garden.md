@@ -152,3 +152,15 @@ Garden hub
 | `GET /api/v1/garden/plants` | Plants tab | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
 | `POST /api/v1/garden/plants` | Add plant | ✅ exists |
 | `GET /api/v1/activity?category=care` | Activity tab | Blocked on [#120](https://github.com/ybordag/rhizome/issues/120), [#115](https://github.com/ybordag/rhizome/issues/115) |
+
+---
+
+## Open design questions
+
+Carried over from earlier design exploration, not yet resolved by the spec above:
+
+- Should Garden `Projects` be its own tab inside Garden, or should Garden only show garden-scoped project links while the full project page lives under `Projects`?
+- Should the focused/expanded map state allow layer toggles (sunlight, water, containers, plants, projects, incidents) in the first real build, or stay visual-only until the layout itself is validated?
+- How much of the `GardenProfile` edit surface belongs on the hub Overview versus a separate dedicated edit flow?
+- Should areas/locations include beds as children, or should beds stay first-class objects alongside areas?
+- Should garden areas be spatial map-first or ledger/list-first when there's no generated layout yet?

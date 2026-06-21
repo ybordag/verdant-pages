@@ -1,6 +1,8 @@
 # Verdant Pages — Claude Code Memory
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-21
+
+This file is updated continuously as work happens, not just at phase boundaries — the "Currently working on" section below is the live record of what's in flight. There's no separate `docs/current_work/` history folder; `docs/roadmap/overview.md` carries the full per-phase plan and build record, and this file is the fast day-to-day pointer into it.
 
 ## What this is
 
@@ -84,12 +86,18 @@ for the remaining `lib/api` domain modules still blocked on rhizome backend work
 |---|---|---|
 | 1 | Scaffold + build tooling | complete |
 | 2 | Tokens + theme + fonts | complete |
-| 3 | Primitives + app shell | complete (current — `cedar` branch) |
-| 4 | Auth + API client | in progress — auth core done, domain modules next |
+| 3 | Primitives + app shell | complete |
+| 4 | Auth + API client | in progress (`birch` branch) — auth core + 12/16 domain modules + SSE streaming built |
 | 5a–5e | Feature pages | not started |
-| 6a–6c | Today / Incidents / Agent chat | blocked on rhizome#120 P1 |
+| 6a–6c | Today / Incidents / Agent chat | blocked on rhizome#120 P1 + rhizome#141 |
 
-Full detail: [docs/roadmap/overview.md](docs/roadmap/overview.md). Per-phase build records: [docs/current_work/](docs/current_work/).
+Full detail, including what shipped phase-by-phase and bugs found along the way: [docs/roadmap/overview.md](docs/roadmap/overview.md).
+
+## Currently working on
+
+- Phase 4 domain modules: 12/16 built (`garden`, `plants`, `tasks`, `calendar`, `shopping`, `search`, `alerts`, `notifications`, `interactions`, `chat`, `triage`, `weather`). `projects.ts`/`incidents.ts`/`activity.ts`/`media.ts` still blocked on rhizome backend gaps.
+- `src/lib/sse/stream.ts` is built and unit-tested, but live-testing it against the real Cambium → Rhizome stack found a real backend bug: streaming chat (`/internal/agent/stream`) fails before any LLM call for every provider, because the LangGraph checkpointer is wired sync-only. Filed as [rhizome#141](https://github.com/ybordag/rhizome/issues/141) — Phase 6c (agent chat) can't be live-verified until it's fixed.
+- 229 tests passing (unit + E2E).
 
 ## Known issues / deferred work
 
@@ -144,7 +152,7 @@ docs/                          — Architecture decisions and page design docs.
 
 ## Where to start
 
-Read docs/architecture/build-phases.md for the full phased plan.
+Read docs/roadmap/overview.md for the full phased plan.
 The architecture docs in docs/architecture/ cover every decision made.
 The page designs in docs/pages/ cover every page in the app.
 docs/README.md explains how the whole docs/ tree is organized if you're lost.

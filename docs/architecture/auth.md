@@ -97,3 +97,5 @@ No auth screens exist in the prototype — design them in the same botanical aes
 - **Toggle link:** small link to the other auth page in `--font-label`, pine color
 
 No third-party OAuth. Email + password only (matching Cambium's auth model).
+
+**Registration policy:** open/public for now — anyone can `POST /auth/register`. Very few people know about the project, so obscurity acts as the gate rather than an invite system or approval flow. Revisit if the project becomes more public.

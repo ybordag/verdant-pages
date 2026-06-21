@@ -160,3 +160,9 @@ Rhizome can reference these directly without the user re-describing them. The su
 | `GET /api/v1/search?q=X&types=Y` | Context search modal | Blocked on [#126](https://github.com/ybordag/rhizome/issues/126) |
 | `POST /api/v1/triage/run` | "Run Triage" button in topbar | ✅ |
 | `POST /api/v1/incidents` | "New Incident" button in topbar | ✅ |
+
+---
+
+## Open design questions
+
+**Thread UX on first open.** When the user navigates to `/app/rhizome` for the first time, should the page (a) auto-create a new thread and start a fresh conversation, or (b) show a thread list/picker so the user selects or creates one? Not yet decided — pick this before building 6c.
