@@ -1,3 +1,4 @@
+import { reportNetworkFailure, reportNetworkSuccess } from '@/lib/connectivity/connectivity'
 import type { TokenResponse } from '@/lib/types/cambium'
 
 export const BASE = import.meta.env.VITE_CAMBIUM_URL ?? ''
@@ -70,15 +71,22 @@ export function toQueryString<T extends object>(params?: T): string {
 export async function apiFetch<T>(path: string, options: RequestInit = {}, skipRefresh = false): Promise<T> {
   const token = accessToken
 
-  const res = await fetch(BASE + path, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  })
+  let res: Response
+  try {
+    res = await fetch(BASE + path, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    })
+  } catch (err) {
+    reportNetworkFailure()
+    throw err
+  }
+  reportNetworkSuccess()
 
   // Only an authenticated call (token was attached) can mean "session expired" —
   // a 401 with no token attached is a credentials failure (e.g. bad login),

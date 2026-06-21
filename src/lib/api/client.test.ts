@@ -1,4 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+const reportNetworkFailure = vi.fn()
+const reportNetworkSuccess = vi.fn()
+vi.mock('@/lib/connectivity/connectivity', () => ({
+  reportNetworkFailure: (...args: unknown[]) => reportNetworkFailure(...args),
+  reportNetworkSuccess: (...args: unknown[]) => reportNetworkSuccess(...args),
+}))
+
 import { apiFetch, ApiError, getAccessToken, setAccessToken, toQueryString } from './client'
 
 describe('toQueryString', () => {
@@ -31,10 +39,27 @@ describe('apiFetch', () => {
     setAccessToken(null)
     vi.stubGlobal('fetch', vi.fn())
     vi.stubGlobal('location', { ...window.location, replace: vi.fn() })
+    reportNetworkFailure.mockClear()
+    reportNetworkSuccess.mockClear()
   })
 
   afterEach(() => {
     vi.unstubAllGlobals()
+  })
+
+  it('reports a network success on any completed response', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({ ok: true }))
+    await apiFetch('/api/v1/garden/profile')
+    expect(reportNetworkSuccess).toHaveBeenCalledOnce()
+    expect(reportNetworkFailure).not.toHaveBeenCalled()
+  })
+
+  it('reports a network failure and rethrows when fetch itself rejects', async () => {
+    const networkError = new TypeError('Failed to fetch')
+    vi.mocked(fetch).mockRejectedValueOnce(networkError)
+    await expect(apiFetch('/api/v1/garden/profile')).rejects.toThrow('Failed to fetch')
+    expect(reportNetworkFailure).toHaveBeenCalledOnce()
+    expect(reportNetworkSuccess).not.toHaveBeenCalled()
   })
 
   it('omits the Authorization header when no token is set', async () => {

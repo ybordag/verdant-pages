@@ -1,6 +1,6 @@
 # Roadmap
 
-**Last updated:** 2026-06-21
+**Last updated:** 2026-06-21 (offline banner + retry-visibility toasts)
 
 ## How we work
 
@@ -134,6 +134,10 @@ Done:
 - `PasswordStrengthMeter`'s own rendering (bar count, color level, Weak/Fair/Good/Strong label, per-requirement met/unmet) was only indirectly exercised once through `RegisterPage.test.tsx`'s single "Strong" assertion — the scoring logic itself (`passwordStrength.ts`) was well-tested, but the component's render branches weren't. New `PasswordStrengthMeter.test.tsx` (6 tests) covers all four strength levels plus per-requirement met/unmet state.
 
 259 total tests (14 new this pass).
+
+**Offline banner + retry-visibility toasts (2026-06-21):** built the connectivity/toast plumbing that `error-handling.md` had specified since before Phase 4 started but never had anything to attach to. `src/lib/toast/toastStore.ts` (generic module-level toast store), `src/lib/connectivity/connectivity.ts` (offline detection: native `online`/`offline` events + a three-consecutive-failure fallback), `OfflineBanner` in `AppShell`, and `src/lib/query/queryClient.ts` (custom `retry`: skips `ApiError` entirely, retries a raw network failure up to 3x with a toast per attempt) — this also fills in `lib/query/`, previously empty. Also corrected a stale claim in `error-handling.md`: the notification stream's auto-reconnect-with-backoff was documented as built but `stream.ts` never had any reconnect logic — re-spec'd as not-yet-built, blocked on rhizome#130 like the rest of the notification drawer.
+
+285 total tests (26 new this pass).
 
 **Still omitted:** `listTasksBlocked` (`GET /tasks/blocked`) and `batchRemovePlants` (`PATCH /garden/plants/batch/remove`) — different, smaller endpoints #140 didn't cover, still string-wrapped. `getTriageRecommendations` stays omitted — the route doesn't exist server-side at all.
 

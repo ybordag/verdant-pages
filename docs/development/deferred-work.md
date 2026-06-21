@@ -1,6 +1,6 @@
 # Deferred Work
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-21
 
 Things that are consciously incomplete right now — not bugs, not oversights. Each entry says what's missing, why it's not worth doing yet, and the concrete condition that should trigger picking it back up. Modeled on rhizome's and cambium's `DEFERRED_TESTS.md` convention: a deferral without a re-enable condition is just a TODO that never gets read again.
 
@@ -62,13 +62,17 @@ Unit-tested (fake `ReadableStream`, no live backend needed for these): token ord
 
 ---
 
-### Offline banner, SSE manual-retry UI, 409 query invalidation
+### Offline banner + retry-visibility toasts — done (2026-06-21)
 
-**What's deferred:** [error-handling.md](error-handling.md) specifies behavior for network failure (offline banner), SSE connection-failure-before-first-event (manual retry button), and 409 conflicts (toast + query invalidation) — but none of this UI exists yet, because nothing in the app makes a real network call yet.
+Built: `src/lib/toast/toastStore.ts` (generic module-level toast store, not tied to notifications — `pushToast`/`dismissToast`/`subscribeToasts`), `src/lib/connectivity/connectivity.ts` (`reportNetworkFailure`/`reportNetworkSuccess`/`useConnectivity`, three-consecutive-failure heuristic + native `online`/`offline` events), `src/components/shell/OfflineBanner/`, and `src/lib/query/queryClient.ts` (custom `retry`: never retries `ApiError`, retries a raw network failure up to 3x with a toast per attempt). All mounted in `AppShell`/`App.tsx`. This also retires the "`lib/query/` still EMPTY" note in `CLAUDE.md` — it now holds the query client config.
 
-**Why deferred:** Same root cause as the empty `lib/` directories — these are Phase 4+ behaviors that can't be built (or meaningfully tested) before `apiFetch` and TanStack Query are wired up.
+### SSE manual-retry UI, notification-stream auto-reconnect, 409 query invalidation
 
-**Re-enable when:** Phase 4, alongside the API client itself. The spec in error-handling.md is meant to be implemented as part of that phase, not bolted on after.
+**What's deferred:** [error-handling.md](error-handling.md) specifies behavior for SSE connection-failure-before-first-event (manual retry button), notification-stream auto-reconnect with backoff, and 409 conflicts (toast + query invalidation) — none of this exists yet.
+
+**Why deferred:** The SSE manual-retry button needs a chat UI to attach it to (Phase 6c, not started, blocked on rhizome#141 regardless) — the contract is now spec'd in [pages/05-agent.md](../pages/05-agent.md)'s "Connection handling" section so it's settled before 6c starts. Notification-stream auto-reconnect is blocked on the same thing as the rest of the notification drawer — rhizome#130. 409 invalidation needs a real mutation flow wired to the UI to invalidate against, which doesn't exist until Phase 5+ pages are built.
+
+**Re-enable when:** SSE retry UI + 409 invalidation: when the relevant page (6c / any Phase 5 mutation flow) gets built. Notification auto-reconnect: when rhizome#130 ships.
 
 ---
 

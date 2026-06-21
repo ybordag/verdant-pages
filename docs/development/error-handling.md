@@ -1,6 +1,6 @@
 # Error Handling
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-21
 
 How the frontend responds to every failure mode it can encounter — API errors, network failures, and SSE stream drops. Written before Phase 4 wires up `apiFetch` so the contract is settled before the code exists, not reverse-engineered from whatever `try/catch` ends up scattered through page components.
 
@@ -17,7 +17,7 @@ Every non-2xx response from Cambium goes through `apiFetch` (see [api-client.md]
 | 404 | Resource not found | Throws `ApiError(404, body)`, no retry. | Page-level: render a "Not found" state instead of the detail view (e.g. a deleted plant navigated to via a stale link). List-level: silently exclude (the list endpoint already wouldn't return it). |
 | 400 / 422 | Validation error | Throws `ApiError(status, body)`, no retry. `body` carries field-level errors from Cambium. | Form-level: map `body` fields to the relevant `Input`/`Select` and show inline validation messages. Never a toast for validation errors — they're actionable, not informational. |
 | 409 | Conflict (e.g. duplicate name, stale optimistic update) | Throws `ApiError(409, body)`, no retry. | Toast: "That changed elsewhere — refreshing." Then invalidate the relevant TanStack Query key so the UI reloads current state. |
-| 5xx | Cambium or Rhizome failure | Throws `ApiError(status, body)`, no retry. | Toast: "Something went wrong on our end." TanStack Query's default retry (3x with backoff) already ran before this surfaces — by the time the UI shows anything, retries are exhausted. |
+| 5xx | Cambium or Rhizome failure | Throws `ApiError(status, body)`, no retry. | Toast: "Something went wrong on our end." `ApiError` is never retried by the query client (see below) — it surfaces immediately, no backoff delay. |
 
 **Rule:** components never construct their own error copy from `err.body` for 401/5xx — those are generic by design (the user can't act on a 500). 400/422 is the one case where `err.body` content reaches the UI, because those errors are specifically about what the user typed.
 
@@ -27,10 +27,10 @@ Every non-2xx response from Cambium goes through `apiFetch` (see [api-client.md]
 
 `fetch()` rejects (not a 4xx/5xx response — it never got one) when the network is down or Cambium is unreachable.
 
-- `apiFetch` does not catch this — it propagates as a raw `TypeError` from `fetch`, not an `ApiError`.
-- TanStack Query treats this the same as any other query/mutation failure: retries with backoff, then surfaces `error` on the hook.
+- `apiFetch` doesn't swallow this — the raw `TypeError` from `fetch` still propagates, not an `ApiError` — but it does report the failure to `src/lib/connectivity/connectivity.ts` (`reportNetworkFailure()`/`reportNetworkSuccess()`) before rethrowing/returning, so connectivity state is tracked regardless of how a caller handles the rejection.
 - Components should check `error instanceof ApiError` to branch on API errors; anything else (including this case) falls through to a generic "Connection lost" state.
-- The nav shell shows a persistent banner ("You're offline — changes won't save") when `navigator.onLine` is `false` or three consecutive requests fail with a non-`ApiError`. This is a Phase 4 deliverable, not yet built.
+- The query client's `retry` (`src/lib/query/queryClient.ts`) never retries an `ApiError` (see the 5xx row above) but retries a raw network failure up to 3 times, pushing a toast ("Retrying… (n/3)") on each attempt so a retry-in-progress is visible instead of the UI looking frozen. Mutations keep TanStack's default of no retry — unchanged, since blindly re-firing a write isn't safe.
+- The nav shell (`AppShell` → `OfflineBanner`) shows a persistent banner ("You're offline — changes won't save") once three consecutive requests fail with a non-`ApiError`, or immediately on the browser's native `offline` event — `navigator.onLine` going false is the more reliable signal in practice (e.g. airplane mode), the failure-counter is the fallback for cases where the browser doesn't notice (Cambium reachable on the network but not responding). A toast fires on each offline/online transition.
 
 ---
 
@@ -47,10 +47,10 @@ The `reader.read()` loop simply ends (`done: true`) without ever seeing a `{ typ
 **3. Malformed event (unparseable JSON after `data: `).**
 Per the implementation in [api-client.md](../architecture/api-client.md), malformed lines are silently skipped (`catch { /* malformed — skip */ }`). This is intentional — a single garbled line shouldn't kill the whole stream — but it means a malformed `done` event would cause case 2's behavior. Acceptable trade-off; not worth instrumenting further until it's observed in practice.
 
-**4. Notification stream specifically** (`consumeNotificationStream`, no `done` event ever sent — it's long-lived) reconnects automatically on drop with exponential backoff (1s, 2s, 4s, capped at 30s). This is the one stream where silent reconnection is correct — losing a few seconds of notifications is low-stakes, unlike losing part of an agent response.
+**4. Notification stream specifically** (`consumeNotificationStream`, no `done` event ever sent — it's long-lived) *should* reconnect automatically on drop with exponential backoff (1s, 2s, 4s, capped at 30s) — silent reconnection is correct here, since losing a few seconds of notifications is low-stakes, unlike losing part of an agent response. **Not built yet** — `stream.ts` today is a single `fetch` + read loop with no reconnect logic at all. This is the spec for when it gets wired up (blocked on rhizome#130, same as the rest of the notification drawer — see [deferred-work.md](deferred-work.md)).
 
 ---
 
 ## What's deliberately not handled yet
 
-See [deferred-work.md](deferred-work.md) for the full list with rationale. The short version: the offline banner, SSE manual-retry UI, and 409-triggered query invalidation described above are *specified* here but not yet implemented — Phase 4 is where `apiFetch` and the auth/query plumbing actually get built.
+See [deferred-work.md](deferred-work.md) for the full list with rationale. Still outstanding: the SSE manual-retry button (no chat UI exists yet to attach it to — contract specified in [pages/05-agent.md](../pages/05-agent.md)), notification-stream auto-reconnect (item 4 above, blocked on rhizome#130), and 409-triggered query invalidation. The offline banner and retry-visibility toasts described above **are** built (2026-06-21) — `src/lib/connectivity/connectivity.ts`, `src/lib/toast/toastStore.ts`, `src/lib/query/queryClient.ts`.
