@@ -20,7 +20,7 @@ This file is the single source of truth for phase planning and status — what t
 | 1 | Scaffold + build tooling | **complete** | `willow` |
 | 2 | Tokens + theme + fonts | **complete** | `aspen` |
 | 3 | Primitives + app shell | **complete** | `cedar` |
-| 4 | Auth + API client foundation | **in progress** — auth core + 15/16 domain modules + SSE streaming done; only media and small structured endpoint cleanup deferred | `birch` |
+| 4 | Auth + API client foundation | **in progress** — auth core + 15/16 domain modules + SSE streaming done; structured cleanup complete; only media deferred | `birch` |
 | 5 | Chat and context (Agent chat, Today, Incidents, Activity) | not started | — |
 | 6 | Tasks and projects (Tasks, Calendar, Projects) | not started | — |
 | 7a | Garden hub & objects (beds, containers) | not started | — |
@@ -144,7 +144,7 @@ Done:
 
 **`projects.ts` and `activity.ts` built (2026-06-21), unblocked by rhizome#134/#137.** Projects covers project CRUD, progress, briefs, proposals, project tasks/task graph, task generation trigger, series, bed/container/plant assignment envelopes, activity, expenses, expense summary, and shopping. Activity covers the global activity feed and stats. 17 focused API tests added.
 
-**Still omitted:** `batchRemovePlants` (`PATCH /garden/plants/batch/remove`) — still string-wrapped. `listTasksBlocked` is now built against structured `GET /tasks/blocked`; there is intentionally no `getTriageRecommendations` because `getLatestTriage()` is the supported structured path.
+**Structured cleanup complete:** `listTasksBlocked` is built against structured `GET /tasks/blocked`, and `batchRemovePlants` is built against structured `PATCH /garden/plants/batch/remove`. There is intentionally no `getTriageRecommendations` because `getLatestTriage()` is the supported structured path.
 
 **Not started:** `media.ts` — genuinely not started in Rhizome at all (rhizome#117), separate from the structured-JSON backlog.
 

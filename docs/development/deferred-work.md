@@ -31,17 +31,17 @@ Unit-tested (fake `ReadableStream`, no live backend needed for these): token ord
 
 `ActivityEventView`/`ActivitySubjectView`/`PlantBatchResultView` added to `rhizome.ts`; several existing request types (`CreateContainerRequest`, `CreatePlantRequest`, `UpdateTaskRequest`, `UpdateTaskSeriesRequest`) were also corrected against the actual rhizome tool signatures while wiring these — a couple of fields were missing or wrongly marked optional/required.
 
-**Still omitted** (small structured endpoint cleanup, not full-module blockers):
-- `plants.ts`: `batchRemovePlants` — `PATCH /garden/plants/batch/remove` still returns `{"result": "<string>"}`
+**Intentionally absent:**
 - `triage.ts`: no `getTriageRecommendations` by design; use `getLatestTriage()` for structured grouped recommendations
 
 `projects.ts` is built against the structured routes from rhizome#137, including briefs, proposals, progress, task graph, expenses, shopping, assignments, and `GET /projects/{id}/activity`. Assignment endpoints still return Rhizome's `{"result": "<string>"}` envelope because Cambium proxies the existing tool result; the wrappers expose that envelope explicitly as `ResultResponse` rather than pretending those calls are `void`.
 
 `tasks.ts` now includes `listTasksBlocked` — Rhizome's `GET /tasks/blocked` returns `TaskSummaryView[]` with `blocked: true`.
+`plants.ts` now includes `batchRemovePlants` — Rhizome's `PATCH /garden/plants/batch/remove` returns `PlantSummaryView[]` for the plants actually marked `removed`.
 
 **Why deferred:** This was a deliberate scope split within Phase 4 — auth core first and verified working end-to-end, domain modules as a follow-up. Within that follow-up, modules were split further by actual backend readiness (verified per-endpoint, not per-module) rather than built all-or-nothing against a spec that assumed full backend support.
 
-**Re-enable when:** `batchRemovePlants` once `PATCH /garden/plants/batch/remove` gets a structured response; `media.ts` once rhizome#117 lands. `getTriageRecommendations` is no longer deferred — the old proxy is removed from the contract, and `getLatestTriage()` is the supported structured path.
+**Re-enable when:** `media.ts` once rhizome#117 lands. `getTriageRecommendations` is no longer deferred — the old proxy is removed from the contract, and `getLatestTriage()` is the supported structured path.
 
 ---
 

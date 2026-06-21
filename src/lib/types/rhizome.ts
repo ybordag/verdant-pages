@@ -203,6 +203,15 @@ export interface BatchUpdatePlantsRequest {
   notes?: string
 }
 
+export interface BatchRemovePlantsRequest {
+  name: string
+  reason: string
+  project_id?: string
+  variety?: string
+  current_status?: string
+  quantity?: number
+}
+
 export interface RecordCareRequest {
   care_type: 'watered' | 'fertilized' | 'amended' | 'inspected' | 'treated' | 'pruned'
   notes?: string

@@ -210,6 +210,7 @@ getPlant(id: string): Promise<PlantDetailView>
 createPlant(data: CreatePlantRequest): Promise<PlantDetailView>  // rhizome#140 ✅
 createPlantBatch(data: BatchCreatePlantRequest): Promise<PlantBatchResultView>  // rhizome#140 ✅
 batchUpdatePlants(data: BatchUpdatePlantsRequest): Promise<PlantSummaryView[]>  // rhizome#140 ✅
+batchRemovePlants(data: BatchRemovePlantsRequest): Promise<PlantSummaryView[]>  // structured removed plants
 updatePlant(id: string, data: UpdatePlantRequest): Promise<PlantDetailView>  // rhizome#140 ✅
 removePlant(id: string, reason: string): Promise<void>    // soft delete
 deletePlant(id: string): Promise<void>                    // hard delete
@@ -218,8 +219,6 @@ recordPlantCare(id: string, data: RecordCareRequest): Promise<CareRecordResult> 
 getPlantActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]>  // rhizome#140 ✅
 getBatchActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]>  // rhizome#140 ✅
 
-// batchRemovePlants — PATCH /garden/plants/batch/remove still returns
-// {"result": "<string>"}. Not implemented yet.
 ```
 
 ### `tasks.ts`

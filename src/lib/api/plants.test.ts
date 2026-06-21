@@ -66,6 +66,15 @@ describe('plants API', () => {
     })
   })
 
+  it('batchRemovePlants patches the batch remove payload', async () => {
+    const data = { name: 'Basil', reason: 'thinning', quantity: 2 }
+    await plants.batchRemovePlants(data)
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/plants/batch/remove', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  })
+
   it('getPlantCareState fetches care state', async () => {
     await plants.getPlantCareState('plant-1')
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/garden/plants/plant-1/care/state')

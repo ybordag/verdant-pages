@@ -2,6 +2,7 @@ import { apiFetch, toQueryString } from './client'
 import type {
   ActivityEventView,
   BatchCreatePlantRequest,
+  BatchRemovePlantsRequest,
   BatchUpdatePlantsRequest,
   CareRecordResult,
   CareStateView,
@@ -46,6 +47,10 @@ export function batchUpdatePlants(data: BatchUpdatePlantsRequest): Promise<Plant
   return apiFetch('/api/v1/garden/plants/batch', { method: 'PATCH', body: JSON.stringify(data) })
 }
 
+export function batchRemovePlants(data: BatchRemovePlantsRequest): Promise<PlantSummaryView[]> {
+  return apiFetch('/api/v1/garden/plants/batch/remove', { method: 'PATCH', body: JSON.stringify(data) })
+}
+
 export function getPlantCareState(id: string): Promise<CareStateView> {
   return apiFetch(`/api/v1/garden/plants/${id}/care/state`)
 }
@@ -73,7 +78,3 @@ export function deletePlant(id: string): Promise<void> {
 export function getBatchActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]> {
   return apiFetch(`/api/v1/garden/batches/${id}/activity${toQueryString(params)}`)
 }
-
-// batchRemovePlants (soft delete for multiple plants) is intentionally not
-// implemented yet — PATCH /garden/plants/batch/remove still returns
-// {"result": "<string>"}. See deferred-work.md.
