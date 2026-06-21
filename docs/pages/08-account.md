@@ -1,5 +1,7 @@
 # Account & Settings
 
+**Last updated:** 2026-06-21
+
 ## Purpose
 
 User account management and app-wide preferences. Accessed via the nav sidebar footer (user avatar or settings icon). Single page — lightweight enough that no sub-pages are needed.

@@ -1,5 +1,7 @@
 # Testing Guide
 
+**Last updated:** 2026-06-21
+
 ## Stack
 
 | Tool | Role |
@@ -134,10 +136,10 @@ E2E tests that hit real API endpoints require Cambium and Rhizome to be running.
 | 2 — Tokens + theme | `ThemeProvider` toggles `data-theme`, reads `localStorage` | Dark/light toggle persists across page reload |
 | 3 — Primitives + shell | Each primitive renders, Modal traps focus, nav items render | All nav items clickable, route stubs resolve |
 | 4 — Auth | `apiFetch` attaches token, 401 triggers refresh + retry, `ProtectedRoute` redirects | Register → login → protected page → logout → login required |
-| 5a — Garden objects | List renders with mock data, filter reduces results, optimistic delete | Create bed → appears in list; click plant → detail page |
-| 5b — Tasks | Complete task → optimistic strike-through → reverts on error | Today view loads, complete a task, it disappears |
-| 5c–5e | Component-level for each page group | Core happy path per page |
-| 6c — Agent chat | `consumeSSEStream` yields tokens in order, stops on `done` | Send message → tokens stream in, interaction card appears |
+| 5 — Chat and context | `consumeSSEStream` yields tokens in order, stops on `done`; interaction cards render and resolve | Send message → tokens stream in, interaction card appears; Today/Incidents/Activity load real data |
+| 6 — Tasks and projects | Complete task → optimistic strike-through → reverts on error; project/resource panels render with API data | Today task view loads, complete a task, project Gantt/resources smoke path works |
+| 7a — Garden hub & objects | Lists render with mock data, filters reduce results, care state/activity sections render | Create bed/container → appears in list; click object → detail page |
+| 7b — Plants | Plant list/card/detail render, lifecycle/care sections update, optimistic mutations rollback | Create plant/batch → appears in list; click plant → detail page |
 
 The rule: **every new component gets at least one render test and one interaction test.** E2E tests cover the golden path for each phase before it's considered done.
 

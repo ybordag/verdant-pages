@@ -1,6 +1,6 @@
 # API Client
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-21
 
 All API communication goes through a single typed client layer in `src/lib/api/`. Page components never call `fetch()` directly — they use TanStack Query hooks that call these client functions.
 
@@ -227,7 +227,7 @@ getBatchActivity(id: string, params?: { limit?: number }): Promise<ActivityEvent
 ```typescript
 listTasksDaily(params?: { project_id?: string; limit?: number }): Promise<TaskSummaryView[]>
 listTasksDue(params?: { project_id?: string; days_ahead?: number }): Promise<TaskSummaryView[]>
-listTasksBlocked(): Promise<TaskSummaryView[]>  // GET /tasks/blocked still returns {"result": "<string>"} — not implemented yet
+listTasksBlocked(params?: { project_id?: string }): Promise<TaskSummaryView[]>  // structured TaskSummaryView[] with blocked=true
 listTasks(params: TaskListParams): Promise<TaskSummaryView[]>
   // params: project_id?, type?, subject_type?, subject_id?, status?
 getTask(id: string): Promise<TaskDetailView>
@@ -254,33 +254,37 @@ materializeSeries(params?: { project_id?: string; days_ahead?: number }): Promis
 ```typescript
 listProjects(params?: { status?: string }): Promise<ProjectSummaryView[]>
 getProject(id: string): Promise<ProjectDetailView>
-createProject(data: CreateProjectRequest): Promise<ProjectSummaryView>
-updateProject(id: string, data: Partial<ProjectDetailView>): Promise<ProjectDetailView>
-deleteProject(id: string): Promise<void>
+createProject(data: CreateProjectRequest): Promise<ProjectDetailView>
+updateProject(id: string, data: UpdateProjectRequest): Promise<ProjectDetailView>
+deleteProject(id: string): Promise<ProjectDetailView>
 getProjectProgress(id: string): Promise<ProjectProgressView>
 getProjectBrief(id: string): Promise<ProjectBriefView>
 updateProjectBrief(id: string, data: UpdateBriefRequest): Promise<ProjectBriefView>
-listProjectTasks(id: string, params?: { include_dependencies?: boolean }): Promise<TaskSummaryView[] | TaskGraphView>
-generateProjectTasks(id: string, threadId: string): Promise<ChatResponse>  // AI trigger
 listProjectProposals(id: string): Promise<ProposalSummaryView[]>
 getProjectProposal(id: string, proposalId: string): Promise<ProposalDetailView>
-acceptProjectProposal(id: string, proposalId: string): Promise<void>
-getProjectActivity(id: string, params?: ActivityParams): Promise<ActivityEventView[]>
-assignBedToProject(id: string, bedId: string): Promise<void>
-removeBedFromProject(id: string, bedId: string): Promise<void>
-assignContainerToProject(id: string, containerId: string): Promise<void>
-removeContainerFromProject(id: string, containerId: string): Promise<void>
+acceptProjectProposal(id: string, proposalId: string): Promise<ProposalDetailView>
+listProjectTasks(id: string, params?: { status?: string; include_dependencies?: boolean }): Promise<TaskSummaryView[] | ProjectTaskGraphView>
+bulkUpdateProjectTasks(id: string, updates: TaskDateUpdate[]): Promise<TaskSummaryView[]>
+generateProjectTasks(id: string, threadId: string): Promise<ChatResponse>  // AI trigger
+listProjectSeries(id: string): Promise<TaskSeriesView[]>
+getProjectActivity(id: string, params?: { category?: string; event_type?: string; since?: string; before_timestamp?: string; limit?: number }): Promise<ActivityEventView[]>
 listProjectBeds(id: string): Promise<BedView[]>
+assignBedToProject(id: string, bedId: string): Promise<ResultResponse>
+removeBedFromProject(id: string, bedId: string): Promise<ResultResponse>
+assignBedsToProject(id: string, bedIds: string[]): Promise<ResultResponse>
 listProjectContainers(id: string): Promise<ContainerView[]>
-listProjectPlants(id: string): Promise<PlantSummaryView[]>
-// Expenses (rhizome#124)
+assignContainerToProject(id: string, containerId: string): Promise<ResultResponse>
+removeContainerFromProject(id: string, containerId: string): Promise<ResultResponse>
+assignContainersToProject(id: string, containerIds: string[]): Promise<ResultResponse>
+addPlantToProject(id: string, plantId: string): Promise<ResultResponse>
+removePlantFromProject(id: string, plantId: string): Promise<ResultResponse>
+// Project-scoped plants use plants.listPlants({ project_id }) — Rhizome has no GET /projects/{id}/plants route.
 listProjectExpenses(id: string): Promise<ProjectExpenseView[]>
-createProjectExpense(id: string, data: CreateExpenseRequest): Promise<ProjectExpenseView>
-updateProjectExpense(id: string, expenseId: string, data: Partial<ProjectExpenseView>): Promise<ProjectExpenseView>
+createProjectExpense(id: string, data: CreateProjectExpenseRequest): Promise<ProjectExpenseView>
+updateProjectExpense(id: string, expenseId: string, data: UpdateProjectExpenseRequest): Promise<ProjectExpenseView>
 deleteProjectExpense(id: string, expenseId: string): Promise<void>
 getProjectExpenseSummary(id: string): Promise<ExpenseSummaryView>
-// Shopping (rhizome#125)
-listProjectShopping(id: string): Promise<ShoppingItemView[]>
+listProjectShopping(id: string, params?: { status?: string }): Promise<ShoppingItemView[]>
 ```
 
 ### `chat.ts`
@@ -305,7 +309,8 @@ streamResume(threadId: string, resolution: string): AsyncGenerator<SSEEvent>
 ```typescript
 runTriage(threadId: string): Promise<ChatResponse>       // AI trigger
 getLatestTriage(): Promise<TriageSnapshotView | null>    // null if no snapshot exists yet
-getTriageRecommendations(): Promise<TriageSnapshotView>  // NOTE: not implemented in Rhizome — no GET /triage/recommendations route exists server-side
+// No getTriageRecommendations(): the old proxy route was removed.
+// Use getLatestTriage(), which returns grouped TaskSummaryView objects.
 ```
 
 ### `weather.ts`
@@ -320,21 +325,23 @@ draftWeatherTasks(threadId: string): Promise<ChatResponse>  // AI trigger
 
 ### `incidents.ts`
 
+Built 2026-06-21 (unblocked by rhizome#135 — incidents/treatment-plan structured JSON):
+
 ```typescript
-listIncidents(params?: IncidentListParams): Promise<IncidentView[]>
+listIncidents(params?: ListIncidentsParams): Promise<IncidentView[]>
   // params: project_id?, status?, severity?, incident_type?, since?, before?, subject_type?, subject_id?
 getIncident(id: string): Promise<IncidentDetailView>
 createIncident(data: CreateIncidentRequest): Promise<IncidentView>
-updateIncident(id: string, data: Partial<IncidentDetailView>): Promise<IncidentView>  // rhizome#129
-deleteIncident(id: string): Promise<void>                                               // rhizome#129
-resolveIncident(id: string): Promise<void>
+updateIncident(id: string, data: UpdateIncidentRequest): Promise<IncidentView>
+deleteIncident(id: string): Promise<void>
+resolveIncident(id: string, data?: ResolveIncidentRequest): Promise<IncidentView>
 getIncidentTreatment(id: string): Promise<TreatmentPlanView>
-draftTreatmentPlan(id: string, threadId: string): Promise<ChatResponse>   // AI trigger
-createManualTreatmentPlan(id: string, data: CreateTreatmentRequest): Promise<TreatmentPlanView>  // rhizome#129
-updateTreatmentPlan(id: string, data: Partial<TreatmentPlanView>): Promise<TreatmentPlanView>    // rhizome#129
-deleteTreatmentPlan(id: string): Promise<void>                                                    // rhizome#129
-approveTreatmentPlan(planId: string): Promise<void>
-getIncidentActivity(id: string): Promise<ActivityEventView[]>
+draftTreatmentPlan(id: string, threadId: string): Promise<ChatResponse>   // AI trigger — Cambium's triggerTreatmentDraft, not a plain proxy
+createManualTreatmentPlan(id: string, data: CreateManualTreatmentPlanRequest): Promise<TreatmentPlanView>
+updateTreatmentPlan(planId: string, data: UpdateTreatmentPlanRequest): Promise<TreatmentPlanView>
+deleteTreatmentPlan(planId: string): Promise<void>
+approveTreatmentPlan(planId: string): Promise<TreatmentPlanView>
+getIncidentActivity(id: string, params?: { limit?: number }): Promise<ActivityEventView[]>
 ```
 
 ### `interactions.ts`
@@ -588,27 +595,17 @@ export interface InteractionEnvelopeView {
 }
 ```
 
-### P1/P2 types (partially shipped, partially pending)
+### P1/P2 types (mostly shipped)
 
-`TriageSnapshotView`, `WeatherSnapshotView`, `WeatherImpactedTaskView`, `WeatherTaskChangeSetView`,
-and `InteractionEnvelopeView` are now shipped (rhizome#133, rhizome#136 — defined above). These
-still need to be added once the remaining P1/P2 view models land in Rhizome — tracked per-feature
-in [rhizome#134](https://github.com/ybordag/rhizome/issues/134) (activity feed),
-[#135](https://github.com/ybordag/rhizome/issues/135) (incidents/treatment plans),
-[#137](https://github.com/ybordag/rhizome/issues/137) (projects), and
-[#139](https://github.com/ybordag/rhizome/issues/139) (ThreadView, lower priority). The original
-umbrella issue, #132, was closed in favor of this per-feature split — see #132 for why:
+`TriageSnapshotView`, weather views, `InteractionEnvelopeView`, incident/treatment views,
+activity views, project views, task series, ThreadView, and monitor alert views are now shipped and
+defined in `src/lib/types/rhizome.ts`. The remaining typed backend work is media views once
+rhizome#117 lands. The original umbrella issue, #132, was closed in favor of per-feature splits —
+see #132 for why.
 
 ```typescript
-// Still needed in views.py → types:
-IncidentView, IncidentDetailView
-TreatmentPlanView
-ActivityEventView
-ThreadView, ThreadMessagesResponse
-ProjectProgressView, ProjectBriefView
-ProposalSummaryView, ProposalDetailView
-TaskSeriesView
-MonitorAlertView
+// Still needed or pending cleanup:
+MediaView
 ```
 
 ---

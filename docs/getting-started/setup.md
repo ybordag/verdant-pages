@@ -1,6 +1,6 @@
 # Setup
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-21
 
 How to run Verdant Pages locally. For the condensed version, see [quickstart.md](quickstart.md).
 
@@ -84,14 +84,16 @@ HMR is enabled — changes to React components and CSS update the browser withou
 
 ## 6. Verify
 
-Open `http://localhost:5173`. You should see "Verdant Pages".
+Open `http://localhost:5173`. You should see the Verdant landing page.
 
-If Cambium is running, open the browser console and run:
+If Cambium is running, verify it directly from a terminal:
 
-```js
-fetch('/health').then(r => r.json()).then(console.log)
+```bash
+curl http://localhost:8080/health
 // → {"status":"ok"}
 ```
+
+The Vite dev server proxies `/api` and `/auth`, not `/health`, so checking `/health` from the browser on port `5173` does not prove Cambium is reachable.
 
 ---
 

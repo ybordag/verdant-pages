@@ -1,5 +1,7 @@
 # Incidents & Treatment Plans
 
+**Last updated:** 2026-06-21
+
 ## Purpose
 
 Incidents track problems in the garden — pests, disease, blight, environmental damage. Treatment plans are the response. Both can be created and managed directly by the user or with Rhizome's help. This page group is distinct from the agent chat but connects to it naturally.
@@ -74,16 +76,16 @@ Full event feed for this incident: creation, subject additions, treatment plan s
 
 | Endpoint | Used for | Status |
 |---|---|---|
-| `GET /api/v1/incidents` | List (with all filters) | ✅ exists (filters require [#129](https://github.com/ybordag/rhizome/issues/129); JSON requires [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| `GET /api/v1/incidents` | List (with all filters) | ✅ |
 | `POST /api/v1/incidents` | Create | ✅ |
-| `GET /api/v1/incidents/{id}` | Detail | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `PATCH /api/v1/incidents/{id}` | Edit | Blocked on [#129](https://github.com/ybordag/rhizome/issues/129) |
-| `DELETE /api/v1/incidents/{id}` | Delete | Blocked on [#129](https://github.com/ybordag/rhizome/issues/129) |
+| `GET /api/v1/incidents/{id}` | Detail | ✅ |
+| `PATCH /api/v1/incidents/{id}` | Edit | ✅ |
+| `DELETE /api/v1/incidents/{id}` | Delete | ✅ |
 | `PATCH /api/v1/incidents/{id}/resolve` | Resolve | ✅ |
 | `POST /api/v1/incidents/{id}/treatment` | AI treatment draft (Cambium AI trigger) | ✅ |
-| `POST /api/v1/incidents/{id}/treatment/manual` | Manual treatment plan | Blocked on [#129](https://github.com/ybordag/rhizome/issues/129) |
-| `GET /api/v1/incidents/{id}/treatment` | Get treatment plan | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `PATCH /api/v1/treatment-plans/{id}` | Edit treatment steps | Blocked on [#129](https://github.com/ybordag/rhizome/issues/129) |
+| `POST /api/v1/incidents/{id}/treatment/manual` | Manual treatment plan | ✅ |
+| `GET /api/v1/incidents/{id}/treatment` | Get treatment plan | ✅ |
+| `PATCH /api/v1/treatment-plans/{id}` | Edit treatment steps | ✅ |
 | `PATCH /api/v1/treatment-plans/{id}/approve` | Approve → generate tasks | ✅ |
-| `DELETE /api/v1/treatment-plans/{id}` | Delete draft | Blocked on [#129](https://github.com/ybordag/rhizome/issues/129) |
-| `GET /api/v1/incidents/{id}/activity` | Activity history | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| `DELETE /api/v1/treatment-plans/{id}` | Delete draft | ✅ |
+| `GET /api/v1/incidents/{id}/activity` | Activity history | ✅ |

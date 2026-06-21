@@ -18,8 +18,9 @@ export function listTasksDue(params?: { project_id?: string; days_ahead?: number
   return apiFetch(`/api/v1/tasks/due${toQueryString(params)}`)
 }
 
-// listTasksBlocked is intentionally not implemented yet — GET /tasks/blocked
-// still returns {"result": "<string>"}. See deferred-work.md.
+export function listTasksBlocked(params?: { project_id?: string }): Promise<TaskSummaryView[]> {
+  return apiFetch(`/api/v1/tasks/blocked${toQueryString(params)}`)
+}
 
 export interface TaskListParams {
   project_id?: string

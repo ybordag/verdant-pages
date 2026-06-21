@@ -1,6 +1,6 @@
 # Route Structure
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-21
 
 All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`. `/login` and `/register` are wrapped by `PublicOnlyRoute`, which redirects to `/app/today` if the user is already authenticated (so a logged-in user can't land back on the login form).
 
@@ -38,6 +38,7 @@ All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`. 
   /app/plants/:id           → PlantDetailPage
 
   /app/projects             → ProjectsPage — project list
+  /app/projects/new         → ProjectCreatePage — create project wizard
   /app/projects/:id         → ProjectDetailPage
   /app/projects/:id/proposals/:proposalId → ProposalDetailPage
 
@@ -59,7 +60,7 @@ Seven top-level nav items in three groups:
 | Work | Tasks, Calendar, Projects |
 | Operational | Incidents, Activity |
 
-**Garden, Plants, Beds, and Containers are NOT nav items.** They are accessed through the garden profile card widget in the sidebar. The card links to:
+**Garden, Plants, Beds, and Containers are NOT top-level nav items.** They are accessed through the garden profile card widget in the sidebar. The card links to:
 
 | Card link | Route |
 |---|---|
@@ -69,8 +70,6 @@ Seven top-level nav items in three groups:
 | Containers | `/app/containers` |
 
 **The Garden hub tabs are previews only.** Each tab (Beds, Containers, Plants, Activity) shows a compact summary with a "See all →" link that navigates to the full dedicated list page. Plants, Beds, and Containers all follow the same pattern: preview tab in the hub → full list page → detail page → creation page.
-
-Plants are a top-level nav item (frequent daily access). Beds and Containers are accessed via the garden card — they are less frequently visited and more structural than operational.
 
 ## Notes
 

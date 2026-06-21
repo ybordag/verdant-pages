@@ -4,7 +4,9 @@
 
 ## How we work
 
-Work is organised into **phases** — each phase has a clear deliverable and a smoke test. Phases 1–4 are sequential. Phases 5a–5e are independent and can run in parallel. Phase 6 is blocked on a Rhizome backend dependency.
+Work is organised into **phases** — each phase has a clear deliverable and a smoke test. Phases 1–4 are sequential and Phase 4 is still in progress.
+
+**Phases 5–8 were re-planned on 2026-06-21**, replacing the original 5a–5e/6/7/8 split. The original split was organized by *what the backend would unblock next* (it assumed most pages stayed blocked until rhizome#120's P1 tier landed). Re-checking every cited blocker found that picture was stale — #112–#130 and the relevant #132 follow-up issues (#133/#134/#137) are now closed. With nearly everything unblocked, the new split is organized by *what makes the product usable soonest*: agent chat first (it exercises the full stack top to bottom and is the product's differentiator), then the daily-operations pages, then garden/plant management, then polish. See each phase below for current per-feature blocker status — don't trust old "blocked on #120" citations anywhere else in this repo's docs without rechecking.
 
 This file is the single source of truth for phase planning and status — what to build, in what order, and what's actually done versus still planned. There's no separate per-phase history doc; as a phase completes, this file's entry for it is updated in place to describe what actually shipped (including any bugs found and fixed along the way), rather than just what was originally planned.
 
@@ -18,17 +20,14 @@ This file is the single source of truth for phase planning and status — what t
 | 1 | Scaffold + build tooling | **complete** | `willow` |
 | 2 | Tokens + theme + fonts | **complete** | `aspen` |
 | 3 | Primitives + app shell | **complete** | `cedar` |
-| 4 | Auth + API client foundation | **in progress** — auth core + 12/16 domain modules + SSE streaming done; live-tested against real backend, found rhizome#141 | `birch` |
-| 5a | Garden objects | not started | — |
-| 5b | Tasks | not started | — |
-| 5c | Projects | not started (partial blockers) | — |
-| 5d | Calendar | not started (partial blockers) | — |
-| 5e | Activity | not started | — |
-| 6a | Today page | blocked on rhizome#120 P1 | — |
-| 6b | Incidents | blocked on rhizome#120 P1 | — |
-| 6c | Agent chat (SSE) | blocked on rhizome#120 P1 + rhizome#141 | — |
-| 7 | Feature backfill | ongoing as backend issues close | — |
-| 8 | Polish + deploy | not started | — |
+| 4 | Auth + API client foundation | **in progress** — auth core + 15/16 domain modules + SSE streaming done; only media and small structured endpoint cleanup deferred | `birch` |
+| 5 | Chat and context (Agent chat, Today, Incidents, Activity) | not started | — |
+| 6 | Tasks and projects (Tasks, Calendar, Projects) | not started | — |
+| 7a | Garden hub & objects (beds, containers) | not started | — |
+| 7b | Plants | not started | — |
+| 8 | App polish (Settings, Notifications, deploy) | not started | — |
+
+Renumbered 2026-06-21 — see "How we work" above for why. The old 5a–5e/6/7/8 numbering is gone; nothing below reuses it.
 
 ---
 
@@ -88,7 +87,7 @@ Done:
 
 **Primitives:** `Button` (primary/ghost/danger, sm/md), `Input`, `Select`, `Textarea`, `Chip` (with optional remove), `FieldLabel`, `Modal` (focus-trapped, Escape closes), `InlinePopover`, `StatusBadge`, `ProgressBar`
 
-**Shell:** `AppShell` (renamed from `VPNav` for genericness), `AppNav` — all 7 nav items with icons, badge slots, collapse to 52px, pending-state color dim; `QuickActionsPanel`, `GardenProfileCard`, `NavFooter` (avatar placeholder, theme toggle, notification bell), `NotificationDrawer`/`Toast` empty shells (wired in Phase 7), `Breadcrumb`
+**Shell:** `AppShell` (renamed from `VPNav` for genericness), `AppNav` — all 7 nav items with icons, badge slots, collapse to 52px, pending-state color dim; `QuickActionsPanel`, `GardenProfileCard`, `NavFooter` (avatar placeholder, theme toggle, notification bell), `NotificationDrawer`/`Toast` empty shells (wired in Phase 8), `Breadcrumb`
 
 **Router:** all routes from [routes.md](../architecture/routes.md), 27 page stubs, `ProtectedRoute` (passthrough until Phase 4)
 
@@ -117,11 +116,11 @@ Done:
 - Fixed a real StrictMode bug in `context.tsx`: the mount effect was double-invoked in dev, firing `/auth/refresh` twice and racing one cookie rotation against the other's revoke. Fixed with a `hasMountedRef` guard; regression test added under `<StrictMode>`.
 - Tests: full suite now 229 unit + 19 E2E, all passing against a live Cambium instance. `auth.spec.ts` covers register→logout→login, direct login, wrong-password rejection, registering an already-taken email, and the unauthenticated-redirect case.
 
-**Domain modules — 12/16 built:** `garden.ts`, `plants.ts`, `tasks.ts`, `calendar.ts`, `shopping.ts`, `search.ts`, `alerts.ts`, `notifications.ts`, `interactions.ts`, `chat.ts`, `triage.ts`, `weather.ts`, plus `src/lib/types/rhizome.ts`. Built only against endpoints confirmed (by reading `agent/api/routers.py` directly) to return real structured JSON — see [deferred-work.md](../development/deferred-work.md) for the exact list of individually-omitted functions where a specific endpoint is still string-wrapped. `triage.ts`/`weather.ts` landed last, after independently verifying rhizome#133 (code review + a from-scratch happy-path test) rather than trusting the closed-issue label at face value.
+**Domain modules — 15/16 built:** `garden.ts`, `plants.ts`, `tasks.ts`, `calendar.ts`, `shopping.ts`, `search.ts`, `alerts.ts`, `notifications.ts`, `interactions.ts`, `chat.ts`, `triage.ts`, `weather.ts`, `incidents.ts`, `projects.ts`, `activity.ts`, plus `src/lib/types/rhizome.ts`. Built only against endpoints confirmed (by reading `agent/api/routers.py` directly) to return real structured JSON — see [deferred-work.md](../development/deferred-work.md) for the exact list of individually-omitted functions where a specific endpoint is still string-wrapped or missing. `triage.ts`/`weather.ts` landed after independently verifying rhizome#133, and `projects.ts`/`activity.ts` landed after rhizome#134/#137 were verified and closed.
 
 **`src/lib/sse/stream.ts` is also built** (`consumeSSEStream`, `consumeNotificationStream`), unblocking `chat.ts`'s `streamChat`/`streamResume` and `notifications.ts`'s `streamNotifications`. Both accept an optional `AbortSignal` for client-side cancellation (logout, route change, unmount) — added after a coverage audit found there was previously no way to cancel an open stream.
 
-**Live-verified against the real stack:** ran the actual SSE wire-parsing logic against running Cambium → Rhizome with two providers (default `google_genai`, explicit `openai`) — both failed identically with a real backend bug (LangGraph's checkpointer is wired sync-only, but the streaming endpoints need its async interface). Filed as [rhizome#141](https://github.com/ybordag/rhizome/issues/141). Non-streaming chat against the same thread/provider worked fine, confirming the bug is specific to the streaming path. Also found and fixed two frontend bugs during this pass: `stream.ts` sent the literal header `Bearer null` when logged out instead of omitting it, and there was no way to cancel an open stream at all.
+**Live-verified against the real stack:** ran the actual SSE wire-parsing logic against running Cambium → Rhizome with two providers (default `google_genai`, explicit `openai`). That pass found rhizome#141, a real backend bug in the streaming path; the backend fix was later verified and the issue was closed. The same pass found and fixed two frontend bugs: `stream.ts` sent the literal header `Bearer null` when logged out instead of omitting it, and there was no way to cancel an open stream at all.
 
 229 total tests (101 new this pass).
 
@@ -139,135 +138,141 @@ Done:
 
 285 total tests (26 new this pass).
 
-**Still omitted:** `listTasksBlocked` (`GET /tasks/blocked`) and `batchRemovePlants` (`PATCH /garden/plants/batch/remove`) — different, smaller endpoints #140 didn't cover, still string-wrapped. `getTriageRecommendations` stays omitted — the route doesn't exist server-side at all.
+**`incidents.ts` built (2026-06-21), unblocked by rhizome#135's closure.** Full incident CRUD (`listIncidents`, `getIncident`, `createIncident`, `updateIncident`, `deleteIncident`, `resolveIncident`) plus treatment-plan management (`getIncidentTreatment`, `createManualTreatmentPlan`, `updateTreatmentPlan`, `deleteTreatmentPlan`, `approveTreatmentPlan`), `getIncidentActivity`, and the AI-trigger `draftTreatmentPlan(id, threadId)` (Cambium's `triggerTreatmentDraft`, same pattern as `triage.ts`'s `runTriage`). New types in `rhizome.ts`. 15 new tests.
 
-**Not started:**
-- `projects.ts`, `incidents.ts`, `activity.ts` — blocked on rhizome backend work (structured-JSON gaps, tracked as rhizome issues split by feature: #134/#135/#137). Note `GET /projects/{id}/activity` is already structured per #140 — pick it up once `projects.ts` itself gets built.
-- `media.ts` — genuinely not started in rhizome at all (rhizome#117), separate from the structured-JSON backlog
+300 total tests (15 new this pass).
+
+**`projects.ts` and `activity.ts` built (2026-06-21), unblocked by rhizome#134/#137.** Projects covers project CRUD, progress, briefs, proposals, project tasks/task graph, task generation trigger, series, bed/container/plant assignment envelopes, activity, expenses, expense summary, and shopping. Activity covers the global activity feed and stats. 17 focused API tests added.
+
+**Still omitted:** `batchRemovePlants` (`PATCH /garden/plants/batch/remove`) — still string-wrapped. `listTasksBlocked` is now built against structured `GET /tasks/blocked`; there is intentionally no `getTriageRecommendations` because `getLatestTriage()` is the supported structured path.
+
+**Not started:** `media.ts` — genuinely not started in Rhizome at all (rhizome#117), separate from the structured-JSON backlog.
 
 See [deferred-work.md](../development/deferred-work.md) for the full breakdown of what's deferred and why.
 
 ---
 
-## Phase 5a — Garden objects
+## Phase 5 — Chat and context
 
-**Deliverable:** Full garden object pages wired to real data. Create, view, edit, care recording all functional.
+**Deliverable:** Agent chat fully functional end to end (streaming, interaction approval, context-aware entry from other pages), Today page live with real briefing data, Incidents fully CRUD-able with the treatment plan flow, and the global Activity feed with filtering. This phase deliberately exercises the full stack — auth, SSE, multi-page context-passing — before building out the rest of the app, and gives a way to both *direct* Rhizome (chat) and *verify* what it did (Activity).
 
-**No blockers — all required endpoints are live.**
+**No real blockers left.** #136 (interactions), #126/#127 (search + pinned context), #135 (incidents), #141 (SSE streaming), and #134 (global activity) are all closed.
 
-**Shared components (build first — used by all object pages):** `LedgerTable`, `FilterRail`, `TabNav`, `ObjectDetailHeader`, `CareStateStrip` (log button fires `POST /api/v1/garden/{type}/{id}/care` — rhizome#128, or placeholder until it lands), `ObjectLifecycleTimeline`, `LinkedProjectChips`, `LinkedTasksList`, `ObjectActivityFeed`
+### Agent chat (Rhizome)
 
-**Pages:** `GardenPage` (map placeholder + `ProfilePanel` + `ConstraintsEditor` + tab previews), `BedListPage`/`BedDetailPage`/`BedCreatePage`, `ContainerListPage`/`ContainerDetailPage`/`ContainerCreatePage`, `PlantsPage` (FilterRail + card grid + ledger toggle), `PlantDetailPage`, `PlantCreatePage` (`WizardShell` 4-step wizard)
+`SessionStrip`, `ContextStrip` + `ContextSearchModal` (unified + typed search, #126/#127 closed), `ChatThread` (`StreamingMessage`, `MessageBubble`, day separators), `Composer`, `InteractionPanel` (`PendingInteractionList` + `InteractionCard`), thread list/switcher in the page header, context-aware entry (URL params → pre-fill + new/existing thread choice). **Page:** `RhizomePage`
 
-Full page-level spec: [pages/02-garden.md](../pages/02-garden.md), [pages/03-garden-objects.md](../pages/03-garden-objects.md).
+Whether a new thread auto-opens on first visit, or the user sees a thread list/picker first, is still an open product decision — see [pages/05-agent.md](../pages/05-agent.md). That doc also specifies (but doesn't yet build) the SSE manual-retry contract and a future model-dropdown/active-model indicator — both deferred, not blockers.
 
-**Smoke test:** List all plants → real data, sortable columns; click a plant → detail page with care state, lifecycle dates; "Log watering" → care state strip updates; create a new bed → appears in list; filter beds by location → filters correctly.
+Known rough edge, not a blocker: rhizome#142 — a single chat turn can stream the same reply twice (and occasionally a raw provider content block) before `done`. Build the chat UI assuming a clean single reply; revisit once #142 closes rather than working around it in the frontend.
 
----
+**Smoke test:** Send a message → tokens stream in real time; receive an interaction event → panel slides open with review card; accept a proposal → stream resumes, follow-up message appears; "Ask Rhizome about Cherry Tomatoes" from plant detail → opens pre-seeded thread.
 
-## Phase 5b — Tasks
+### Today page
 
-**Deliverable:** Tasks page fully operational across all 6 views with real data, optimistic mutations, and velocity tracking.
+`TodayConditionsPanel` (weather), `RhizomeBriefingPanel` (triage + inline `InteractionCard` for pending approvals), `TodayOverviewPanel` (projects + `MiniCalendar`), `TodayTasksStrip` (top 5 with quick-complete), `ThisWeekStrip`. **Page:** `TodayPage`
 
-**No blockers.**
+Build this one deliberately thin at first — real data for everything above, but expect to come back and add widgets as Phase 6/7 land (e.g. richer project status once Projects is built). Don't over-build it now.
 
-**Shared components:** `TaskRow` (type markers, source colours, hover actions), `TaskGroup` (section header + rows), `DetailPanel` (right slide-in), `VelocityStrip` (uses `GET /api/v1/activity/stats` ✅)
+**Smoke test:** Today's briefing paragraph reflects real `GET /api/v1/triage/latest` data; pending interactions render inline and are actionable; clicking the mini-calendar navigates to `/app/calendar` (stub is fine until Phase 6).
 
-**Pages:** `TasksPage` (all 6 views — Today, Week, Project, Kind, Area, Progress — with FilterRail), `TaskDetailPage`, `TaskCreatePage` (`WizardShell` 3-step + quick inline mode), `TaskSeriesPage` (series rule editor)
+### Incidents
 
-**Key interactions:** Complete → optimistic strike-through → `POST .../complete`; Defer → `InlinePopover` date picker → `POST .../defer`; Skip → `InlinePopover` reason → `POST .../skip`; Create → `POST /api/v1/tasks` ✅; Velocity strip reads `GET /api/v1/activity/stats` ✅
+`IncidentRow`, `IncidentDetailHeader`, `AffectedSubjectsPicker`, `TreatmentPlanSection` (dual path — AI draft + manual write), `TreatmentPlanCard`, `TreatmentStepsEditor`. **Pages:** `IncidentsPage`, `IncidentDetailPage`.
 
-**Smoke test:** Today view shows prioritised task list; completing a task strikes through immediately and reverts if server errors; Progress view shows 14-day completion bar chart; creating a task appears in list with `is_user_modified: true`.
+**Smoke test:** Create an incident → appears in list; "Write my own plan" → treatment plan saved and shown with steps; approve a plan → tasks generated; resolve an incident with notes → status updates.
 
----
+### Activity
 
-## Phase 5c — Projects
-
-**Deliverable:** Projects list and full project detail with planning mode (brief + proposals) and execution mode (Kanban + basic Gantt). Resource allocation, expenses, and shopping list implemented where backend is ready.
-
-**Partially blocked:** Gantt dependency drag (#121, #122), expenses (#124), shopping list (#125). Build around these with clear disabled states.
-
-**Components:** `ProjectCard`, `PhaseIndicatorStrip`, `BriefPanel`, `ResourceAllocationPanel` (uses `?available=true` ✅), `KanbanBoard` + `KanbanCard`, `GanttChart` (task bars + date drag; full dependency drag blocked on #121, show dependency lines read-only for now), `ProjectProposalCard`, `PlantProgressPanel`, `BudgetTracker` (placeholder UI until #124 lands), `ShoppingListPanel` (placeholder UI until #125 lands)
-
-**Pages:** `ProjectsPage`, `ProjectDetailPage`, `ProjectCreatePage` (wizard), `ProposalDetailPage`
-
-**Smoke test:** Projects list groups by status with correct counts; planning mode shows brief form + generate proposal button; execution mode shows Gantt and Kanban with real tasks; resource allocation shows available beds/containers; accepting a proposal transitions the project to active.
-
----
-
-## Phase 5d — Calendar
-
-**Deliverable:** Full calendar renders tasks across the month, day detail panel works, week view works. Drag-to-reschedule functional. Annotations placeholder until #114 lands.
-
-**Partially blocked:** Annotations (#114); full drag works without it.
-
-**Components:** `CalendarGrid` (render-prop, month + week views), `MiniCalendar`, `DayDetailPanel`, `CalendarMarginPanel`, `WeatherIcon`
-
-**Pragmatic DnD:** drag task chip between day cells → `PATCH /api/v1/tasks/:id` → optimistic update. Annotations render from `GET /api/v1/calendar/annotations` if #114 has landed; otherwise disabled placeholder input.
-
-**Page:** `CalendarPage`
-
-**Smoke test:** Month view shows all tasks from `tasks/due?days_ahead=30`; clicking a day slides in `DayDetailPanel` with that day's tasks; dragging a task to a different day updates the date in real time.
-
----
-
-## Phase 5e — Activity
-
-**Deliverable:** Global activity feed page with full filtering. `ObjectActivityFeed` already built in 5a; this wires the full-page variant.
-
-**No blockers.**
-
-**Page:** `ActivityPage` — `FilterRail` (category, event_type, date range, subject picker) + `ObjectActivityFeed` (full-page variant, `showFilters: true`)
+`ActivityPage` — `FilterRail` (category, event_type, date range, subject picker) + `ObjectActivityFeed` (full-page variant, `showFilters: true`). The same `ObjectActivityFeed` component is reused (not rebuilt) on every other detail page across later phases.
 
 **Smoke test:** Global feed shows recent events across all objects; filtering by category shows only those event types; infinite scroll loads more via `before_timestamp` cursor.
 
 ---
 
-## Phase 6 — Today page, Incidents, Agent chat
+## Phase 6 — Tasks and projects
 
-**Blocked on:** rhizome#120 P1 — `TriageSnapshotView`, `WeatherSnapshotView`, `InteractionEnvelopeView`, `IncidentView`, `ThreadView` must land first. 6c is additionally blocked on [rhizome#141](https://github.com/ybordag/rhizome/issues/141) (streaming is wired but non-functional server-side). Build all of Phase 5 first and run Phase 6 once these are confirmed.
+**Deliverable:** Full task ledger (all 6 views), calendar with drag-to-reschedule and annotations, and projects covering both planning mode (brief + proposals) and execution mode (Gantt, Kanban, resources, budget, shopping).
 
-### 6a — Today page
+**No real blockers left.** Tasks, Calendar, and Projects are unblocked: #113/#114 cover task series and annotations, #121/#122 cover project task graph and bulk date updates, #123/#124/#125 cover resource availability, expenses, and shopping, and #137 covers project planning plus project create/update/delete.
 
-`TodayConditionsPanel` (weather), `RhizomeBriefingPanel` (triage + inline `InteractionCard` for pending approvals), `TodayOverviewPanel` (projects + MiniCalendar), `TodayTasksStrip` (top 5 with quick-complete), `ThisWeekStrip`. **Page:** `TodayPage`
+### Tasks
 
-### 6b — Incidents
+**Shared components:** `TaskRow` (type markers, source colours, hover actions), `TaskGroup` (section header + rows), `DetailPanel` (right slide-in), `VelocityStrip` (`GET /api/v1/activity/stats`)
 
-`IncidentRow`, `IncidentDetailHeader`, `AffectedSubjectsPicker`, `TreatmentPlanSection` (dual path — AI draft + manual write), `TreatmentPlanCard`, `TreatmentStepsEditor`. **Pages:** `IncidentsPage`, `IncidentDetailPage`. Requires #129 (incident edit/delete/manual treatment) alongside P1.
+**Pages:** `TasksPage` (all 6 views — Today, Week, Project, Kind, Area, Progress — with `FilterRail`), `TaskDetailPage`, `TaskCreatePage` (`WizardShell` 3-step + quick inline mode, "Make recurring" toggle fully live), `TaskSeriesPage` (series rule editor)
 
-### 6c — Agent chat with SSE
+**Key interactions:** Complete → optimistic strike-through → `POST .../complete`; Defer → `InlinePopover` date picker → `POST .../defer`; Skip → `InlinePopover` reason → `POST .../skip`; Create → `POST /api/v1/tasks`
 
-`SessionStrip`, `ContextStrip`, `ChatThread` (`StreamingMessage`, `MessageBubble`, day separators), `Composer`, `InteractionPanel` (`PendingInteractionList` + `InteractionCard`), thread list/switcher in the page header, context-aware entry (URL params → pre-fill + new/existing thread choice). **Page:** `RhizomePage`
+**Smoke test:** Today view shows prioritised task list; completing a task strikes through immediately and reverts if server errors; Progress view shows 14-day completion bar chart; creating a recurring task generates a `TaskSeries`.
 
-Whether a new thread auto-opens on first visit, or the user sees a thread list/picker first, is still an open product decision — see [pages/05-agent.md](../pages/05-agent.md).
+### Calendar
 
-**Smoke test:** Send a message → tokens stream in real time; receive an interaction event → panel slides open with review card; accept a proposal → stream resumes, follow-up message appears; "Ask Rhizome about Cherry Tomatoes" from plant detail → opens pre-seeded thread.
+**Components:** `CalendarGrid` (render-prop, month + week views), `MiniCalendar`, `DayDetailPanel`, `CalendarMarginPanel`, `WeatherIcon`, `AnnotationEditor` (fully live, not a placeholder)
 
----
+**Pragmatic DnD:** drag task chip between day cells → `PATCH /api/v1/tasks/:id` → optimistic update.
 
-## Phase 7 — Feature backfill
+**Page:** `CalendarPage`
 
-Each item is independent. Build in any order as backend issues close.
+**Smoke test:** Month view shows all tasks from `tasks/due?days_ahead=30`; dragging a task to a different day updates the date in real time; annotating a day saves and persists on reload.
 
-| Feature | Depends on | Component(s) |
-|---|---|---|
-| Context search + pinned context | rhizome#126 + #127 | `ContextSearchModal`, `ContextStrip` wired |
-| Care recording quick actions | rhizome#128 | `CareStateStrip` log button live |
-| Full Gantt dependency drag | rhizome#121 + #122 | `GanttDependencyLine` draggable, `GanttTaskBar` create-dependency drag |
-| Project expenses | rhizome#124 | `BudgetTracker` fully wired |
-| Shopping list | rhizome#125 | `ShoppingListPanel` fully wired |
-| Media gallery | rhizome#117 | `MediaGallery` upload + lightbox |
-| Garden map | rhizome#118 | `GardenMap` minimap + `ExpandedMapOverlay` |
-| Calendar annotations | rhizome#114 | `AnnotationEditor` in `DayDetailPanel` + `CalendarMarginPanel` |
-| Notification drawer + toasts | rhizome#130 | `NotificationDrawer` live, `JobProgressTree`, `Toast` |
-| Task series CRUD | rhizome#113 | Task creation wizard "Make recurring" toggle live |
-| Incident media | rhizome#117 | `MediaGallery` on `IncidentDetailPage` |
+### Projects
+
+**Components:** `ProjectCard`, `PhaseIndicatorStrip`, `BriefPanel`, `ResourceAllocationPanel`, `KanbanBoard` + `KanbanCard`, `GanttChart` (task bars, date drag, *and* dependency-line drag — fully live), `ProjectProposalCard`, `PlantProgressPanel`, `BudgetTracker` (fully wired, not a placeholder), `ShoppingListPanel` (fully wired, not a placeholder)
+
+**Pages:** `ProjectsPage`, `ProjectDetailPage`, `ProjectCreatePage` (wizard), `ProposalDetailPage`
+
+**Smoke test:** Projects list groups by status with correct counts; planning mode can edit a brief and review/accept a proposal; execution mode shows Gantt and Kanban with real tasks and draggable dependencies; resource allocation shows available beds/containers; budget tracker reflects real expenses; shopping list purchase action creates a linked expense.
 
 ---
 
-## Phase 8 — Polish + deploy
+## Phase 7a — Garden hub & objects
 
-**Deliverable:** Production-ready app running on spark-thor.
+**Deliverable:** Garden hub page plus full bed and container management — list, detail, create, edit, care recording, lifecycle timeline, activity history.
+
+**No blockers.**
+
+**Shared components (build first — also reused by 7b):** `ObjectDetailHeader`, `CareStateStrip` (log button fully live — #128 closed), `ObjectLifecycleTimeline`, `LinkedProjectChips`, `LinkedTasksList`, `ObjectActivityFeed` (same component from Phase 5's Activity page), `LedgerTable`, `FilterRail`, `TabNav`
+
+**Pages:** `GardenPage` (map placeholder + `ProfilePanel` + `ConstraintsEditor` + tab previews — map itself stays a placeholder, blocked on #118), `BedListPage`/`BedDetailPage`/`BedCreatePage`, `ContainerListPage`/`ContainerDetailPage`/`ContainerCreatePage`
+
+Full page-level spec: [pages/02-garden.md](../pages/02-garden.md), [pages/03-garden-objects.md](../pages/03-garden-objects.md).
+
+**Smoke test:** Garden hub shows real profile + constraints; "Log watering" on a bed updates its care state strip immediately; create a new container → appears in list and hub preview tab; filter beds by location → filters correctly.
+
+---
+
+## Phase 7b — Plants
+
+**Deliverable:** Full plant management — list (card grid + ledger), detail with propagation/lifecycle/batch info, and the 4-step creation wizard.
+
+**No blockers.** Split out from 7a deliberately: plants carry more complexity already (lifecycle stages, batches, propagation) and will carry significantly more once visual/image understanding lands on the rhizome side (see Future roadmap below) — worth a focused pass rather than bundling with the simpler bed/container CRUD.
+
+**Reuses 7a's shared components** (`ObjectDetailHeader`, `CareStateStrip`, `ObjectLifecycleTimeline`, `LinkedProjectChips`, `LinkedTasksList`, `ObjectActivityFeed`) plus plant-specific additions: propagation details, batch provenance, care schedule card.
+
+**Pages:** `PlantsPage` (`FilterRail` + card grid/ledger toggle), `PlantDetailPage`, `PlantCreatePage` (`WizardShell` 4-step wizard: identity → location → timing → care/batch)
+
+**Smoke test:** List all plants → real data, sortable columns; click a plant → detail page with care state, lifecycle dates; create a plant via the wizard, including a batch → batch and individual plant records both appear correctly.
+
+---
+
+## Phase 8 — App polish
+
+**Deliverable:** Account/Settings page live, notification drawer and toasts wired to real data, and the production-readiness tail (code splitting, accessibility, deploy).
+
+**No real blockers.** #130 (notification SSE) is closed — `NotificationDrawer`/`Toast` have been empty shells since Phase 3 purely because nothing existed to wire them to; that's no longer true. Settings has only one blocker: password change (cambium#20). Everything else on that page (provider/model selection, API key management, theme) is already buildable.
+
+### Settings
+
+Single scrollable page per [pages/08-account.md](../pages/08-account.md): profile (email read-only, password change disabled pending cambium#20), AI provider + model picker, API key management (configured/not-set status, set/update/remove), theme toggle. **Page:** `SettingsPage`
+
+### Notifications
+
+Wire the existing `NotificationDrawer`/`Toast` shells to `consumeNotificationStream()` (already built in Phase 4) for real job-progress and alert content: `JobProgressTree` for in-flight jobs (triage, weather refresh, series materialization, treatment plan drafting, proposal generation), alert cards for monitor alerts and new pending interactions.
+
+**Smoke test:** Trigger a backend job (e.g. run triage from the topbar) → drawer shows live step-by-step progress; a new monitor alert → toast appears; opening Settings shows real provider/key status; changing the AI provider persists and reflects on next chat turn.
+
+### Deploy + polish tail
 
 **Deploy target:** Cambium serves the built static files directly on spark-thor — same-origin, no CORS, no `VITE_CAMBIUM_URL` needed in production.
 
@@ -304,39 +309,48 @@ Raise a Cambium issue for the static file handler when ready to deploy.
 
 ---
 
+## Future roadmap (not phase-assigned)
+
+Items with a real backend blocker still open, or deliberately out of scope for Phases 5–8. Pick these up as their blocker closes — none of them gate any phase above.
+
+| Item | Depends on | Notes |
+|---|---|---|
+| Media galleries | rhizome#117 | `MediaGallery` upload + lightbox on plants/beds/containers/incidents. Not started server-side at all. |
+| Garden spatial map | rhizome#118 | `GardenMap` minimap + `ExpandedMapOverlay` on the Garden hub. Not started server-side at all. |
+| Visual garden understanding | rhizome roadmap initiative | Image-based plant/disease/pest identification. The reason Plants got split into its own phase (7b) — this will extend that page significantly once it lands. |
+| Duplicate chat-stream replies | rhizome#142 | A single `/agent/stream` turn can emit the same reply twice. Doesn't block Phase 5's agent chat build, but revisit before considering chat "done." |
+
+---
+
 ## Build order summary
 
 ```
 Phase 1   Scaffold + Vite config
 Phase 2   Tokens + theme + fonts
 Phase 3   Primitives + app shell (can use before auth)
-Phase 4   Auth + API client foundation
+Phase 4   Auth + API client foundation              ← in progress now
           ↓
-Phase 5a  Garden objects ← no blockers
-Phase 5b  Tasks          ← no blockers    } all in parallel
-Phase 5c  Projects       ← partial blockers (expenses, shopping, Gantt dependencies)
-Phase 5d  Calendar       ← partial blockers (annotations)
-Phase 5e  Activity       ← no blockers
+Phase 5   Chat and context                          ← no real blockers
+            Agent chat · Today · Incidents · Activity
           ↓
-          [Wait for rhizome#120 P1 + #141]
+Phase 6   Tasks and projects                         ← no real blockers
+            Tasks · Calendar · Projects
           ↓
-Phase 6a  Today page
-Phase 6b  Incidents       } all in parallel once P1 + #141 land
-Phase 6c  Agent chat SSE
+Phase 7a  Garden hub & objects ← no blockers   } sequential — 7b reuses 7a's shared components
+Phase 7b  Plants               ← no blockers   }
           ↓
-Phase 7   Feature backfill (independent, as each backend issue closes)
-Phase 8   Polish + deploy
+Phase 8   App polish
+            Settings · Notifications · deploy + polish tail
+          ↓
+          Future roadmap (media, garden map, visual understanding — pick up as blockers close)
 ```
 
 **Estimated phase sizes:**
 
 | Phase | Size |
 |---|---|
-| 5a | 2–3 days |
-| 5b | 2–3 days |
-| 5c | 3–4 days |
-| 5d | 2 days |
-| 5e | half day |
-| 6a–6c | 3–4 days (after P1 + #141) |
-| 7 | ongoing |
-| 8 | 1–2 days |
+| 5 | 4–5 days (largest single phase — agent chat is the most complex page in the app) |
+| 6 | 4–5 days |
+| 7a | 2–3 days |
+| 7b | 2 days |
+| 8 | 2–3 days |

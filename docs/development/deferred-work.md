@@ -8,19 +8,21 @@ If you're auditing test coverage or docs completeness and find something not lis
 
 ---
 
-### `src/lib/api/` domain modules, `src/lib/sse/`, `src/lib/query/` tuning
+### `src/lib/api/` endpoint-level deferrals
 
-**What's deferred:** Auth core is done (see the previous entry's history). As of 2026-06-21, 12 of 16 domain modules are also built and tested against the documented contract in [api-client.md](../architecture/api-client.md): `garden.ts`, `plants.ts`, `tasks.ts`, `calendar.ts`, `shopping.ts`, `search.ts`, `alerts.ts`, `notifications.ts`, `interactions.ts`, `chat.ts`, `triage.ts`, `weather.ts`. `src/lib/types/rhizome.ts` now exists with the view/request types these modules need.
+**What's deferred:** Auth core, SSE parsing, query retry/connectivity plumbing, and 15 of 16 domain modules are built and tested against the documented contract in [api-client.md](../architecture/api-client.md): `garden.ts`, `plants.ts`, `tasks.ts`, `calendar.ts`, `shopping.ts`, `search.ts`, `alerts.ts`, `notifications.ts`, `interactions.ts`, `chat.ts`, `triage.ts`, `weather.ts`, `incidents.ts`, `projects.ts`, and `activity.ts`. `src/lib/types/rhizome.ts` has the view/request types these modules need.
 
-`triage.ts`/`weather.ts` were the last to land — rhizome#133 was independently verified (code review + a from-scratch happy-path test covering the actual point of the fix: resolving task IDs into full `TaskSummaryView` objects, which had zero coverage anywhere before) rather than trusted at face value, the same standard `#136`/`#138` got. `triage.ts` omits `getTriageRecommendations` — confirmed `GET /triage/recommendations` doesn't exist anywhere in Rhizome's `data_router`; Cambium's `routes.go` still proxies to it (a dead route that will always 404), separate finding, not filed as its own issue since it's cheap to just not call.
+`triage.ts`/`weather.ts` were the last to land — rhizome#133 was independently verified (code review + a from-scratch happy-path test covering the actual point of the fix: resolving task IDs into full `TaskSummaryView` objects, which had zero coverage anywhere before) rather than trusted at face value, the same standard `#136`/`#138` got. `triage.ts` omits `getTriageRecommendations` — confirmed `GET /triage/recommendations` doesn't exist in Rhizome's `data_router`; the stale Cambium proxy has been removed, and `getLatestTriage()` is the structured replacement.
 
 `src/lib/sse/stream.ts` (`consumeSSEStream`, `consumeNotificationStream`) is now also built — confirmed `chatStream`/`chatResumeStream` (Cambium) and `/agent/stream`/`/notifications/stream` (Rhizome) all emit the exact `data: {...}\n\n` framing the parser expects, by reading both sides directly rather than assuming the doc's spec matched reality. `chat.ts`'s `streamChat`/`streamResume` and `notifications.ts`'s `streamNotifications` are wired to it. Both functions and `consumeSSEStream`/`consumeNotificationStream` now also accept an optional `signal?: AbortSignal`, added after a coverage audit found there was previously no way to cancel an open stream client-side (route change, unmount, logout) — without it a long-lived stream (especially `consumeNotificationStream`, which has no terminal event) keeps running on a token that may no longer be valid.
 
-**Live-verified (2026-06-21):** ran `consumeSSEStream`'s actual wire-parsing logic against the real running Cambium → Rhizome stack (not mocked) with two throwaway users — one on the default `google_genai` provider, one explicitly `PATCH /auth/profile`'d to `openai`. **Both failed identically** — found a real backend bug, not a frontend issue: Rhizome's `agent/core/graph.py` wires the LangGraph checkpointer with the sync-only `PostgresSaver`/`SqliteSaver`, but the streaming endpoints call `agent.astream_events(...)`, which needs the checkpointer's async interface; the sync savers raise `NotImplementedError` on `aget_tuple` before any LLM call happens. Non-streaming `/api/v1/chat` against the same thread worked fine (proves it's specifically the async-checkpointer gap, not auth/provider/thread setup). Filed as [rhizome#141](https://github.com/ybordag/rhizome/issues/141) with root cause, repro, and fix sketch (swap to `AsyncPostgresSaver`/`AsyncSqliteSaver`, already available with no new dependency — but `agent` is a module-level singleton built at import time with sync `setup()`, so the fix needs a FastAPI-lifespan-based async init, not a one-line swap).
+**Live-verified (2026-06-21):** `consumeSSEStream`'s actual wire-parsing logic was checked against the real running Cambium → Rhizome stack with `google_genai` and `openai`. That pass found rhizome#141 (sync checkpointer wired into async streaming); the backend fix was later verified and the issue was closed. Streaming is no longer a Phase 4 blocker.
 
-Unit-tested (fake `ReadableStream`, no live backend needed for these): token ordering, interaction events, malformed-line skipping, chunk-split-across-reads, non-2xx → `ApiError`, omitting the Authorization header instead of sending the literal string `"Bearer null"` when logged out (a real bug found and fixed in the same pass — `stream.ts` previously interpolated the token unconditionally, unlike `apiFetch`'s conditional pattern), a network drop mid-stream surfacing as a rejection rather than a silent stop, `AbortSignal`-driven cancellation mid-stream (simulates logout/unmount — rejects with `AbortError`, stops yielding further events), and that a stream already open keeps its original token through a token refresh while a *new* stream call afterward picks up the refreshed one. **Still not coverable here:** the actual live token-stream content (real provider output, mid-turn interaction pauses) — blocked until rhizome#141 closes, since right now every live streaming call fails before any LLM call happens.
+Unit-tested (fake `ReadableStream`, no live backend needed for these): token ordering, interaction events, malformed-line skipping, chunk-split-across-reads, non-2xx → `ApiError`, omitting the Authorization header instead of sending the literal string `"Bearer null"` when logged out (a real bug found and fixed in the same pass — `stream.ts` previously interpolated the token unconditionally, unlike `apiFetch`'s conditional pattern), a network drop mid-stream surfacing as a rejection rather than a silent stop, `AbortSignal`-driven cancellation mid-stream (simulates logout/unmount — rejects with `AbortError`, stops yielding further events), and that a stream already open keeps its original token through a token refresh while a *new* stream call afterward picks up the refreshed one.
 
-**Still genuinely empty:** `projects.ts`, `incidents.ts`, `activity.ts`, `media.ts` — blocked on rhizome backend work (see below).
+**Still genuinely empty:** `media.ts` — blocked on rhizome#117. The media/image endpoints are not started server-side and are separate from the structured-JSON backlog.
+
+**rhizome#135 closed (2026-06-21) — incidents/treatment-plan structured JSON.** `incidents.ts` built: full CRUD on incidents (`listIncidents`, `getIncident`, `createIncident`, `updateIncident`, `deleteIncident`, `resolveIncident`) plus treatment plans (`getIncidentTreatment`, `createManualTreatmentPlan`, `updateTreatmentPlan`, `deleteTreatmentPlan`, `approveTreatmentPlan`) and `getIncidentActivity`. Also added `draftTreatmentPlan(id, threadId): Promise<ChatResponse>` — confirmed via `cambium/internal/api/triggers.go` that `POST /api/v1/incidents/{id}/treatment` is a distinct AI-trigger handler (`triggerTreatmentDraft`, calls `h.rhizome.RunAgent(...)` with a synthesized message and returns a `ChatResponse`), not a plain CRUD proxy — same pattern as `triage.ts`'s `runTriage`. New types added to `rhizome.ts`: `IncidentView`, `IncidentDetailView`, `IncidentSubjectView`, `TreatmentPlanView`, plus the matching request types. Typecheck clean, 15 new tests, full suite at 300/300.
 
 **rhizome#140 closed (2026-06-21) — garden/plants/tasks CRUD writes + remaining activity feeds.** This unblocked almost everything that was previously omitted. Now built, code-reviewed, test-verified (50 new rhizome tests + the full 798-test suite), and live-curled against a running instance:
 - `garden.ts`: `updateGardenProfile`, `updateBed`, `createContainer`, `updateContainer`, `getBedActivity`, `getContainerActivity`
@@ -29,16 +31,17 @@ Unit-tested (fake `ReadableStream`, no live backend needed for these): token ord
 
 `ActivityEventView`/`ActivitySubjectView`/`PlantBatchResultView` added to `rhizome.ts`; several existing request types (`CreateContainerRequest`, `CreatePlantRequest`, `UpdateTaskRequest`, `UpdateTaskSeriesRequest`) were also corrected against the actual rhizome tool signatures while wiring these — a couple of fields were missing or wrongly marked optional/required.
 
-**Still omitted** (different, smaller endpoints #140 didn't cover):
-- `tasks.ts`: `listTasksBlocked` — `GET /tasks/blocked` still returns `{"result": "<string>"}`
+**Still omitted** (small structured endpoint cleanup, not full-module blockers):
 - `plants.ts`: `batchRemovePlants` — `PATCH /garden/plants/batch/remove` still returns `{"result": "<string>"}`
-- `triage.ts`: `getTriageRecommendations` (route doesn't exist server-side at all, not a string-wrap issue)
+- `triage.ts`: no `getTriageRecommendations` by design; use `getLatestTriage()` for structured grouped recommendations
 
-`GET /projects/{id}/activity` is also now structured (`ActivityEventView[]`) per #140, but isn't wired anywhere yet — `projects.ts` doesn't exist as a module until rhizome#137 lands; pick it up there.
+`projects.ts` is built against the structured routes from rhizome#137, including briefs, proposals, progress, task graph, expenses, shopping, assignments, and `GET /projects/{id}/activity`. Assignment endpoints still return Rhizome's `{"result": "<string>"}` envelope because Cambium proxies the existing tool result; the wrappers expose that envelope explicitly as `ResultResponse` rather than pretending those calls are `void`.
+
+`tasks.ts` now includes `listTasksBlocked` — Rhizome's `GET /tasks/blocked` returns `TaskSummaryView[]` with `blocked: true`.
 
 **Why deferred:** This was a deliberate scope split within Phase 4 — auth core first and verified working end-to-end, domain modules as a follow-up. Within that follow-up, modules were split further by actual backend readiness (verified per-endpoint, not per-module) rather than built all-or-nothing against a spec that assumed full backend support.
 
-**Re-enable when:** `incidents.ts`/`activity.ts`/`projects.ts` once rhizome#134/#135/#137 land; `listTasksBlocked`/`batchRemovePlants` once those two specific endpoints get structured responses; `media.ts` once rhizome#117 lands (not started at all, separate from the structured-JSON backlog).
+**Re-enable when:** `batchRemovePlants` once `PATCH /garden/plants/batch/remove` gets a structured response; `media.ts` once rhizome#117 lands. `getTriageRecommendations` is no longer deferred — the old proxy is removed from the contract, and `getLatestTriage()` is the supported structured path.
 
 ---
 
@@ -56,9 +59,9 @@ Unit-tested (fake `ReadableStream`, no live backend needed for these): token ord
 
 **What's deferred:** Both components render empty shells. `NotificationDrawer` opens/closes but shows no content; `Toast` accepts a `toasts` array but nothing ever populates it.
 
-**Why deferred:** Both depend on the notification SSE stream (`consumeNotificationStream`), which depends on Cambium's notification endpoint, which is blocked on [rhizome#130](https://github.com/ybordag/rhizome/issues/130). Building the UI shell now (done in Phase 3) and wiring it later avoids redoing layout work, but the wiring itself can't happen until the backend exists.
+**Why deferred:** Both depend on the notification SSE stream (`consumeNotificationStream`), which depends on Cambium's notification endpoint. That backend dependency (rhizome#130) closed on 2026-06-21 — the remaining work is purely sequencing: building the UI shell now (done in Phase 3) and wiring it later avoids redoing layout work, but the wiring itself is scheduled for Phase 8, not blocked on anything anymore.
 
-**Re-enable when:** rhizome#130 ships. Tracked as Phase 7 in [roadmap/overview.md](../roadmap/overview.md) — "Notification drawer + toasts."
+**Re-enable when:** Phase 8 starts. Tracked in [roadmap/overview.md](../roadmap/overview.md) under Phase 8 — "Notifications."
 
 ---
 
@@ -70,9 +73,9 @@ Built: `src/lib/toast/toastStore.ts` (generic module-level toast store, not tied
 
 **What's deferred:** [error-handling.md](error-handling.md) specifies behavior for SSE connection-failure-before-first-event (manual retry button), notification-stream auto-reconnect with backoff, and 409 conflicts (toast + query invalidation) — none of this exists yet.
 
-**Why deferred:** The SSE manual-retry button needs a chat UI to attach it to (Phase 6c, not started, blocked on rhizome#141 regardless) — the contract is now spec'd in [pages/05-agent.md](../pages/05-agent.md)'s "Connection handling" section so it's settled before 6c starts. Notification-stream auto-reconnect is blocked on the same thing as the rest of the notification drawer — rhizome#130. 409 invalidation needs a real mutation flow wired to the UI to invalidate against, which doesn't exist until Phase 5+ pages are built.
+**Why deferred:** The SSE manual-retry button needs a chat UI to attach it to — Agent chat is part of Phase 5, not started yet; the contract is already spec'd in [pages/05-agent.md](../pages/05-agent.md)'s "Connection handling" section so it's settled before that build starts. Notification-stream auto-reconnect is scheduled alongside the rest of the notification drawer in Phase 8 (rhizome#130, its only real dependency, is closed — this is purely a sequencing deferral now). 409 invalidation needs a real mutation flow wired to the UI to invalidate against, which doesn't exist until later phases build out real forms.
 
-**Re-enable when:** SSE retry UI + 409 invalidation: when the relevant page (6c / any Phase 5 mutation flow) gets built. Notification auto-reconnect: when rhizome#130 ships.
+**Re-enable when:** SSE retry UI + 409 invalidation: as Phase 5/6/7 pages get built and have real mutation flows to attach to. Notification auto-reconnect: Phase 8.
 
 ---
 
@@ -82,4 +85,4 @@ Built: `src/lib/toast/toastStore.ts` (generic module-level toast store, not tied
 
 **Why deferred:** There's nothing to test yet — no data fetching, no forms, no interactions. Writing tests against a placeholder div would just be testing that the placeholder div exists.
 
-**Re-enable when:** Each page gets built out in its respective phase (5a–6c per [roadmap/overview.md](../roadmap/overview.md)). Test it then, against real behavior — not before.
+**Re-enable when:** Each page gets built out in its respective phase (5–8 per [roadmap/overview.md](../roadmap/overview.md)). Test it then, against real behavior — not before.

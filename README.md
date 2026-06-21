@@ -12,7 +12,7 @@ Verdant talks exclusively to **Cambium** (the Go API gateway). It has no knowled
 
 ## Tech stack
 
-Vite 8 · React 19 · TypeScript (strict) · React Router v7 · TanStack Query v5 · TanStack Table v8 · Pragmatic Drag and Drop · CSS custom properties
+Vite 8 · React 19 · TypeScript (strict) · React Router v6 · TanStack Query v5 · TanStack Table v8 · Pragmatic Drag and Drop · CSS custom properties
 
 ## Quick start
 
@@ -44,7 +44,6 @@ Full docs are in [`docs/`](docs/README.md), which also explains how the docs tre
 - [Architecture index](docs/README.md)
 - [Testing](docs/development/testing.md) · [error handling](docs/development/error-handling.md) · [deferred work](docs/development/deferred-work.md)
 - [Roadmap](docs/roadmap/overview.md)
-- [Current work](docs/current_work/)
 
 ## Related repos
 

@@ -1,5 +1,7 @@
 # Daily Driver — Today, Tasks, Calendar
 
+**Last updated:** 2026-06-21
+
 ## Overview
 
 Three pages serving three distinct cognitive modes. They are deliberately separate — collapsing them produces a page that does two things awkwardly.
@@ -155,14 +157,14 @@ Requires [rhizome#115](https://github.com/ybordag/rhizome/issues/115).
 
 **Trigger:** `+` button in the ledger header, or "New Task" in the sidebar quick actions.
 
-**Interface:** a **creation drawer** slides in from the right. Context-aware pre-fill:
+**Interface:** dedicated route at `/app/tasks/new`. Context-aware pre-fill:
 - In By Project view → `project_id` pre-filled
 - In By Kind view → `type` pre-filled
 - In By Area view → `linked_subjects` pre-filled with the selected subject
 
 **Basic fields:** title (required), type (required), priority, scheduled date, deadline, estimated minutes, notes, linked subjects (plant/bed/container picker), reversible toggle.
 
-**"Make recurring" toggle** — expands additional series fields: cadence (daily / weekly / every N days / custom), start date, end date, window days (how long the materialized instance stays open). On save, creates a `TaskSeries` via `POST /api/v1/tasks/series` *(requires [rhizome#113](https://github.com/ybordag/rhizome/issues/113))*.
+**"Make recurring" toggle** — expands additional series fields: cadence (daily / weekly / every N days / custom), start date, end date, window days (how long the materialized instance stays open). On save, creates a `TaskSeries` via `POST /api/v1/tasks/series`.
 
 **Series editing** — editing an existing series rule lives at `/app/tasks/series/:id`, not in the creation drawer. This is a separate page because changing a rule has forward-only implications (it doesn't retroactively change existing instances).
 
@@ -175,7 +177,7 @@ Cross-project velocity view. Accessed from the filter rail.
 - **Deferred task list** — tasks deferred 3+ times, with "Ask Rhizome about this →" link to start a chat thread about the specific task
 - This view connects the task ledger back to Rhizome — persistent deferrals are a signal worth discussing with the agent
 
-Requires [rhizome#115](https://github.com/ybordag/rhizome/issues/115).
+Uses `GET /api/v1/activity/stats`.
 
 ### API endpoints
 

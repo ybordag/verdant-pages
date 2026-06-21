@@ -1,7 +1,7 @@
 import type { LabelHTMLAttributes } from 'react'
 import s from './FieldLabel.module.css'
 
-interface FieldLabelProps extends LabelHTMLAttributes<HTMLLabelElement> {}
+type FieldLabelProps = LabelHTMLAttributes<HTMLLabelElement>
 
 export default function FieldLabel({ className = '', children, ...props }: FieldLabelProps) {
   return (

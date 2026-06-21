@@ -1,5 +1,7 @@
 # Garden Hub — `/app/garden`
 
+**Last updated:** 2026-06-21
+
 ## Purpose
 
 The garden hub is a portfolio-style overview page for the entire garden. It is the cover page — you come here to understand the whole picture, navigate into specific objects, and manage the garden's profile and constraints. It is not a detail surface; depth lives on the individual object pages.
@@ -117,7 +119,7 @@ Garden-wide activity feed scoped to care and garden events. Uses the global acti
 
 Cursor-paginated, newest first. Each row: date, event type, affected object (clickable link), summary text.
 
-`GET /api/v1/activity?category=care` *(requires [rhizome#120](https://github.com/ybordag/rhizome/issues/120) for structured JSON and [rhizome#115](https://github.com/ybordag/rhizome/issues/115) for subject_type filter)*
+`GET /api/v1/activity?category=care`
 
 ---
 
@@ -141,17 +143,17 @@ Garden hub
 
 | Endpoint | Used for | Status |
 |---|---|---|
-| `GET /api/v1/garden/profile` | Profile panel + constraints | ✅ exists (string response — blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| `GET /api/v1/garden/profile` | Profile panel + constraints | ✅ |
 | `PATCH /api/v1/garden/profile` | Constraint editing | ✅ exists |
 | `GET /api/v1/garden/layout` | Map hero | Blocked on [#118](https://github.com/ybordag/rhizome/issues/118) |
-| `GET /api/v1/garden/beds` | Areas/Beds tab | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `POST /api/v1/garden/beds` | Add bed | Blocked on [#116](https://github.com/ybordag/rhizome/issues/116) |
-| `GET /api/v1/garden/locations/{location}` | Area grouping | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/garden/containers` | Containers tab | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| `GET /api/v1/garden/beds` | Areas/Beds tab | ✅ |
+| `POST /api/v1/garden/beds` | Add bed | ✅ |
+| `GET /api/v1/garden/locations/{location}` | Area grouping | ✅ |
+| `GET /api/v1/garden/containers` | Containers tab | ✅ |
 | `POST /api/v1/garden/containers` | Add container | ✅ exists |
-| `GET /api/v1/garden/plants` | Plants tab | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| `GET /api/v1/garden/plants` | Plants tab | ✅ |
 | `POST /api/v1/garden/plants` | Add plant | ✅ exists |
-| `GET /api/v1/activity?category=care` | Activity tab | Blocked on [#120](https://github.com/ybordag/rhizome/issues/120), [#115](https://github.com/ybordag/rhizome/issues/115) |
+| `GET /api/v1/activity?category=care` | Activity tab | ✅ |
 
 ---
 

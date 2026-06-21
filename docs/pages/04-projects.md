@@ -1,5 +1,7 @@
 # Projects — `/app/projects`
 
+**Last updated:** 2026-06-21
+
 ## Purpose
 
 The projects surface is a full project management tool scoped to gardening work. It covers the full lifecycle from brief and planning through active execution to completion, with Gantt, Kanban, and list views, resource tracking, budget management, and a shopping list.
@@ -24,7 +26,7 @@ A dashboard of all projects grouped by status.
 
 Each project card shows: name, status badge, goal summary (truncated), progress bar (task completion %), timeline health indicator (on track / at risk / overdue), budget burn gauge, target date.
 
-`+ New Project` button opens a creation drawer: name (required), goal (required), budget ceiling, target completion date, tray slot allocation, notes. Creates via `POST /api/v1/projects`.
+`+ New Project` navigates to `/app/projects/new`: name (required), goal (required), budget ceiling, target completion date, tray slot allocation, notes. Creates via `POST /api/v1/projects`.
 
 ---
 
@@ -53,8 +55,8 @@ When a project is in planning, the brief and proposal flow takes centre stage.
 **Brief panel** — editable form: goal, desired outcome, budget cap, target start, target completion, effort preference (minimal / moderate / intensive), propagation preference. Sourced from `GET /api/v1/projects/{id}/brief`, saved via `PATCH /api/v1/projects/{id}/brief`.
 
 **Resource allocation panel** — during planning the user picks which physical spaces are committed to this project:
-- Beds available: `GET /api/v1/garden/beds?available=true` *(requires [rhizome#123](https://github.com/ybordag/rhizome/issues/123))*
-- Containers available: `GET /api/v1/garden/containers?available=true` *(requires [rhizome#123](https://github.com/ybordag/rhizome/issues/123))*
+- Beds available: `GET /api/v1/garden/beds?available=true`
+- Containers available: `GET /api/v1/garden/containers?available=true`
 - Assign via `POST /api/v1/projects/{id}/beds/{bedId}`, deallocate via `DELETE`
 - Currently assigned objects shown with an active indicator; objects in another active project shown as unavailable
 
@@ -141,7 +143,7 @@ Cherry Tomatoes  Sow ●────── Red Cup ●────── Transpl
 
 Filled dots = completed stages, hollow dot = upcoming. Clicking a plant navigates to `/app/plants/:id`.
 
-Source: `GET /api/v1/garden/plants?project_id=X` (once [rhizome#120](https://github.com/ybordag/rhizome/issues/120) lands)
+Source: `GET /api/v1/garden/plants?project_id=X`
 
 ---
 
@@ -185,29 +187,29 @@ Requires media attachments ([rhizome#117](https://github.com/ybordag/rhizome/iss
 
 | Endpoint | Used for | Status |
 |---|---|---|
-| `GET /api/v1/projects` | Projects list | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| `GET /api/v1/projects` | Projects list | ✅ |
 | `POST /api/v1/projects` | Create project | ✅ |
-| `GET /api/v1/projects/{id}` | Project detail header | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| `GET /api/v1/projects/{id}` | Project detail header | ✅ |
 | `PATCH /api/v1/projects/{id}` | Edit project | ✅ |
 | `DELETE /api/v1/projects/{id}` | Delete project | ✅ |
-| `GET /api/v1/projects/{id}/brief` | Brief panel | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| `GET /api/v1/projects/{id}/brief` | Brief panel | ✅ |
 | `PATCH /api/v1/projects/{id}/brief` | Edit brief | ✅ |
-| `GET /api/v1/projects/{id}/proposals` | Proposals panel | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/projects/{id}/proposals/{id}` | Proposal detail page | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| `GET /api/v1/projects/{id}/proposals` | Proposals panel | ✅ |
+| `GET /api/v1/projects/{id}/proposals/{id}` | Proposal detail page | ✅ |
 | `POST /api/v1/projects/{id}/proposals/{id}/accept` | Accept proposal | ✅ |
 | `POST /api/v1/projects/{id}/tasks/generate` | AI task generation | ✅ |
-| `GET /api/v1/projects/{id}/tasks?include_dependencies=true` | Gantt data | Blocked on [#121](https://github.com/ybordag/rhizome/issues/121) |
-| `POST /api/v1/tasks/{id}/dependencies` | Create dependency (Gantt drag) | Blocked on [#121](https://github.com/ybordag/rhizome/issues/121) |
-| `DELETE /api/v1/tasks/{id}/dependencies/{id}` | Remove dependency | Blocked on [#121](https://github.com/ybordag/rhizome/issues/121) |
-| `PATCH /api/v1/projects/{id}/tasks/bulk` | Gantt drag-reschedule | Blocked on [#122](https://github.com/ybordag/rhizome/issues/122) |
-| `GET /api/v1/garden/beds?available=true` | Planning allocation | Blocked on [#123](https://github.com/ybordag/rhizome/issues/123) |
-| `GET /api/v1/garden/containers?available=true` | Planning allocation | Blocked on [#123](https://github.com/ybordag/rhizome/issues/123) |
-| `GET/POST/PATCH/DELETE /api/v1/projects/{id}/expenses` | Resources tracker | Blocked on [#124](https://github.com/ybordag/rhizome/issues/124) |
-| `GET /api/v1/projects/{id}/expenses/summary` | Budget gauge | Blocked on [#124](https://github.com/ybordag/rhizome/issues/124) |
-| `GET/POST/PATCH/DELETE /api/v1/shopping` | Shopping list | Blocked on [#125](https://github.com/ybordag/rhizome/issues/125) |
-| `POST /api/v1/shopping/{id}/purchase` | Mark purchased | Blocked on [#125](https://github.com/ybordag/rhizome/issues/125) |
+| `GET /api/v1/projects/{id}/tasks?include_dependencies=true` | Gantt data | ✅ |
+| `POST /api/v1/tasks/{id}/dependencies` | Create dependency (Gantt drag) | ✅ |
+| `DELETE /api/v1/tasks/{id}/dependencies/{id}` | Remove dependency | ✅ |
+| `PATCH /api/v1/projects/{id}/tasks/bulk` | Gantt drag-reschedule | ✅ |
+| `GET /api/v1/garden/beds?available=true` | Planning allocation | ✅ |
+| `GET /api/v1/garden/containers?available=true` | Planning allocation | ✅ |
+| `GET/POST/PATCH/DELETE /api/v1/projects/{id}/expenses` | Resources tracker | ✅ |
+| `GET /api/v1/projects/{id}/expenses/summary` | Budget gauge | ✅ |
+| `GET/POST/PATCH/DELETE /api/v1/shopping` | Shopping list | ✅ |
+| `POST /api/v1/shopping/{id}/purchase` | Mark purchased | ✅ |
 | `GET /api/v1/projects/{id}/beds` | Allocated beds panel | ✅ |
 | `GET /api/v1/projects/{id}/containers` | Allocated containers panel | ✅ |
-| `GET /api/v1/projects/{id}/activity` | Activity tab | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/projects/{id}/progress` | Progress ring | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/garden/plants?project_id=X` | Plant progress panel | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| `GET /api/v1/projects/{id}/activity` | Activity tab | ✅ |
+| `GET /api/v1/projects/{id}/progress` | Progress ring | ✅ |
+| `GET /api/v1/garden/plants?project_id=X` | Plant progress panel | ✅ |

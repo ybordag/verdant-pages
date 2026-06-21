@@ -1,5 +1,7 @@
 # Garden Objects — Plants, Beds, Containers
 
+**Last updated:** 2026-06-21
+
 ## Overview
 
 Plants, beds, and containers share a common detail page pattern. They are all physical garden entities with care histories, lifecycles, linked tasks, linked projects, and media attachments. One shared layout component handles all three; each type adds its own specific fields on top.
@@ -83,7 +85,7 @@ A dedicated page for plant management across the whole garden — more featured 
 **`+ Add plant` button** navigates to `/app/plants/new`.
 
 **API:**
-- `GET /api/v1/garden/plants?status=X&location=Y&project_id=Z` *(location filter requires [rhizome#116](https://github.com/ybordag/rhizome/issues/116))*
+- `GET /api/v1/garden/plants?status=X&location=Y&project_id=Z`
 
 ---
 
@@ -131,7 +133,7 @@ The endpoint finds any existing pending care task of the matching type linked to
 
 This means **care is always tracked as tasks** — the quick button is just a fast path that collapses create + complete into a single tap. For planned recurring care, the task series provides the task; for ad-hoc care, a one-off task is created transparently.
 
-Source: `POST /api/v1/garden/{type}/{id}/care` *(requires [rhizome#128](https://github.com/ybordag/rhizome/issues/128))*
+Source: `POST /api/v1/garden/{type}/{id}/care`
 
 | Care field | Applies to |
 |---|---|
@@ -142,7 +144,7 @@ Source: `POST /api/v1/garden/{type}/{id}/care` *(requires [rhizome#128](https://
 | `last_treated_at` | Plant |
 | `last_pruned_at` | Plant |
 
-Source: `GET /api/v1/garden/{type}/{id}/care/state` *(structured JSON requires [rhizome#120](https://github.com/ybordag/rhizome/issues/120))*
+Source: `GET /api/v1/garden/{type}/{id}/care/state`
 
 ### 3. Lifecycle timeline
 
@@ -164,7 +166,7 @@ The `ObjectLifecycleTimeline` component is shared across all three types — it 
 
 Source:
 - Plants: lifecycle fields from `GET /api/v1/garden/plants/{id}` *(rhizome#116)*
-- Beds/Containers: `GET /api/v1/garden/{type}/{id}/activity?event_type=bed_amended&event_type=...` *(requires event_type filter: rhizome#120 addendum)*
+- Beds/Containers: `GET /api/v1/garden/{type}/{id}/activity?event_type=bed_amended&event_type=...`
 
 ### 4. Linked projects
 
@@ -188,7 +190,7 @@ Requires [rhizome#117](https://github.com/ybordag/rhizome/issues/117).
 
 Open tasks where this object appears in `linked_subjects`. Displayed as a compact task list — checkbox, title, urgency, deadline. Completing a task from here calls `POST /api/v1/tasks/{id}/complete` with optimistic update.
 
-Source: `GET /api/v1/tasks?subject_type=X&subject_id=Y` *(requires [rhizome#112](https://github.com/ybordag/rhizome/issues/112))*
+Source: `GET /api/v1/tasks?subject_type=X&subject_id=Y`
 
 ### 8. Activity history
 
@@ -226,14 +228,14 @@ Source: `GET /api/v1/garden/{type}/{id}/activity?before_timestamp=X&limit=20` *(
 
 | Endpoint | Used for | Status |
 |---|---|---|
-| `GET /api/v1/garden/plants/{id}` | Header, lifecycle fields, linked projects, current batch | Blocked on [#116](https://github.com/ybordag/rhizome/issues/116) + [#120](https://github.com/ybordag/rhizome/issues/120) |
+| `GET /api/v1/garden/plants/{id}` | Header, lifecycle fields, linked projects, current batch | ✅ |
 | `PATCH /api/v1/garden/plants/{id}` | Edit | ✅ |
 | `PATCH /api/v1/garden/plants/{id}/remove` | Soft delete | ✅ |
 | `DELETE /api/v1/garden/plants/{id}` | Hard delete | ✅ |
-| `GET /api/v1/garden/plants/{id}/care/state` | Care state strip | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| `GET /api/v1/garden/plants/{id}/care/state` | Care state strip | ✅ |
 | `GET /api/v1/garden/plants/{id}/care/history` | *(future: care history panel)* | ✅ exists |
-| `GET /api/v1/garden/plants/{id}/activity` | Activity history + lifecycle timeline | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/tasks?subject_type=plant&subject_id=X` | Linked tasks | Blocked on [#112](https://github.com/ybordag/rhizome/issues/112) |
+| `GET /api/v1/garden/plants/{id}/activity` | Activity history + lifecycle timeline | ✅ |
+| `GET /api/v1/tasks?subject_type=plant&subject_id=X` | Linked tasks | ✅ |
 | `GET /api/v1/garden/plants/{id}/media` | Media gallery | Blocked on [#117](https://github.com/ybordag/rhizome/issues/117) |
 | `POST /api/v1/garden/plants/{id}/media` | Upload image | Blocked on [#117](https://github.com/ybordag/rhizome/issues/117) |
 
@@ -241,24 +243,24 @@ Source: `GET /api/v1/garden/{type}/{id}/activity?before_timestamp=X&limit=20` *(
 
 | Endpoint | Used for | Status |
 |---|---|---|
-| `GET /api/v1/garden/beds/{id}` | Header, current plants, linked projects | Blocked on [#116](https://github.com/ybordag/rhizome/issues/116) + [#120](https://github.com/ybordag/rhizome/issues/120) |
+| `GET /api/v1/garden/beds/{id}` | Header, current plants, linked projects | ✅ |
 | `PATCH /api/v1/garden/beds/{id}` | Edit | ✅ |
 | `DELETE /api/v1/garden/beds/{id}` | Delete | ✅ |
-| `GET /api/v1/garden/beds/{id}/care/state` | Care state strip | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/garden/beds/{id}/activity` | Activity history + lifecycle timeline | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/tasks?subject_type=bed&subject_id=X` | Linked tasks | Blocked on [#112](https://github.com/ybordag/rhizome/issues/112) |
+| `GET /api/v1/garden/beds/{id}/care/state` | Care state strip | ✅ |
+| `GET /api/v1/garden/beds/{id}/activity` | Activity history + lifecycle timeline | ✅ |
+| `GET /api/v1/tasks?subject_type=bed&subject_id=X` | Linked tasks | ✅ |
 | `GET /api/v1/garden/beds/{id}/media` | Media gallery | Blocked on [#117](https://github.com/ybordag/rhizome/issues/117) |
 
 ### Container
 
 | Endpoint | Used for | Status |
 |---|---|---|
-| `GET /api/v1/garden/containers/{id}` | Header, current plant, linked projects | Blocked on [#116](https://github.com/ybordag/rhizome/issues/116) + [#120](https://github.com/ybordag/rhizome/issues/120) |
+| `GET /api/v1/garden/containers/{id}` | Header, current plant, linked projects | ✅ |
 | `PATCH /api/v1/garden/containers/{id}` | Edit | ✅ |
 | `DELETE /api/v1/garden/containers/{id}` | Delete | ✅ |
-| `GET /api/v1/garden/containers/{id}/care/state` | Care state strip | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/garden/containers/{id}/activity` | Activity history + lifecycle timeline | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/tasks?subject_type=container&subject_id=X` | Linked tasks | Blocked on [#112](https://github.com/ybordag/rhizome/issues/112) |
+| `GET /api/v1/garden/containers/{id}/care/state` | Care state strip | ✅ |
+| `GET /api/v1/garden/containers/{id}/activity` | Activity history + lifecycle timeline | ✅ |
+| `GET /api/v1/tasks?subject_type=container&subject_id=X` | Linked tasks | ✅ |
 | `GET /api/v1/garden/containers/{id}/media` | Media gallery | Blocked on [#117](https://github.com/ybordag/rhizome/issues/117) |
 
 ---

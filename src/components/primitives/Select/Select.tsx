@@ -1,7 +1,7 @@
 import type { SelectHTMLAttributes } from 'react'
 import s from './Select.module.css'
 
-interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {}
+type SelectProps = SelectHTMLAttributes<HTMLSelectElement>
 
 export default function Select({ className = '', children, ...props }: SelectProps) {
   return (

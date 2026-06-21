@@ -26,6 +26,16 @@ describe('tasks API', () => {
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/tasks/due?days_ahead=3')
   })
 
+  it('listTasksBlocked builds a query string from params', async () => {
+    await tasks.listTasksBlocked({ project_id: 'proj-1' })
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/tasks/blocked?project_id=proj-1')
+  })
+
+  it('listTasksBlocked omits the query string when no params are given', async () => {
+    await tasks.listTasksBlocked()
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/tasks/blocked')
+  })
+
   it('listTasks omits the query string when no params are given', async () => {
     await tasks.listTasks()
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/tasks')

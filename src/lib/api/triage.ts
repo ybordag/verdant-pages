@@ -11,6 +11,6 @@ export function getLatestTriage(): Promise<TriageSnapshotView | null> {
   return apiFetch('/api/v1/triage/latest')
 }
 
-// getTriageRecommendations is intentionally not implemented — Cambium proxies
-// GET /api/v1/triage/recommendations, but no such route exists in Rhizome's
-// data_router, so it always 404s. See deferred-work.md.
+// getTriageRecommendations is intentionally not implemented. The old Cambium
+// proxy route was removed; use getLatestTriage(), which returns grouped
+// TaskSummaryView objects.
