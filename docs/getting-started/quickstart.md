@@ -1,6 +1,6 @@
 # Quickstart
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-21
 
 The fastest path to a running dev server. For the full walkthrough — environment variables, running Cambium, troubleshooting, production builds — see [setup.md](setup.md).
 
@@ -17,6 +17,12 @@ That's it for pure UI work — component rendering, styling, routing all work wi
 
 ```bash
 cd ../cambium && go run ./cmd/server/
+```
+
+Verify Cambium directly from a terminal:
+
+```bash
+curl http://localhost:8080/health
 ```
 
 **Running tests:**

@@ -1,10 +1,14 @@
 import { test, expect } from '@playwright/test'
 
+// /app/* requires a real session now that ProtectedRoute does a real auth
+// check — register a throwaway user via the UI before each test.
 test.beforeEach(async ({ page }) => {
-  await page.goto('/')
-})
-
-test('redirects to /app/today by default', async ({ page }) => {
+  const email = `nav-spec-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`
+  await page.goto('/register')
+  await page.getByLabel('Email').fill(email)
+  await page.getByLabel('Password', { exact: true }).fill('Nav-spec-password1!')
+  await page.getByLabel('Confirm password').fill('Nav-spec-password1!')
+  await page.getByRole('button', { name: 'Sign Up' }).click()
   await expect(page).toHaveURL('/app/today')
 })
 

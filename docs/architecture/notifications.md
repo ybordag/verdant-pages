@@ -170,6 +170,6 @@ When an `InteractionRecord` is created: `push_notification(user_id, {"type": "in
 |---|---|---|
 | `GET /api/v1/alerts` | Initial sync — current alerts | ✅ (already returns structured JSON) |
 | `POST /api/v1/alerts/{id}/dismiss` | Dismiss an alert | ✅ |
-| `GET /api/v1/interactions/pending` | Initial sync — pending interactions | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/notifications/stream` | Live SSE event stream | Blocked on [#130](https://github.com/ybordag/rhizome/issues/130) |
-| `GET /api/v1/notifications` | Sync snapshot on mount/reconnect | Blocked on [#130](https://github.com/ybordag/rhizome/issues/130) |
+| `GET /api/v1/interactions/pending` | Initial sync — pending interactions | ✅ |
+| `GET /api/v1/notifications/stream` | Live SSE event stream | ✅ backend ready; frontend wiring scheduled for Phase 8 |
+| `GET /api/v1/notifications` | Sync snapshot on mount/reconnect | ✅ backend ready; frontend wiring scheduled for Phase 8 |

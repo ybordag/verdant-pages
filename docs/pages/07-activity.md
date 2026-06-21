@@ -1,5 +1,7 @@
 # Activity — Global Feed
 
+**Last updated:** 2026-06-21
+
 ## Purpose
 
 A single page showing everything that has happened across the whole garden — task completions, care actions, project updates, incidents, weather events, agent actions, and interactions. The primary use is verifying what Rhizome did, cross-referencing events across objects, and building a picture of the garden's history.
@@ -19,7 +21,7 @@ Filter rail (left) + activity feed (main, infinite scroll).
 - **Category:** All / Task / Project / Plant / Care / Incident / Interaction / Weather
 - **Event type:** specific event types within the selected category (e.g. `task_completed`, `plant_watered`, `proposal_accepted`)
 - **Since / Before:** date range pickers
-- **Subject:** plant/bed/container/project picker — filters to events involving a specific object *(requires [rhizome#115](https://github.com/ybordag/rhizome/issues/115))*
+- **Subject:** plant/bed/container/project picker — filters to events involving a specific object
 
 ### Activity feed
 
@@ -32,16 +34,16 @@ Cursor-paginated, newest first. Each row:
 
 Infinite scroll via `before_timestamp` cursor. "Load more" fallback for accessibility.
 
-### No new API work needed
+### API coverage
 
-All requirements are covered by existing endpoints and already-tracked issues:
+Endpoint needs:
 
-| Requirement | Endpoint | Status |
-|---|---|---|
-| Global feed with filters | `GET /api/v1/activity` | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120) for JSON, [#115](https://github.com/ybordag/rhizome/issues/115) for subject_type filter) |
-| Cursor pagination | `before_timestamp` param | ✅ |
-| Per-object feeds | `GET /api/v1/garden/{type}/{id}/activity` | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| Velocity stats | `GET /api/v1/activity/stats` | Blocked on [#115](https://github.com/ybordag/rhizome/issues/115) |
+| Requirement | Endpoint |
+|---|---|
+| Global feed with filters | `GET /api/v1/activity` |
+| Cursor pagination | `before_timestamp` param |
+| Per-object feeds | `GET /api/v1/garden/{type}/{id}/activity` |
+| Velocity stats | `GET /api/v1/activity/stats` |
 
 ---
 

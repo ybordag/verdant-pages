@@ -1,6 +1,6 @@
 # SSE & Agent Chat Streaming
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-21
 
 ## The EventSource problem
 
@@ -18,14 +18,17 @@ The native `EventSource` API cannot be used for Cambium's streaming endpoints be
 export async function* consumeSSEStream(
   url: string,
   body: unknown,
+  signal?: AbortSignal,
 ): AsyncGenerator<SSEEvent> {
-  const res = await fetch(url, {
+  const token = getAccessToken();
+  const res = await fetch(BASE + url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,  // from in-memory store
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(body),
+    signal,
   });
 
   if (!res.ok || !res.body) throw new ApiError(res.status, null);

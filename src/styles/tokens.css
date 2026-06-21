@@ -2,7 +2,11 @@
 :root {
   /* Ink / vellum scale */
   --inkwell: #1C1814;
+  --vellum-dark: #E9DEB7;
   --vellum: #F2E8C9;
+  /* Same hue/chroma as --vellum, just lighter — unlike --vellum-light,
+     which is both lighter and less saturated. */
+  --vellum-bright: oklch(from var(--vellum) calc(l + 0.03) c h);
   --vellum-light: #F6F0E0;
   --vellum-pale: #F8F4EC;
   --vellum-whisper: #FAF7F2;
@@ -10,7 +14,17 @@
 
   /* Brand */
   --chartreuse: #B8D43A;
+  /* Same hue/chroma as --chartreuse, just darker — for text/borders that need
+     to read against a chartreuse-tinted background (chartreuse-on-chartreuse
+     has poor contrast; relative color syntax darkens without desaturating). */
+  --chartreuse-deep: oklch(from var(--chartreuse) calc(l - 0.22) c h);
   --pine: #2B5C2F;
+  /* Light pine text/border color — a true forest green, lighter than --pine,
+     hand-picked rather than computed (lightening --pine via relative color
+     syntax clipped in sRGB and lost its green hue entirely). Use this
+     wherever pine-branded text/borders need to sit on a light or tinted
+     background without reading as too dark/heavy. */
+  --pine-light: #4F8F55;
   --clay: #E06B4A;
   --buttercup: #FFC94D;
   --pale-herb: #B0EAAC;
@@ -32,6 +46,7 @@
   --pine-rgb: 43 92 47;
   --clay-rgb: 224 107 74;
   --chartreuse-rgb: 184 212 58;
+  --pale-herb-rgb: 176 234 172;
 
   /* Typography */
   --font-display: "Shantell Sans", cursive;
@@ -53,6 +68,11 @@
   /* App shell */
   --bg: #181510;
   --bg-nav: #201C17;
+
+  /* Marketing pages (landing, login, register) — same as --bg/--bg-nav in dark mode */
+  --bg-marketing: var(--bg);
+  --card-marketing: var(--bg-nav);
+  --input-bg-marketing: var(--input-bg);
 
   /* Paper surfaces — used for cards, panels, drawers */
   --surface-primary: var(--vellum-light);
@@ -92,8 +112,19 @@
 /* ── Light theme ── */
 [data-theme="light"] {
   /* App shell */
-  --bg: var(--vellum-whisper);
-  --bg-nav: var(--vellum-light);
+  --bg: var(--vellum-light);
+  --bg-nav: var(--vellum);
+
+  /* Marketing pages (landing, login, register). --vellum-bright (page) is
+     lighter than --vellum (card) with identical hue/chroma — see the
+     ink/vellum scale above for why that's not the same as --vellum-light. */
+  --bg-marketing: var(--vellum-bright);
+  --card-marketing: var(--vellum);
+  /* The global --input-bg mixes toward --inkwell, which works fine on the
+     app's normal light surfaces but desaturates against this warm
+     palette — nudge slightly darker than the card instead, same
+     hue/chroma as --vellum, no inkwell involved. */
+  --input-bg-marketing: oklch(from var(--vellum) calc(l - 0.025) c h);
 
   /* Paper surfaces */
   --surface-primary: var(--vellum-light);

@@ -1,5 +1,7 @@
 # Garden Hub — `/app/garden`
 
+**Last updated:** 2026-06-21
+
 ## Purpose
 
 The garden hub is a portfolio-style overview page for the entire garden. It is the cover page — you come here to understand the whole picture, navigate into specific objects, and manage the garden's profile and constraints. It is not a detail surface; depth lives on the individual object pages.
@@ -30,7 +32,7 @@ The garden hub is a portfolio-style overview page for the entire garden. It is t
 
 ### Map / plan view
 
-A spatial plan of the garden rendered from `GET /api/v1/garden/layout` *(requires [rhizome#118](https://github.com/ybordag/rhizome/issues/118))*.
+A spatial plan of the garden rendered from `GET /api/v1/garden/layout`.
 
 **Default state (minimap):** A compact plan view showing bed shapes, container positions, and area labels. Sized to fit within the hero without scrolling.
 
@@ -57,7 +59,7 @@ Compact data grid from `GET /api/v1/garden/profile`:
 | First frost | Dec 1 |
 | Mapped objects | 18 |
 
-"Edit profile →" link opens the profile edit drawer.
+"Edit profile →" scrolls focus to the editable profile and constraints section.
 
 ### Constraints section (below hero, full width)
 
@@ -117,7 +119,7 @@ Garden-wide activity feed scoped to care and garden events. Uses the global acti
 
 Cursor-paginated, newest first. Each row: date, event type, affected object (clickable link), summary text.
 
-`GET /api/v1/activity?category=care` *(requires [rhizome#120](https://github.com/ybordag/rhizome/issues/120) for structured JSON and [rhizome#115](https://github.com/ybordag/rhizome/issues/115) for subject_type filter)*
+`GET /api/v1/activity?category=care`
 
 ---
 
@@ -139,16 +141,30 @@ Garden hub
 
 ## API endpoints
 
-| Endpoint | Used for | Status |
-|---|---|---|
-| `GET /api/v1/garden/profile` | Profile panel + constraints | ✅ exists (string response — blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `PATCH /api/v1/garden/profile` | Constraint editing | ✅ exists |
-| `GET /api/v1/garden/layout` | Map hero | Blocked on [#118](https://github.com/ybordag/rhizome/issues/118) |
-| `GET /api/v1/garden/beds` | Areas/Beds tab | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `POST /api/v1/garden/beds` | Add bed | Blocked on [#116](https://github.com/ybordag/rhizome/issues/116) |
-| `GET /api/v1/garden/locations/{location}` | Area grouping | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/garden/containers` | Containers tab | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `POST /api/v1/garden/containers` | Add container | ✅ exists |
-| `GET /api/v1/garden/plants` | Plants tab | ✅ exists (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `POST /api/v1/garden/plants` | Add plant | ✅ exists |
-| `GET /api/v1/activity?category=care` | Activity tab | Blocked on [#120](https://github.com/ybordag/rhizome/issues/120), [#115](https://github.com/ybordag/rhizome/issues/115) |
+| Endpoint | Used for |
+|---|---|
+| `GET /api/v1/garden/profile` | Profile panel + constraints |
+| `PATCH /api/v1/garden/profile` | Constraint editing |
+| `GET /api/v1/garden/layout` | Map hero |
+| `GET /api/v1/garden/beds` | Areas/Beds tab |
+| `POST /api/v1/garden/beds` | Add bed |
+| `GET /api/v1/garden/locations/{location}` | Area grouping |
+| `GET /api/v1/garden/containers` | Containers tab |
+| `POST /api/v1/garden/containers` | Add container |
+| `GET /api/v1/garden/plants` | Plants tab |
+| `POST /api/v1/garden/plants` | Add plant |
+| `GET /api/v1/activity?category=care` | Activity tab |
+
+**Blocked capability:** advanced spatial layout/map rendering depends on rhizome#118.
+
+---
+
+## Open design questions
+
+Carried over from earlier design exploration, not yet resolved by the spec above:
+
+- Should Garden `Projects` be its own tab inside Garden, or should Garden only show garden-scoped project links while the full project page lives under `Projects`?
+- Should the focused/expanded map state allow layer toggles (sunlight, water, containers, plants, projects, incidents) in the first real build, or stay visual-only until the layout itself is validated?
+- How much of the `GardenProfile` edit surface belongs on the hub Overview versus a separate dedicated edit flow?
+- Should areas/locations include beds as children, or should beds stay first-class objects alongside areas?
+- Should garden areas be spatial map-first or ledger/list-first when there's no generated layout yet?

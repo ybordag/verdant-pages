@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import ProtectedRoute from './ProtectedRoute'
+import PublicOnlyRoute from './PublicOnlyRoute'
 import AppShell from '@/components/shell/AppShell/AppShell'
+import LandingPage from '@/pages/LandingPage'
 import LoginPage from '@/pages/auth/LoginPage'
 import RegisterPage from '@/pages/auth/RegisterPage'
 import TodayPage from '@/pages/TodayPage'
@@ -30,8 +32,14 @@ import ActivityPage from '@/pages/ActivityPage'
 import SettingsPage from '@/pages/SettingsPage'
 
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
-  { path: '/register', element: <RegisterPage /> },
+  { path: '/', element: <LandingPage /> },
+  {
+    element: <PublicOnlyRoute />,
+    children: [
+      { path: '/login', element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
+    ],
+  },
   {
     path: '/app',
     element: <ProtectedRoute />,
@@ -82,6 +90,5 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  { path: '/', element: <Navigate to="/app/today" replace /> },
-  { path: '*', element: <Navigate to="/app/today" replace /> },
+  { path: '*', element: <Navigate to="/" replace /> },
 ])

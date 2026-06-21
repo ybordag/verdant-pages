@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-06-20
 
-`src/styles/tokens.css` is the single source of truth. All tokens come from `docs/design/mockup.html` — do not restyle or invent new values without explicit sign-off.
+`src/styles/tokens.css` is the single source of truth. Tokens originate from the locked design study at [`design/mockups/base/typography-and-surfaces.html`](../design/mockups/base/typography-and-surfaces.html) — see [`design/visual-identity.md`](../design/visual-identity.md) for the rationale behind these values. Do not restyle or invent new values without explicit sign-off.
 
 ## Token file structure
 

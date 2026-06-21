@@ -46,7 +46,7 @@ Verdant talks **only** to Cambium. It has no awareness of Rhizome internals, Lan
 - Rendering of triage, tasks, proposals, treatment plans, and weather reviews
 - Interaction-resolution UI (structured approval cards)
 - Agent chat thread list, streaming message display, and composer
-- Media upload and display flows (future — Phase 7)
+- Media upload and display flows (future roadmap, blocked on rhizome#117)
 
 ## What Verdant does not own
 

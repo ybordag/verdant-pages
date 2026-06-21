@@ -1,5 +1,7 @@
 # Agent — Rhizome Chat
 
+**Last updated:** 2026-06-21
+
 ## Pages in this group
 
 | Page | Route |
@@ -62,7 +64,7 @@ A full-screen-overlay search input. Supports two modes:
 
 Selecting a result pins it as a context chip. Multiple objects can be pinned.
 
-Source: `GET /api/v1/search?q=X&types=Y` *(requires [rhizome#126](https://github.com/ybordag/rhizome/issues/126))*
+Source: `GET /api/v1/search?q=X&types=Y`
 
 ---
 
@@ -91,6 +93,17 @@ A `<textarea>` at the bottom. Enter sends (Shift+Enter newline). "Send" button b
 Placeholder: *"Ask Rhizome about tasks, plants, projects, weather, or incidents…"*
 
 Status line below: zone + model indicator ("Zone 9b · Rhizome is listening").
+
+---
+
+## Connection handling
+
+SSE is the only transport for chat (`streamChat`/`streamResume` — see [sse-streaming.md](../architecture/sse-streaming.md)); there's no non-streaming fallback. Behavior on failure, per [error-handling.md](../development/error-handling.md):
+
+- **Connection never opens / drops before any token arrives:** no auto-retry. Show "Connection failed — try again" in the composer area with a manual retry button. Resubmitting a half-sent message automatically would be worse than asking the user to re-trigger it.
+- **Connection drops mid-stream** (after some tokens, before a `{ type: "done" }` event): the consuming component must track a local `sawDone` flag. If the generator returns without it ever being set, treat the response as incomplete — append "⚠ response may be incomplete" rather than presenting partial tokens as the full answer.
+
+Neither case is built yet — there's no chat UI to attach it to until Phase 5 starts. This section exists so the contract is settled before the chat UI is built, not reverse-engineered after.
 
 ---
 
@@ -146,17 +159,25 @@ Rhizome can reference these directly without the user re-describing them. The su
 
 ## API endpoints
 
-| Endpoint | Used for | Status |
-|---|---|---|
-| `POST /api/v1/threads` | Create thread (+ initial_context) | ✅ (initial_context requires [rhizome#127](https://github.com/ybordag/rhizome/issues/127)) |
-| `GET /api/v1/threads?limit=20` | Thread list in topbar | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `GET /api/v1/threads/{id}/messages` | Load thread history | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `DELETE /api/v1/threads/{id}` | Delete thread | ✅ |
-| `POST /api/v1/chat/stream` | Send message (SSE) | ✅ |
-| `POST /api/v1/chat/resume/stream` | Resume after interaction approval | ✅ |
-| `GET /api/v1/interactions/pending` | Populate interaction panel | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `POST /api/v1/threads/{id}/context` | Pin context object | Blocked on [#127](https://github.com/ybordag/rhizome/issues/127) |
-| `DELETE /api/v1/threads/{id}/context/{type}/{id}` | Remove context chip | Blocked on [#127](https://github.com/ybordag/rhizome/issues/127) |
-| `GET /api/v1/search?q=X&types=Y` | Context search modal | Blocked on [#126](https://github.com/ybordag/rhizome/issues/126) |
-| `POST /api/v1/triage/run` | "Run Triage" button in topbar | ✅ |
-| `POST /api/v1/incidents` | "New Incident" button in topbar | ✅ |
+| Endpoint | Used for |
+|---|---|
+| `POST /api/v1/threads` | Create thread (+ initial_context) |
+| `GET /api/v1/threads?limit=20` | Thread list in topbar |
+| `GET /api/v1/threads/{id}/messages` | Load thread history |
+| `DELETE /api/v1/threads/{id}` | Delete thread |
+| `POST /api/v1/chat/stream` | Send message (SSE) |
+| `POST /api/v1/chat/resume/stream` | Resume after interaction approval |
+| `GET /api/v1/interactions/pending` | Populate interaction panel |
+| `POST /api/v1/threads/{id}/context` | Pin context object |
+| `DELETE /api/v1/threads/{id}/context/{type}/{id}` | Remove context chip |
+| `GET /api/v1/search?q=X&types=Y` | Context search modal |
+| `POST /api/v1/triage/run` | "Run Triage" button in topbar |
+| `POST /api/v1/incidents` | "New Incident" button in topbar |
+
+---
+
+## Open design questions
+
+**Thread UX on first open.** When the user navigates to `/app/rhizome` for the first time, should the page (a) auto-create a new thread and start a fresh conversation, or (b) show a thread list/picker so the user selects or creates one? Not yet decided — pick this before building Phase 5 chat.
+
+**Model selection.** A dropdown to pick the active rhizome backend model/provider (`preferred_provider`/`preferred_model`, already settable via `PATCH /auth/profile`), plus a visual indicator in the composer status line of which model is currently active for the session — extends the existing "Zone 9b · Rhizome is listening" line rather than replacing it. Not yet decided where the dropdown lives (composer status line vs. topbar) or whether switching mid-thread is allowed. Pick this before building Phase 5 chat.

@@ -1,6 +1,6 @@
 # Setup
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-21
 
 How to run Verdant Pages locally. For the condensed version, see [quickstart.md](quickstart.md).
 
@@ -16,6 +16,25 @@ How to run Verdant Pages locally. For the condensed version, see [quickstart.md]
 | Cambium | running on `:8080` | API gateway — needed for all API calls |
 
 Verdant can be developed for pure UI work without Cambium running. API calls will fail but the dev server and component rendering work independently.
+
+---
+
+## Run modes
+
+Pick the lightest mode that matches the work you are doing.
+
+| Mode | Required services | Use when | Verification |
+|---|---|---|---|
+| UI-only | Node/npm/Vite | Styling, routing, shell work, component tests, placeholder pages | `npm run dev` then open `http://localhost:5173` |
+| API smoke | Node/npm/Vite + Cambium on `:8080` | Auth, API client wrappers, pages that read or mutate real data | `curl http://localhost:8080/health` returns `{"status":"ok"}` |
+| Full agent/live model | Node/npm/Vite + Cambium + Rhizome + DB + provider key | Chat streaming, AI triggers, triage/weather/treatment/proposal generation | Cambium health passes, Rhizome is reachable on `:8001`, and provider keys are configured |
+
+Sibling setup docs:
+
+- Cambium: [`../cambium/docs/getting-started/setup.md`](../../../cambium/docs/getting-started/setup.md)
+- Rhizome: [`../rhizome/docs/getting-started/setup.md`](../../../rhizome/docs/getting-started/setup.md)
+
+The Vite dev server proxies `/api` and `/auth` to Cambium. It does not proxy `/health`, so check Cambium health directly at `http://localhost:8080/health`.
 
 ---
 
@@ -84,14 +103,16 @@ HMR is enabled — changes to React components and CSS update the browser withou
 
 ## 6. Verify
 
-Open `http://localhost:5173`. You should see "Verdant Pages".
+Open `http://localhost:5173`. You should see the Verdant landing page.
 
-If Cambium is running, open the browser console and run:
+If Cambium is running, verify it directly from a terminal:
 
-```js
-fetch('/health').then(r => r.json()).then(console.log)
+```bash
+curl http://localhost:8080/health
 // → {"status":"ok"}
 ```
+
+The Vite dev server proxies `/api` and `/auth`, not `/health`, so checking `/health` from the browser on port `5173` does not prove Cambium is reachable.
 
 ---
 
@@ -123,7 +144,7 @@ npm run build
 # → dist/
 ```
 
-TypeScript compiles first (`tsc -b`), then Vite bundles. The `dist/` output is served by Cambium as static files in production — see [`docs/architecture/build-phases.md`](../architecture/build-phases.md) (Phase 8) for the deploy process.
+TypeScript compiles first (`tsc -b`), then Vite bundles. The `dist/` output is served by Cambium as static files in production — see [`docs/roadmap/overview.md`](../roadmap/overview.md) (Phase 8) for the deploy process.
 
 ---
 
@@ -140,6 +161,8 @@ TypeScript compiles first (`tsc -b`), then Vite bundles. The `dist/` output is s
 ---
 
 ## Project layout
+
+This is the short map. For how these pieces connect at runtime, read [codebase-tour.md](../architecture/codebase-tour.md).
 
 ```
 verdant-pages/

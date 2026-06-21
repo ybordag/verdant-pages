@@ -1,0 +1,59 @@
+.page {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--bg-marketing);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.topRight {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+}
+
+.backLink {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  display: flex;
+  color: var(--text-secondary);
+  transition: color 0.15s;
+}
+.backLink:hover { color: var(--text-primary); }
+
+.card {
+  width: min(380px, 100%);
+  background: var(--card-marketing);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-journal);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  /* Inputs inside this card read var(--input-bg) — redefine it locally so
+     they pick up the warm, inkwell-free marketing tone instead of the
+     app-wide one. */
+  --input-bg: var(--input-bg-marketing);
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-variation-settings: 'BNCE' var(--display-bounce);
+  font-size: 28px;
+  color: var(--nav-accent);
+  text-decoration: none;
+  text-align: center;
+}
+
+.tagline {
+  margin: 8px 0 28px;
+  font-family: var(--font-botanical);
+  font-size: 15px;
+  color: var(--text-secondary);
+  text-align: center;
+}

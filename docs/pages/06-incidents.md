@@ -1,5 +1,7 @@
 # Incidents & Treatment Plans
 
+**Last updated:** 2026-06-21
+
 ## Purpose
 
 Incidents track problems in the garden — pests, disease, blight, environmental damage. Treatment plans are the response. Both can be created and managed directly by the user or with Rhizome's help. This page group is distinct from the agent chat but connects to it naturally.
@@ -28,8 +30,8 @@ Incidents track problems in the garden — pests, disease, blight, environmental
 **Alert → Incident pipeline:** MonitorAlerts of type `pest` or `plant_health` show a "Create incident from this alert" action that pre-fills the form.
 
 **API:**
-- `GET /api/v1/incidents?status=X&severity=Y&incident_type=Z&since=ISO&subject_type=T&subject_id=ID` *(filters require [rhizome#129](https://github.com/ybordag/rhizome/issues/129))*
-- `POST /api/v1/incidents` ✅
+- `GET /api/v1/incidents?status=X&severity=Y&incident_type=Z&since=ISO&subject_type=T&subject_id=ID`
+- `POST /api/v1/incidents`
 
 ---
 
@@ -45,7 +47,7 @@ Chips for each plant, bed, or container this incident affects. Clickable — nav
 
 ### Media gallery
 
-Photos of the damage, before/after treatment. Requires [rhizome#117](https://github.com/ybordag/rhizome/issues/117).
+Photos of the damage, before/after treatment. This gallery is part of the media endpoint work tracked in the blocked capability note below.
 
 ### Treatment plan section
 
@@ -53,14 +55,14 @@ The most important section on the page. Two paths offered in parallel:
 
 **Option A — Ask Rhizome** (primary): "Draft with Rhizome →" opens a Rhizome chat thread pre-seeded with the incident context. Rhizome generates a treatment plan draft, which appears here when complete.
 
-**Option B — Write your own**: "Write my own plan" opens a form with: approach summary, add-step interface (title, task type, estimated minutes, days from approval for each step), follow-up strategy. Calls `POST /api/v1/incidents/{id}/treatment/manual` *(rhizome#129)*.
+**Option B — Write your own**: "Write my own plan" opens a form with: approach summary, add-step interface (title, task type, estimated minutes, days from approval for each step), follow-up strategy. Calls `POST /api/v1/incidents/{id}/treatment/manual`.
 
 Once a plan exists (either source), this section shows:
 - Approach summary
 - Steps list with estimated minutes and sequencing (days from approval)
 - Follow-up strategy
 - Source badge: "Rhizome draft" or "User plan"
-- Edit button — `PATCH /api/v1/treatment-plans/{id}` *(rhizome#129)* — opens the step editor, available until approval
+- Edit button — `PATCH /api/v1/treatment-plans/{id}` — opens the step editor, available until approval
 - **Approve button** — `PATCH /api/v1/treatment-plans/{id}/approve` — auto-generates tasks for each step, locked after this
 - Delete draft button — only available pre-approval
 
@@ -72,18 +74,20 @@ Full event feed for this incident: creation, subject additions, treatment plan s
 
 ## API endpoints
 
-| Endpoint | Used for | Status |
-|---|---|---|
-| `GET /api/v1/incidents` | List (with all filters) | ✅ exists (filters require [#129](https://github.com/ybordag/rhizome/issues/129); JSON requires [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `POST /api/v1/incidents` | Create | ✅ |
-| `GET /api/v1/incidents/{id}` | Detail | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `PATCH /api/v1/incidents/{id}` | Edit | Blocked on [#129](https://github.com/ybordag/rhizome/issues/129) |
-| `DELETE /api/v1/incidents/{id}` | Delete | Blocked on [#129](https://github.com/ybordag/rhizome/issues/129) |
-| `PATCH /api/v1/incidents/{id}/resolve` | Resolve | ✅ |
-| `POST /api/v1/incidents/{id}/treatment` | AI treatment draft (Cambium AI trigger) | ✅ |
-| `POST /api/v1/incidents/{id}/treatment/manual` | Manual treatment plan | Blocked on [#129](https://github.com/ybordag/rhizome/issues/129) |
-| `GET /api/v1/incidents/{id}/treatment` | Get treatment plan | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
-| `PATCH /api/v1/treatment-plans/{id}` | Edit treatment steps | Blocked on [#129](https://github.com/ybordag/rhizome/issues/129) |
-| `PATCH /api/v1/treatment-plans/{id}/approve` | Approve → generate tasks | ✅ |
-| `DELETE /api/v1/treatment-plans/{id}` | Delete draft | Blocked on [#129](https://github.com/ybordag/rhizome/issues/129) |
-| `GET /api/v1/incidents/{id}/activity` | Activity history | ✅ (blocked on [#120](https://github.com/ybordag/rhizome/issues/120)) |
+| Endpoint | Used for |
+|---|---|
+| `GET /api/v1/incidents` | List (with all filters) |
+| `POST /api/v1/incidents` | Create |
+| `GET /api/v1/incidents/{id}` | Detail |
+| `PATCH /api/v1/incidents/{id}` | Edit |
+| `DELETE /api/v1/incidents/{id}` | Delete |
+| `PATCH /api/v1/incidents/{id}/resolve` | Resolve |
+| `POST /api/v1/incidents/{id}/treatment` | AI treatment draft (Cambium AI trigger) |
+| `POST /api/v1/incidents/{id}/treatment/manual` | Manual treatment plan |
+| `GET /api/v1/incidents/{id}/treatment` | Get treatment plan |
+| `PATCH /api/v1/treatment-plans/{id}` | Edit treatment steps |
+| `PATCH /api/v1/treatment-plans/{id}/approve` | Approve → generate tasks |
+| `DELETE /api/v1/treatment-plans/{id}` | Delete draft |
+| `GET /api/v1/incidents/{id}/activity` | Activity history |
+
+**Blocked capability:** incident media galleries depend on media attachment endpoints from rhizome#117.

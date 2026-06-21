@@ -1,6 +1,8 @@
 # Verdant Pages — Claude Code Memory
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-21
+
+This file is updated continuously as work happens, not just at phase boundaries — the "Currently working on" section below is the live record of what's in flight. There's no separate `docs/current_work/` history folder; `docs/roadmap/overview.md` carries the full per-phase plan and build record, and this file is the fast day-to-day pointer into it.
 
 ## What this is
 
@@ -58,11 +60,17 @@ src/
 │   ├── primitives/   Generic UI atoms (Button, Input, Modal, ...) — no domain knowledge
 │   └── shell/        AppShell, AppNav, NotificationDrawer, Toast, Breadcrumb
 ├── lib/
-│   ├── api/          apiFetch + domain modules (garden.ts, tasks.ts, ...) — EMPTY, Phase 4
-│   ├── auth/         AuthContext, useAuth — EMPTY, Phase 4
-│   ├── query/        QueryClient setup — EMPTY, Phase 4/5
-│   ├── sse/          consumeSSEStream() — EMPTY, Phase 4/6
-│   └── theme/        ThemeProvider — built, Phase 2
+│   ├── api/          client.ts + auth.ts built. 15/16 domain modules built (garden, plants,
+│   │                 tasks, calendar, shopping, search, alerts, notifications, interactions,
+│   │                 chat, triage, weather, incidents, projects, activity) — see docs/development/deferred-work.md
+│   │                 for the remaining media blocker and intentional non-contracts
+│   ├── auth/         AuthContext, useAuth — built, Phase 4
+│   ├── connectivity/ Offline detection (reportNetworkFailure/Success, useConnectivity) — built
+│   ├── query/        createQueryClient() — custom retry (skips ApiError, retries network
+│   │                 failures with a toast per attempt) — built
+│   ├── sse/          consumeSSEStream() + consumeNotificationStream() — built
+│   ├── theme/        ThemeProvider — built, Phase 2
+│   └── toast/        toastStore — generic module-level toast store — built
 ├── pages/            One file per route, 27 stubs today — built out per docs/pages/*.md, Phase 5+
 ├── routes/           router.tsx, ProtectedRoute.tsx
 ├── styles/           tokens.css (single source of truth), global.css, utilities.css
@@ -71,8 +79,8 @@ e2e/                  Playwright specs
 docs/                 Architecture decisions, page designs, roadmap — see docs/README.md
 ```
 
-`lib/api`, `lib/auth`, `lib/query`, `lib/sse` being empty is not an oversight —
-see [docs/development/deferred-work.md](docs/development/deferred-work.md).
+See [docs/development/deferred-work.md](docs/development/deferred-work.md)
+for the remaining intentional deferrals and re-enable conditions.
 
 ## Current status
 
@@ -80,24 +88,35 @@ see [docs/development/deferred-work.md](docs/development/deferred-work.md).
 |---|---|---|
 | 1 | Scaffold + build tooling | complete |
 | 2 | Tokens + theme + fonts | complete |
-| 3 | Primitives + app shell | complete (current — `cedar` branch) |
-| 4 | Auth + API client | not started — next up |
-| 5a–5e | Feature pages | not started |
-| 6a–6c | Today / Incidents / Agent chat | blocked on rhizome#120 P1 |
+| 3 | Primitives + app shell | complete |
+| 4 | Auth + API client | complete (`birch` branch) — auth core, 15/16 domain modules, SSE, and structured cleanup built; media intentionally deferred |
+| 5 | Chat and context (Agent chat, Today, Incidents, Activity) | not started — no real blockers |
+| 6 | Tasks and projects (Tasks, Calendar, Projects) | not started — no real blockers |
+| 7a–7b | Garden hub & objects, Plants | not started — no blockers |
+| 8 | App polish (Settings, Notifications, deploy) | not started — no blockers |
 
-Full detail: [docs/roadmap/overview.md](docs/roadmap/overview.md). Per-phase build records: [docs/current_work/](docs/current_work/).
+Renumbered 2026-06-21 — the old 5a–5e/6a–6c/7/8 split is gone; see [docs/roadmap/overview.md](docs/roadmap/overview.md) for why and the full per-phase detail, including what shipped along the way.
+
+## Currently working on
+
+- Phase 4 API implementation is complete: auth core, SSE, query/connectivity plumbing, and 15/16 domain modules are built and tested. `media.ts` remains intentionally deferred until rhizome#117 lands. `GET /triage/recommendations` is intentionally absent; use `getLatestTriage()`.
+- [rhizome#140](https://github.com/ybordag/rhizome/issues/140) closed (verified — code review, tests, live curl checks) — unblocked almost every previously-omitted function in `garden.ts`/`plants.ts`/`tasks.ts`: `updateGardenProfile`, `updateBed`, `createContainer`, `updateContainer`, `getPlant`, `createPlant`, `updatePlant`, `createPlantBatch`, `batchUpdatePlants`, `updateTask`, plus per-entity activity feeds (`getBedActivity`, `getContainerActivity`, `getPlantActivity`, `getBatchActivity`, `getTaskActivity`) and `updateTaskSeries`. `listTasksBlocked` and `batchRemovePlants` are now also built against structured backend responses, so the small structured endpoint cleanup bucket is closed.
+- [rhizome#141](https://github.com/ybordag/rhizome/issues/141) (streaming chat 200'd with zero bytes for every provider — sync-only LangGraph checkpointer), [rhizome#142](https://github.com/ybordag/rhizome/issues/142) (duplicate/internal chat-stream tokens), and [rhizome#135](https://github.com/ybordag/rhizome/issues/135) (incidents/treatment-plan structured JSON) are fixed and covered. Agent chat streaming is clear for Phase 5.
+- Offline banner + retry-visibility toasts built (2026-06-21): `lib/connectivity`, `lib/toast`, `lib/query` now hold real code. The notification-stream auto-reconnect-with-backoff that `error-handling.md` previously claimed was built actually wasn't (`stream.ts` had no reconnect logic) — corrected; it's spec'd, scheduled for Phase 8 (its only real dependency, rhizome#130, is closed). The chat SSE manual-retry button is also still deferred — documented in `docs/pages/05-agent.md`'s "Connection handling" section, but there's no chat UI yet to attach it to (that's Phase 5).
+- Roadmap re-planned 2026-06-21: most of the structured-JSON backlog (#132's split) closed since the original 5a–5e/6/7/8 phase plan was written, so phases were regrouped around product usability instead of backend-unblock order. See [docs/roadmap/overview.md](docs/roadmap/overview.md).
+- Latest verification: `npm run lint`, `npm run test:run` (323 Vitest tests), `npm run build`, and `npm run test:e2e` (20 Playwright tests) all pass on Node 24.
 
 ## Known issues / deferred work
 
-Untested primitives, empty `lib/` dirs, unwired `NotificationDrawer`/`Toast`,
-and the offline-banner/SSE-retry UI specified in `error-handling.md` are all
-*intentional* deferrals with documented re-enable conditions — see
-[docs/development/deferred-work.md](docs/development/deferred-work.md) before
-assuming any of these is a bug.
+Current intentional deferrals are documented in
+[docs/development/deferred-work.md](docs/development/deferred-work.md). The
+important ones: `media.ts` is blocked on rhizome#117; `NotificationDrawer` real
+content and notification-stream auto-reconnect are scheduled for Phase 8; SSE
+manual retry and 409 invalidation wait for real Phase 5+ UI flows.
 
 ## Architecture
 
-SPA: Vite + React 18 + TypeScript + React Router v7.
+SPA: Vite + React 19 + TypeScript + React Router v6.
 Auth: JWT access token in-memory (module variable), refresh token in httpOnly cookie.
       On every page load, POST /auth/refresh runs before the app renders.
 Server state: TanStack Query v5.
@@ -133,14 +152,14 @@ UI behavior) is fully specified in
 src/styles/tokens.css          — ALL design tokens (both themes). Single source of truth.
 src/lib/api/client.ts          — Base fetch wrapper, in-memory token, 401 handling, refresh retry.
 src/lib/auth/context.tsx       — AuthContext, useAuth hook.
-src/lib/sse/stream.ts          — consumeSSEStream() async generator.
+src/lib/sse/stream.ts          — consumeSSEStream() + consumeNotificationStream() async generators.
 src/routes/router.tsx          — All routes.
 src/routes/ProtectedRoute.tsx  — Auth guard.
 docs/                          — Architecture decisions and page design docs.
 
 ## Where to start
 
-Read docs/architecture/build-phases.md for the full phased plan.
+Read docs/roadmap/overview.md for the full phased plan.
 The architecture docs in docs/architecture/ cover every decision made.
 The page designs in docs/pages/ cover every page in the app.
 docs/README.md explains how the whole docs/ tree is organized if you're lost.

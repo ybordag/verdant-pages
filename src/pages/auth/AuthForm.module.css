@@ -1,0 +1,46 @@
+.field {
+  margin-bottom: 16px;
+}
+
+.error {
+  display: block;
+  margin-top: 5px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--clay);
+}
+
+.formError {
+  margin: 0 0 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--clay);
+}
+
+.notice {
+  margin: 0 0 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.submit {
+  width: 100%;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.toggle {
+  margin: 20px 0 0;
+  text-align: center;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.toggleLink {
+  color: var(--nav-accent);
+  text-decoration: none;
+}
+.toggleLink:hover { text-decoration: underline; }

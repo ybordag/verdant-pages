@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
 import {
-  Leaf, Sun, Moon, CheckSquare, Calendar, FolderOpen, AlertTriangle, Activity,
+  Leaf, Sun, CheckSquare, Calendar, FolderOpen, AlertTriangle, Activity,
   ChevronsLeft, MessageSquare, Plus, Play, Map, Flower2, LayoutGrid, Package,
-  User, Bell,
+  User, Bell, LogOut,
 } from 'lucide-react'
 import { useNav } from './NavContext'
-import { useTheme } from '@/lib/theme/ThemeProvider'
+import { useAuth } from '@/lib/auth/context'
+import ThemeToggle from '@/components/primitives/ThemeToggle/ThemeToggle'
 import s from './AppNav.module.css'
 
 interface NavItemProps {
@@ -140,8 +141,8 @@ function GardenProfileCard() {
 }
 
 function NavFooter() {
-  const { setDrawerOpen } = useNav()
-  const { toggleTheme, theme } = useTheme()
+  const { collapsed, setDrawerOpen } = useNav()
+  const { logout } = useAuth()
 
   return (
     <div className={s.footer}>
@@ -150,22 +151,12 @@ function NavFooter() {
         <span className={s.itemLabel}>Settings</span>
       </NavLink>
       <div className={s.footerRow}>
-        <button
-          className={s.themeToggle}
-          onClick={toggleTheme}
-          role="switch"
-          aria-checked={theme === 'light'}
-          aria-label="Toggle theme"
-          title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
-        >
-          <span className={s.themeTrack} data-theme={theme}>
-            <Sun size={13} className={theme === 'light' ? s.iconActive : s.iconInactive} />
-            <Moon size={13} className={theme === 'dark' ? s.iconActive : s.iconInactive} />
-            <span className={s.themeThumb} />
-          </span>
-        </button>
+        <ThemeToggle vertical={collapsed} />
         <button className={s.bellBtn} onClick={() => setDrawerOpen(true)} aria-label="Notifications">
           <Bell size={16} />
+        </button>
+        <button className={s.bellBtn} onClick={() => logout()} aria-label="Log out" title="Log out">
+          <LogOut size={16} />
         </button>
       </div>
     </div>

@@ -1,6 +1,6 @@
 # API Client
 
-**Last updated:** 2026-06-20
+**Last updated:** 2026-06-21
 
 All API communication goes through a single typed client layer in `src/lib/api/`. Page components never call `fetch()` directly — they use TanStack Query hooks that call these client functions.
 
@@ -105,30 +105,33 @@ export async function register(email: string, password: string): Promise<void>
 export async function logout(): Promise<void>
 export async function tryRefreshToken(): Promise<boolean>   // called by apiFetch on 401
 export async function getSession(): Promise<SessionResponse>
-export async function updateProfile(data: { preferred_provider?: string; preferred_model?: string }): Promise<SessionResponse>
-export async function changePassword(current: string, next: string): Promise<void>
 ```
 
 `login` and `register` call `setAccessToken(response.access_token)` and start the proactive refresh timer. `logout` calls `setAccessToken(null)` and clears the timer.
+
+Profile preference updates and password changes are intentionally not listed here yet; the Settings page tracks those as blocked on cambium#20.
 
 ---
 
 ## SSE stream
 
 ```typescript
-// src/lib/api/stream.ts
+// src/lib/sse/stream.ts
 
 export async function* consumeSSEStream(
   url: string,
   body: unknown,
+  signal?: AbortSignal,
 ): AsyncGenerator<SSEEvent> {
+  const token = getAccessToken();
   const res = await fetch(BASE + url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(body),
+    signal,
   });
 
   if (!res.ok || !res.body) throw new ApiError(res.status, null);
@@ -159,9 +162,11 @@ export async function* consumeSSEStream(
 Also used for the notification stream (GET, no body):
 
 ```typescript
-export async function* consumeNotificationStream(): AsyncGenerator<NotificationEvent> {
+export async function* consumeNotificationStream(signal?: AbortSignal): AsyncGenerator<NotificationEvent> {
+  const token = getAccessToken();
   const res = await fetch(BASE + '/api/v1/notifications/stream', {
-    headers: { Authorization: `Bearer ${accessToken}` },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    signal,
   });
   // same reader loop, yields NotificationEvent
 }
@@ -173,234 +178,9 @@ See [sse-streaming.md](sse-streaming.md) for full context.
 
 ## Domain modules
 
-Each module exports typed async functions. TanStack Query hooks wrap these — the modules themselves have no React dependency.
+Each module exports typed async functions. TanStack Query hooks wrap these; the modules themselves have no React dependency. The exported function catalog lives in [api-modules.md](api-modules.md).
 
-### `garden.ts`
-
-```typescript
-getGardenProfile(): Promise<GardenProfileView>
-updateGardenProfile(data: Partial<GardenProfileView>): Promise<GardenProfileView>
-getGardenLayout(): Promise<GardenLayoutView | null>           // rhizome#118
-
-listBeds(params?: { available?: boolean }): Promise<BedView[]>
-getBed(id: string): Promise<BedView>
-createBed(data: CreateBedRequest): Promise<BedView>
-updateBed(id: string, data: Partial<BedView>): Promise<BedView>
-deleteBed(id: string): Promise<void>
-getBedCareState(id: string): Promise<CareStateView>
-recordBedCare(id: string, data: CareRequest): Promise<CareRecordResult>  // rhizome#128
-
-listContainers(params?: { available?: boolean }): Promise<ContainerView[]>
-getContainer(id: string): Promise<ContainerView>
-createContainer(data: CreateContainerRequest): Promise<ContainerView>
-updateContainer(id: string, data: Partial<ContainerView>): Promise<ContainerView>
-deleteContainer(id: string): Promise<void>
-getContainerCareState(id: string): Promise<CareStateView>
-recordContainerCare(id: string, data: CareRequest): Promise<CareRecordResult>  // rhizome#128
-```
-
-### `plants.ts`
-
-```typescript
-listPlants(params?: PlantListParams): Promise<PlantSummaryView[]>
-  // params: status, project_id, batch_id, bed_id, container_id, location
-getPlant(id: string): Promise<PlantDetailView>
-createPlant(data: CreatePlantRequest): Promise<PlantDetailView>
-createPlantBatch(data: BatchCreateRequest): Promise<PlantSummaryView[]>
-updatePlant(id: string, data: Partial<PlantDetailView>): Promise<PlantDetailView>
-removePlant(id: string, reason: string): Promise<void>    // soft delete
-deletePlant(id: string): Promise<void>                    // hard delete
-getPlantCareState(id: string): Promise<CareStateView>
-recordPlantCare(id: string, data: CareRequest): Promise<CareRecordResult>  // rhizome#128
-getPlantActivity(id: string, params?: ActivityParams): Promise<ActivityEventView[]>
-```
-
-### `tasks.ts`
-
-```typescript
-listTasksDaily(params?: { project_id?: string; limit?: number }): Promise<DailyTaskView[]>
-listTasksDue(params?: { project_id?: string; days_ahead?: number }): Promise<DueTaskView[]>
-listTasksBlocked(): Promise<TaskSummaryView[]>
-listTasks(params: TaskListParams): Promise<TaskSummaryView[]>
-  // params: project_id?, type?, subject_type?, subject_id?, status?
-getTask(id: string): Promise<TaskDetailView>
-createTask(data: CreateTaskRequest): Promise<TaskDetailView>          // rhizome#112 ✅
-deleteTask(id: string): Promise<void>                                  // rhizome#112 ✅
-updateTask(id: string, data: Partial<TaskDetailView>): Promise<TaskDetailView>
-startTask(id: string, notes?: string): Promise<void>
-completeTask(id: string, data?: { actual_minutes?: number; notes?: string }): Promise<void>
-deferTask(id: string, data: { deferred_until: string; reason?: string }): Promise<void>
-skipTask(id: string, reason: string): Promise<void>
-getTaskBlockers(id: string): Promise<string>
-getTaskActivity(id: string, params?: ActivityParams): Promise<ActivityEventView[]>
-bulkUpdateTaskDates(projectId: string, updates: TaskDateUpdate[]): Promise<TaskSummaryView[]>  // rhizome#122
-createTaskDependency(taskId: string, blockingTaskId: string): Promise<void>                    // rhizome#121
-deleteTaskDependency(taskId: string, blockingTaskId: string): Promise<void>                    // rhizome#121
-createTaskSeries(data: CreateSeriesRequest): Promise<TaskSeriesView>                           // rhizome#113
-updateTaskSeries(id: string, data: Partial<TaskSeriesView>): Promise<TaskSeriesView>
-deleteTaskSeries(id: string, params?: { delete_pending_tasks?: boolean }): Promise<void>       // rhizome#113
-materializeSeries(): Promise<void>
-```
-
-### `projects.ts`
-
-```typescript
-listProjects(params?: { status?: string }): Promise<ProjectSummaryView[]>
-getProject(id: string): Promise<ProjectDetailView>
-createProject(data: CreateProjectRequest): Promise<ProjectSummaryView>
-updateProject(id: string, data: Partial<ProjectDetailView>): Promise<ProjectDetailView>
-deleteProject(id: string): Promise<void>
-getProjectProgress(id: string): Promise<ProjectProgressView>
-getProjectBrief(id: string): Promise<ProjectBriefView>
-updateProjectBrief(id: string, data: UpdateBriefRequest): Promise<ProjectBriefView>
-listProjectTasks(id: string, params?: { include_dependencies?: boolean }): Promise<TaskSummaryView[] | TaskGraphView>
-generateProjectTasks(id: string, threadId: string): Promise<ChatResponse>  // AI trigger
-listProjectProposals(id: string): Promise<ProposalSummaryView[]>
-getProjectProposal(id: string, proposalId: string): Promise<ProposalDetailView>
-acceptProjectProposal(id: string, proposalId: string): Promise<void>
-getProjectActivity(id: string, params?: ActivityParams): Promise<ActivityEventView[]>
-assignBedToProject(id: string, bedId: string): Promise<void>
-removeBedFromProject(id: string, bedId: string): Promise<void>
-assignContainerToProject(id: string, containerId: string): Promise<void>
-removeContainerFromProject(id: string, containerId: string): Promise<void>
-listProjectBeds(id: string): Promise<BedView[]>
-listProjectContainers(id: string): Promise<ContainerView[]>
-listProjectPlants(id: string): Promise<PlantSummaryView[]>
-// Expenses (rhizome#124)
-listProjectExpenses(id: string): Promise<ProjectExpenseView[]>
-createProjectExpense(id: string, data: CreateExpenseRequest): Promise<ProjectExpenseView>
-updateProjectExpense(id: string, expenseId: string, data: Partial<ProjectExpenseView>): Promise<ProjectExpenseView>
-deleteProjectExpense(id: string, expenseId: string): Promise<void>
-getProjectExpenseSummary(id: string): Promise<ExpenseSummaryView>
-// Shopping (rhizome#125)
-listProjectShopping(id: string): Promise<ShoppingItemView[]>
-```
-
-### `chat.ts`
-
-```typescript
-createThread(data: CreateThreadRequest): Promise<ThreadIDResponse>
-  // CreateThreadRequest: { thread_id, title?, project_id?, initial_context?: ContextObject[] }
-listThreads(params?: { limit?: number }): Promise<ThreadView[]>
-getThread(id: string): Promise<ThreadView>
-getThreadMessages(id: string): Promise<ThreadMessagesResponse>
-deleteThread(id: string): Promise<void>
-addThreadContext(threadId: string, data: ContextObject): Promise<void>      // rhizome#127
-removeThreadContext(threadId: string, subjectType: string, subjectId: string): Promise<void>  // rhizome#127
-
-// Streaming (returns async generators — used directly in components, not via TanStack Query)
-streamChat(threadId: string, message: string): AsyncGenerator<SSEEvent>
-streamResume(threadId: string, resolution: string): AsyncGenerator<SSEEvent>
-```
-
-### `triage.ts`
-
-```typescript
-runTriage(threadId: string): Promise<ChatResponse>       // AI trigger
-getLatestTriage(): Promise<TriageSnapshotView>
-getTriageRecommendations(): Promise<TriageSnapshotView>
-```
-
-### `weather.ts`
-
-```typescript
-getLatestWeather(): Promise<WeatherSnapshotView>
-refreshWeather(): Promise<WeatherSnapshotView>
-listWeatherImpactedTasks(params?: { project_id?: string }): Promise<WeatherImpactView[]>
-approveWeatherChangeset(changesetId: string): Promise<void>
-draftWeatherTasks(threadId: string): Promise<ChatResponse>  // AI trigger
-```
-
-### `incidents.ts`
-
-```typescript
-listIncidents(params?: IncidentListParams): Promise<IncidentView[]>
-  // params: project_id?, status?, severity?, incident_type?, since?, before?, subject_type?, subject_id?
-getIncident(id: string): Promise<IncidentDetailView>
-createIncident(data: CreateIncidentRequest): Promise<IncidentView>
-updateIncident(id: string, data: Partial<IncidentDetailView>): Promise<IncidentView>  // rhizome#129
-deleteIncident(id: string): Promise<void>                                               // rhizome#129
-resolveIncident(id: string): Promise<void>
-getIncidentTreatment(id: string): Promise<TreatmentPlanView>
-draftTreatmentPlan(id: string, threadId: string): Promise<ChatResponse>   // AI trigger
-createManualTreatmentPlan(id: string, data: CreateTreatmentRequest): Promise<TreatmentPlanView>  // rhizome#129
-updateTreatmentPlan(id: string, data: Partial<TreatmentPlanView>): Promise<TreatmentPlanView>    // rhizome#129
-deleteTreatmentPlan(id: string): Promise<void>                                                    // rhizome#129
-approveTreatmentPlan(planId: string): Promise<void>
-getIncidentActivity(id: string): Promise<ActivityEventView[]>
-```
-
-### `interactions.ts`
-
-```typescript
-getPendingInteraction(): Promise<InteractionEnvelopeView | null>
-listRecentInteractions(params?: { limit?: number }): Promise<InteractionEnvelopeView[]>
-getInteraction(id: string): Promise<InteractionEnvelopeView>
-resolveInteraction(id: string, data: { action: string; notes?: string }): Promise<void>
-```
-
-### `activity.ts`
-
-```typescript
-listActivity(params?: ActivityListParams): Promise<ActivityEventView[]>
-  // params: project_id?, subject_type?, event_type?, category?, since?, before_timestamp?, limit?
-getActivityStats(params: ActivityStatsParams): Promise<ActivityStatsView>
-  // params: since (required), before?, event_types?, project_id?, group_by?
-```
-
-### `alerts.ts`
-
-```typescript
-listAlerts(): Promise<MonitorAlertView[]>          // already returns structured JSON ✅
-dismissAlert(id: string): Promise<void>
-```
-
-### `notifications.ts`
-
-```typescript
-getNotifications(params?: { since?: string }): Promise<NotificationsSnapshot>  // rhizome#130
-// SSE stream (used directly, not via TanStack Query)
-streamNotifications(): AsyncGenerator<NotificationEvent>                         // rhizome#130
-```
-
-### `shopping.ts`
-
-```typescript
-listShopping(params?: ShoppingListParams): Promise<ShoppingItemView[]>  // rhizome#125
-  // params: status?, project_id?, category?, priority?
-createShoppingItem(data: CreateShoppingRequest): Promise<ShoppingItemView>
-updateShoppingItem(id: string, data: Partial<ShoppingItemView>): Promise<ShoppingItemView>
-deleteShoppingItem(id: string): Promise<void>
-purchaseShoppingItem(id: string): Promise<ShoppingItemView>
-```
-
-### `search.ts`
-
-```typescript
-search(params: { q: string; types?: string; limit?: number }): Promise<SearchResponse>  // rhizome#126
-  // Frontend parses "plant:tomatoes" → { q: "tomatoes", types: "plant" }
-```
-
-### `calendar.ts`
-
-```typescript
-listAnnotations(params: { since: string; before: string }): Promise<CalendarAnnotationView[]>  // rhizome#114
-createAnnotation(data: CreateAnnotationRequest): Promise<CalendarAnnotationView>
-updateAnnotation(id: string, data: Partial<CalendarAnnotationView>): Promise<CalendarAnnotationView>
-deleteAnnotation(id: string): Promise<void>
-```
-
-### `media.ts`
-
-```typescript
-// rhizome#117
-uploadMedia(file: File, purpose?: string): Promise<MediaView>
-deleteMedia(id: string): Promise<void>
-// Per-object attachments
-listObjectMedia(subjectType: string, subjectId: string): Promise<MediaView[]>
-attachMedia(subjectType: string, subjectId: string, mediaId: string): Promise<void>
-detachMedia(subjectType: string, subjectId: string, mediaId: string): Promise<void>
-```
+Keep this file focused on the API client architecture: token handling, fetch behavior, SSE, error handling, and type conventions.
 
 ---
 
@@ -441,7 +221,7 @@ export type NotificationEvent =
   | { type: 'job_failed'; job_id: string; title: string; error: string };
 ```
 
-### From Rhizome `agent/api/views.py` (P0 — implemented ✅)
+### From Rhizome `agent/api/views.py`
 
 ```typescript
 // src/lib/types/rhizome.ts
@@ -530,25 +310,66 @@ export interface ProjectSummaryView {
 export interface ProjectDetailView extends ProjectSummaryView {
   approved_plan?: Record<string, unknown>;
 }
+
+export interface TriageSnapshotView {
+  id: string; created_at: string;
+  reasoning_summary: string; user_focus_summary?: string;
+  weather_snapshot_id?: string;
+  urgent_tasks: TaskSummaryView[]; routine_tasks: TaskSummaryView[]; project_tasks: TaskSummaryView[];
+}
+
+export interface WeatherDayImpactView {
+  date: string; impact_type: string; severity: string; summary: string;
+  reason?: string; timing_advice?: string;
+}
+
+export interface WeatherRecommendedActionView { date: string; action: string }
+
+export interface WeatherSnapshotView {
+  id: string; created_at: string;
+  location_label: string; timezone: string;
+  forecast_start_date: string; forecast_end_date: string;
+  conditions_summary: string; alerts_summary?: string;
+  derived_impacts: WeatherDayImpactView[]; recommended_actions: WeatherRecommendedActionView[];
+}
+
+export interface WeatherImpactedTaskView {
+  task_id: string; task_title: string; project_id?: string;
+  impact_type: string; impact_kind: string; impact_date?: string; summary: string;
+}
+
+export interface WeatherTaskChangeSetView {
+  id: string; status: string; summary: string; weather_snapshot_id: string;
+  created_at: string; approved_at?: string;
+  affected_tasks: TaskSummaryView[];
+}
+
+export interface InteractionActionView {
+  id: string; label: string; kind: string;
+  style_hint: string; input_schema?: Record<string, unknown>[];
+}
+
+export interface InteractionEnvelopeView {
+  id: string; interaction_type: string; status: string;
+  title: string; summary: string; body?: string;
+  sections: Record<string, unknown>[]; actions: InteractionActionView[];
+  context: Record<string, unknown>;
+  created_at: string; resolved_at?: string;
+  resolution_action?: string; resolution_summary?: string;
+}
 ```
 
-### P1 types (pending rhizome#120 P1)
+### P1/P2 types (mostly shipped)
 
-These need to be added once the P1 view models land in Rhizome:
+`TriageSnapshotView`, weather views, `InteractionEnvelopeView`, incident/treatment views,
+activity views, project views, task series, ThreadView, and monitor alert views are now shipped and
+defined in `src/lib/types/rhizome.ts`. The remaining typed backend work is media views once
+rhizome#117 lands. The original umbrella issue, #132, was closed in favor of per-feature splits —
+see #132 for why.
 
 ```typescript
-// Still needed in views.py → types:
-TriageSnapshotView
-WeatherSnapshotView
-InteractionEnvelopeView
-IncidentView, IncidentDetailView
-TreatmentPlanView
-ActivityEventView
-ThreadView, ThreadMessagesResponse
-ProjectProgressView, ProjectBriefView
-ProposalSummaryView, ProposalDetailView
-TaskSeriesView
-MonitorAlertView
+// Still needed or pending cleanup:
+MediaView
 ```
 
 ---

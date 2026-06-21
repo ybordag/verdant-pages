@@ -36,6 +36,13 @@
 }
 .ghost:hover { background: var(--surface-muted); }
 
+.ghost-clay {
+  background: transparent;
+  color: var(--clay);
+  border-color: var(--clay);
+}
+.ghost-clay:hover { background: rgb(var(--clay-rgb) / 0.12); }
+
 .danger {
   background: var(--clay);
   color: #fff;
