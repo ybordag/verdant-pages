@@ -96,7 +96,8 @@ describe('ActivityPage', () => {
 
     await screen.findByText('Completed morning watering for container tomatoes.')
 
-    await userEvent.selectOptions(screen.getByLabelText('Category'), 'incident')
+    await userEvent.click(screen.getByRole('button', { name: 'Category' }))
+    await userEvent.click(screen.getByRole('option', { name: 'incident' }))
 
     expect(screen.getByText('Flagged aphid pressure on kale starts.')).toBeInTheDocument()
     expect(screen.queryByText('Completed morning watering for container tomatoes.')).not.toBeInTheDocument()
@@ -113,9 +114,12 @@ describe('ActivityPage', () => {
 
     await screen.findByText('Completed morning watering for container tomatoes.')
 
-    await userEvent.selectOptions(screen.getByLabelText('Subject'), 'plant')
-    await userEvent.type(screen.getByLabelText('Since'), '2026-06-20')
-    await userEvent.type(screen.getByLabelText('Before'), '2026-06-21')
+    await userEvent.click(screen.getByRole('button', { name: 'Subject' }))
+    await userEvent.click(screen.getByRole('option', { name: 'plant' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Since' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Since 06/20/2026' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Before' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Before 06/21/2026' }))
 
     expect(screen.getByText('Flagged aphid pressure on kale starts.')).toBeInTheDocument()
     expect(screen.queryByText('Updated cherry tomato transplant status.')).not.toBeInTheDocument()

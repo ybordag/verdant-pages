@@ -1,6 +1,5 @@
 import Button from '@/components/primitives/Button/Button'
-import Input from '@/components/primitives/Input/Input'
-import Select from '@/components/primitives/Select/Select'
+import { FilterDatePicker, FilterSelect, type FilterOption } from './FilterControls'
 import s from './FilterRail.module.css'
 
 export interface ActivityFilters {
@@ -18,6 +17,10 @@ interface FilterRailProps {
   subjectTypeOptions: string[]
   onChange: (filters: ActivityFilters) => void
   onReset: () => void
+}
+
+function toOptions(values: string[]): FilterOption[] {
+  return values.map((value) => ({ value, label: value.replaceAll('_', ' ') }))
 }
 
 function updateFilter(filters: ActivityFilters, key: keyof ActivityFilters, value: string): ActivityFilters {
@@ -44,48 +47,53 @@ export default function FilterRail({
       <div className={s.groups}>
         <label className={s.group}>
           <span className={s.label}>Category</span>
-          <Select value={filters.category} onChange={(event) => onChange(updateFilter(filters, 'category', event.target.value))}>
-            <option value="">All categories</option>
-            {categoryOptions.map((category) => (
-              <option key={category} value={category}>
-                {category.replaceAll('_', ' ')}
-              </option>
-            ))}
-          </Select>
+          <FilterSelect
+            label="Category"
+            value={filters.category}
+            placeholder="All categories"
+            options={toOptions(categoryOptions)}
+            onChange={(value) => onChange(updateFilter(filters, 'category', value))}
+          />
         </label>
 
         <label className={s.group}>
           <span className={s.label}>Event type</span>
-          <Select value={filters.eventType} onChange={(event) => onChange(updateFilter(filters, 'eventType', event.target.value))}>
-            <option value="">All event types</option>
-            {eventTypeOptions.map((eventType) => (
-              <option key={eventType} value={eventType}>
-                {eventType.replaceAll('_', ' ')}
-              </option>
-            ))}
-          </Select>
+          <FilterSelect
+            label="Event type"
+            value={filters.eventType}
+            placeholder="All event types"
+            options={toOptions(eventTypeOptions)}
+            onChange={(value) => onChange(updateFilter(filters, 'eventType', value))}
+          />
         </label>
 
         <label className={s.group}>
           <span className={s.label}>Subject</span>
-          <Select value={filters.subjectType} onChange={(event) => onChange(updateFilter(filters, 'subjectType', event.target.value))}>
-            <option value="">All subjects</option>
-            {subjectTypeOptions.map((subjectType) => (
-              <option key={subjectType} value={subjectType}>
-                {subjectType.replaceAll('_', ' ')}
-              </option>
-            ))}
-          </Select>
+          <FilterSelect
+            label="Subject"
+            value={filters.subjectType}
+            placeholder="All subjects"
+            options={toOptions(subjectTypeOptions)}
+            onChange={(value) => onChange(updateFilter(filters, 'subjectType', value))}
+          />
         </label>
 
         <label className={s.group}>
           <span className={s.label}>Since</span>
-          <Input type="date" value={filters.since} onChange={(event) => onChange(updateFilter(filters, 'since', event.target.value))} />
+          <FilterDatePicker
+            label="Since"
+            value={filters.since}
+            onChange={(value) => onChange(updateFilter(filters, 'since', value))}
+          />
         </label>
 
         <label className={s.group}>
           <span className={s.label}>Before</span>
-          <Input type="date" value={filters.before} onChange={(event) => onChange(updateFilter(filters, 'before', event.target.value))} />
+          <FilterDatePicker
+            label="Before"
+            value={filters.before}
+            onChange={(value) => onChange(updateFilter(filters, 'before', value))}
+          />
         </label>
       </div>
     </aside>

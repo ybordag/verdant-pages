@@ -1,9 +1,11 @@
 .feed {
   min-width: 0;
+  width: 100%;
 }
 
 .state {
   display: flex;
+  width: 100%;
   min-height: 240px;
   flex-direction: column;
   justify-content: center;
