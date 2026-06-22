@@ -45,6 +45,20 @@ describe('chat API', () => {
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/threads/thread-1/messages')
   })
 
+  it('getThreadSessionContext fetches the structured session context', async () => {
+    await chat.getThreadSessionContext('thread-1')
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/threads/thread-1/session-context')
+  })
+
+  it('updateThreadSessionContext patches the structured session context', async () => {
+    const data = { available_minutes: 45, energy_level: 'low' as const, focus_project_id: null }
+    await chat.updateThreadSessionContext('thread-1', data)
+    expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/threads/thread-1/session-context', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  })
+
   it('deleteThread issues a DELETE', async () => {
     await chat.deleteThread('thread-1')
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/threads/thread-1', { method: 'DELETE' })
@@ -65,9 +79,9 @@ describe('chat API', () => {
   })
 
   it('streamChat delegates to consumeSSEStream with the thread_id query param and message body', () => {
-    chat.streamChat('thread-1', 'hello')
+    chat.streamChat('thread 1', 'hello')
     expect(stream.consumeSSEStream).toHaveBeenCalledWith(
-      '/api/v1/chat/stream?thread_id=thread-1',
+      '/api/v1/chat/stream?thread_id=thread%201',
       { message: 'hello' },
       undefined,
     )

@@ -122,6 +122,8 @@ createThread(data: CreateThreadRequest): Promise<ThreadIDResponse>
 listThreads(params?: { limit?: number }): Promise<ThreadView[]>
 getThread(id: string): Promise<ThreadView>
 getThreadMessages(id: string): Promise<ThreadMessagesResponse>
+getThreadSessionContext(id: string): Promise<SessionContextView>
+updateThreadSessionContext(id: string, data: UpdateSessionContextRequest): Promise<SessionContextView>
 deleteThread(id: string): Promise<void>
 addThreadContext(threadId: string, data: ContextObject): Promise<void>
 removeThreadContext(threadId: string, subjectType: string, subjectId: string): Promise<void>

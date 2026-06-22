@@ -1,6 +1,6 @@
 # Agent — Rhizome Chat
 
-**Last updated:** 2026-06-21
+**Last updated:** 2026-06-22
 
 ## Pages in this group
 
@@ -43,7 +43,7 @@ A persistent narrow strip at the top of the chat area (below the topbar) showing
 
 **Left — Startup intake:** Rhizome should expose three structured session context values: "How much time do you have?", "What's your energy level?", and "What do you want to focus on?" Display them as compact tiles. These ground Rhizome's recommendations for the session.
 
-Current backend note: Rhizome infers time/energy/focus from opener text internally, but Verdant does not yet have a structured thread/session intake contract to read or update. Tracked as rhizome#146. In Phase 5, render the strip with "Not set" / inferred-summary placeholders until the backend contract lands; do not invent client-only state that Rhizome cannot use.
+Current backend note: rhizome#146 is complete. Rhizome persists structured thread session context and exposes GET/PATCH session-context routes internally. Verdant's normal API path is still waiting on cambium#23 to proxy those routes as `/api/v1/threads/{id}/session-context`; until then, render honest "Not set" / unavailable placeholders and do not invent client-only state that Rhizome cannot use.
 
 **Right — System status:** Weather snapshot timestamp, count of pending reviews needing approval. Clicking the review count jumps to the interaction panel.
 
@@ -179,7 +179,10 @@ Rhizome can reference these directly without the user re-describing them. The su
 |---|---|
 | `POST /api/v1/threads` | Create thread (+ initial_context) |
 | `GET /api/v1/threads?limit=20` | Thread list in topbar |
+| `GET /api/v1/threads/{id}` | Load active thread metadata |
 | `GET /api/v1/threads/{id}/messages` | Load thread history |
+| `GET /api/v1/threads/{id}/session-context` | Load structured startup/session context once cambium#23 lands |
+| `PATCH /api/v1/threads/{id}/session-context` | Save user-edited session context once editing is enabled |
 | `DELETE /api/v1/threads/{id}` | Delete thread |
 | `POST /api/v1/chat/stream` | Send message (SSE) |
 | `POST /api/v1/chat/resume/stream` | Resume after interaction approval |

@@ -1,6 +1,13 @@
 import { apiFetch } from './client'
 import { consumeSSEStream } from '@/lib/sse/stream'
-import type { ContextObject, CreateThreadRequest, ThreadMessagesResponse, ThreadView } from '@/lib/types/rhizome'
+import type {
+  ContextObject,
+  CreateThreadRequest,
+  SessionContextView,
+  ThreadMessagesResponse,
+  ThreadView,
+  UpdateSessionContextRequest,
+} from '@/lib/types/rhizome'
 import type { SSEEvent, ThreadIDResponse } from '@/lib/types/cambium'
 
 export function createThread(data: CreateThreadRequest): Promise<ThreadIDResponse> {
@@ -20,6 +27,17 @@ export function getThreadMessages(id: string): Promise<ThreadMessagesResponse> {
   return apiFetch(`/api/v1/threads/${id}/messages`)
 }
 
+export function getThreadSessionContext(id: string): Promise<SessionContextView> {
+  return apiFetch(`/api/v1/threads/${id}/session-context`)
+}
+
+export function updateThreadSessionContext(
+  id: string,
+  data: UpdateSessionContextRequest,
+): Promise<SessionContextView> {
+  return apiFetch(`/api/v1/threads/${id}/session-context`, { method: 'PATCH', body: JSON.stringify(data) })
+}
+
 export function deleteThread(id: string): Promise<void> {
   return apiFetch(`/api/v1/threads/${id}`, { method: 'DELETE' })
 }
@@ -33,7 +51,7 @@ export function removeThreadContext(threadId: string, subjectType: string, subje
 }
 
 export function streamChat(threadId: string, message: string, signal?: AbortSignal): AsyncGenerator<SSEEvent> {
-  return consumeSSEStream(`/api/v1/chat/stream?thread_id=${threadId}`, { message }, signal)
+  return consumeSSEStream(`/api/v1/chat/stream?thread_id=${encodeURIComponent(threadId)}`, { message }, signal)
 }
 
 export function streamResume(threadId: string, resolution: string, signal?: AbortSignal): AsyncGenerator<SSEEvent> {

@@ -158,7 +158,7 @@ See [deferred-work.md](../development/deferred-work.md) for the full breakdown o
 
 **Deliverable:** Agent chat fully functional end to end (streaming, interaction approval, context-aware entry from other pages), Today page live with real briefing data, Incidents fully CRUD-able with the treatment plan flow, and the global Activity feed with filtering. This phase deliberately exercises the full stack — auth, SSE, multi-page context-passing — before building out the rest of the app, and gives a way to both *direct* Rhizome (chat) and *verify* what it did (Activity).
 
-**No real blockers left.** #136 (interactions), #126/#127 (search + pinned context), #135 (incidents), #141 (SSE streaming), #142 (duplicate/internal chat-stream tokens), and #134 (global activity) are all closed.
+**No real blockers left for core 5b chat.** #136 (interactions), #126/#127 (search + pinned context), #135 (incidents), #141 (SSE streaming), #142 (duplicate/internal chat-stream tokens), #134 (global activity), and rhizome#146 (structured thread session context) are all closed. The only active follow-up for the SessionStrip is cambium#23, which must proxy Rhizome's session-context routes before Verdant can read/write those values through the normal API path.
 
 ### Agent chat (Rhizome)
 
@@ -166,7 +166,7 @@ See [deferred-work.md](../development/deferred-work.md) for the full breakdown o
 
 `/app/rhizome` is the thread home. It does not silently auto-create a thread. With no threads, show a blank new-thread composer state; with existing threads, show a scrollable recent-thread list plus a new-thread entrypoint. `Upload Photo` is omitted until media endpoints land. The model selector lives in the topbar; it displays `preferred_provider`/`preferred_model` from session now and becomes editable once cambium#20 lands.
 
-Startup intake remains a backend contract gap tracked as rhizome#146: Rhizome infers time/energy/focus from opener text internally, but Verdant needs a structured thread/session intake shape to display and edit those values in `SessionStrip`.
+Startup intake is now structured in Rhizome via rhizome#146. Verdant has typed client wrappers ready for `GET/PATCH /api/v1/threads/{id}/session-context`, but the UI should treat this as read-only/placeholder data until cambium#23 lands and proxies those routes.
 
 **Smoke test:** Send a message → tokens stream in real time; receive an interaction event → panel slides open with review card; accept a proposal → stream resumes, follow-up message appears; "Ask Rhizome about Cherry Tomatoes" from plant detail → opens pre-seeded thread.
 

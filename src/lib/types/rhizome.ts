@@ -707,13 +707,14 @@ export interface ResolveInteractionRequest {
 // ---------------------------------------------------------------------------
 
 export interface ThreadView {
-  id: string
+  thread_id: string
   title?: string
   project_id?: string
   last_message_preview?: string
   last_active_at?: string
   message_count: number
   pinned_context: ContextObject[]
+  session_context?: SessionContextView | null
   created_at: string
 }
 
@@ -731,6 +732,27 @@ export interface CreateThreadRequest {
   title?: string
   project_id?: string
   initial_context?: ContextObject[]
+}
+
+export interface SessionContextView {
+  available_minutes?: number | null
+  energy_level?: 'low' | 'medium' | 'high' | null
+  focus_project_id?: string | null
+  focus_label?: string | null
+  preferred_location_type?: 'bed' | 'container' | null
+  open_to_outdoor_work?: boolean | null
+  wants_quick_wins?: boolean | null
+  source: 'unset' | 'inferred' | 'user'
+  updated_at?: string | null
+}
+
+export interface UpdateSessionContextRequest {
+  available_minutes?: number | null
+  energy_level?: 'low' | 'medium' | 'high' | null
+  focus_project_id?: string | null
+  preferred_location_type?: 'bed' | 'container' | null
+  open_to_outdoor_work?: boolean | null
+  wants_quick_wins?: boolean | null
 }
 
 // ---------------------------------------------------------------------------
