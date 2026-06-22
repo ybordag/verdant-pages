@@ -203,6 +203,10 @@ export default function RhizomePage() {
             Ask <span>Rhizome</span>
           </h1>
         </div>
+        <Button size="sm" type="button" onClick={() => navigate('/app/rhizome')}>
+          <Plus size={14} />
+          New
+        </Button>
       </header>
 
       <section
@@ -232,10 +236,6 @@ export default function RhizomePage() {
                   >
                     <PanelLeftClose size={16} />
                   </button>
-                  <Button size="sm" type="button" onClick={() => navigate('/app/rhizome')}>
-                    <Plus size={14} />
-                    New
-                  </Button>
                 </div>
               </div>
 
@@ -250,20 +250,6 @@ export default function RhizomePage() {
                 <div className={s.railState}>Threads are unavailable right now.</div>
               ) : hasThreads ? (
                 <nav className={s.threadList} aria-label="Recent threads">
-                  <Link
-                    className={[s.threadRow, isNewThread ? s.activeThread : '']
-                      .filter(Boolean)
-                      .join(' ')}
-                    to="/app/rhizome"
-                  >
-                    <span className={s.threadIcon}>
-                      <Plus size={15} />
-                    </span>
-                    <span>
-                      <strong>New thread</strong>
-                      <small>Start with a blank composer</small>
-                    </span>
-                  </Link>
                   {threads.map((thread) => (
                     <Link
                       className={[s.threadRow, thread.thread_id === threadId ? s.activeThread : '']
@@ -272,9 +258,6 @@ export default function RhizomePage() {
                       key={thread.thread_id}
                       to={`/app/rhizome/${encodeURIComponent(thread.thread_id)}`}
                     >
-                      <span className={s.threadIcon}>
-                        <MessageSquare size={15} />
-                      </span>
                       <span>
                         <strong>{threadTitle(thread)}</strong>
                         <small>{threadPreview(thread)}</small>

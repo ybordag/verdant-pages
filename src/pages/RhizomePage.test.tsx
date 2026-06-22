@@ -149,14 +149,18 @@ describe('RhizomePage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Look through more threads' }))
     expect(await screen.findByRole('heading', { name: 'Threads' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /New thread/i })).toHaveAttribute(
-      'href',
-      '/app/rhizome',
-    )
+    expect(screen.queryByRole('link', { name: /New thread/i })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Rosemary container plan/i })).toHaveAttribute(
       'href',
       '/app/rhizome/thread-4',
     )
+  })
+
+  it('uses the page-level new button to return to a blank thread', async () => {
+    renderRhizome('/app/rhizome/thread-1')
+
+    await userEvent.click(screen.getByRole('button', { name: 'New' }))
+    expect(await screen.findByText('Start a thread when you are ready.')).toBeInTheDocument()
   })
 
   it('uses the selected thread from the recent-thread list', async () => {

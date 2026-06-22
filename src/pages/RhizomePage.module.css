@@ -165,20 +165,16 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 7px;
   min-height: 0;
   overflow: auto;
 }
 
 .threadRow {
-  display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
-  gap: 9px;
-  align-items: start;
-  border: 1px solid transparent;
-  border-radius: var(--radius-soft);
+  display: block;
+  border: 0;
+  border-bottom: 1px solid var(--line-subtle);
   color: var(--text-secondary);
-  padding: 9px;
+  padding: 9px 2px;
   text-decoration: none;
 }
 
@@ -187,18 +183,8 @@
 }
 
 .activeThread {
-  border-color: var(--nav-accent);
-  background: var(--nav-active-bg);
+  border-bottom-color: var(--nav-accent);
   color: var(--text-primary);
-}
-
-.threadIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  color: var(--nav-accent);
 }
 
 .threadRow strong {
@@ -223,7 +209,8 @@
 }
 
 .threadRow time {
-  grid-column: 2;
+  display: block;
+  margin-top: 6px;
   color: var(--text-muted);
   font-family: var(--font-label);
   font-size: 9px;
@@ -467,23 +454,22 @@
 
 .recentThreads {
   display: grid;
-  gap: 7px;
-  width: min(460px, 100%);
+  width: min(760px, 94%);
   margin-top: 14px;
+  border-top: 1px solid var(--line-subtle);
+  text-align: left;
 }
 
 .recentThreads a {
   display: block;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-soft);
+  border-bottom: 1px solid var(--line-subtle);
   color: var(--text-secondary);
-  padding: 9px 11px;
+  padding: 8px 0;
   text-align: left;
   text-decoration: none;
 }
 
 .recentThreads a:hover {
-  border-color: var(--nav-accent);
   background: var(--surface-muted);
 }
 
@@ -508,6 +494,7 @@
 
 .recentThreads button {
   justify-self: center;
+  margin-top: 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
   background: transparent;
