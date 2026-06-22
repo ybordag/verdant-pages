@@ -24,14 +24,11 @@ Three vertical regions:
 │  Startup intake: Time 45min · Energy Medium · Focus Seeds   │  (open when  │
 │  System status: Weather snapshot · 3 pending reviews        │  pending     │
 ├──────────────────────────────────────────────────────────────┤  interactions│
-│  CONTEXT STRIP (if any objects pinned)                       │  exist)      │
-│  🌱 Cherry Tomatoes  📋 Inspect tomatoes task  ×  + Add     │              │
-├──────────────────────────────────────────────────────────────┤              │
 │  CHAT THREAD                                                 │              │
 │  (scrollable, dot-grid background)                           │              │
 │                                                              │              │
 ├──────────────────────────────────────────────────────────────┤              │
-│  COMPOSER: "Ask Rhizome..."                     [Send]       │              │
+│  COMPOSER: [+] context tray + "Ask Rhizome..."  [Send]       │              │
 └──────────────────────────────────────────────────────────────┴──────────────┘
 ```
 
@@ -61,24 +58,33 @@ The active thread page (`/app/rhizome/:threadId`) keeps a compact thread switche
 
 ---
 
-## Context strip
+## Composer context
 
-Visible only when at least one object is pinned. A horizontal strip of entity chips between the session strip and the chat thread.
+Context is assembled where the user asks Rhizome for help: inside the composer. The composer has a `+` button in its lower control row. Clicking it expands a context tray upward from the message box without leaving the chat.
 
-Each chip: small entity type icon (plant/bed/task/project/incident), entity name, `×` remove button. Active chips are highlighted.
+The tray contains:
 
-**`+ Add context` button** opens the context search modal.
+- a compact search input for plants, beds, containers, tasks, projects, and incidents
+- selected context chips with entity type, readable label, and `×` remove
+- empty/loading/error states that keep the composer usable
 
-**Context search modal:**
+There are two context lifetimes:
 
-A full-screen-overlay search input. Supports two modes:
+- **Attached context** belongs to the outgoing message. This is the default for context chosen before the first message in a blank thread. Sending creates the thread with `initial_context`.
+- **Pinned context** belongs to the thread and remains available on future turns. In an existing thread, context added through the composer is pinned immediately with `POST /api/v1/threads/{id}/context`.
 
-- **Unified search:** type any text → searches across plants, beds, containers, tasks, projects, incidents simultaneously → results grouped by type with entity icon, name, secondary label (location/status), faint type badge
-- **Typed search:** prefix the query with an entity type — `plant:tomatoes`, `task:water`, `incident:aphids`, `project:summer` → narrows results to that type only, autosuggest fires on each keystroke
+Search supports two modes:
 
-Selecting a result pins it as a context chip. Multiple objects can be pinned.
+- **Unified search:** type any text → searches across object types → results grouped by type with entity icon, name, secondary label, and type badge.
+- **Typed search:** prefix the query with an entity type — `plant:tomatoes`, `task:water`, `incident:aphids`, `project:summer` → narrows results to that type.
 
 Source: `GET /api/v1/search?q=X&types=Y`
+
+Future polish:
+
+- Inline object references in the message body. Typing `plant:` or `task:` opens an autocomplete popover. Selecting a result inserts a chip/token instead of raw text.
+- Action suggestions. Typing an action Rhizome can perform, such as create/log/run/plan, can show a small intent popover similar to plan affordances in Codex.
+- Agent-authored object links. When Rhizome references a plant/task/project/incident, the message can render a clickable object reference. Clicking opens the right inspection panel with `Add to message context`, `Pin to thread`, and `Open full page`.
 
 ---
 
@@ -110,6 +116,8 @@ Status line below: zone + model indicator ("Zone 9b · Rhizome is listening").
 
 **Model selector:** A compact selector belongs in the topbar, not the composer. It shows provider + model from `GET /auth/session` (`preferred_provider`, `preferred_model`) and saves changes through `PATCH /auth/profile` when cambium#20 lands. Until that endpoint exists, render the current provider/model as read-only with a disabled selector affordance and a tooltip.
 
+**Context controls:** The composer control row owns the context `+` button. The old standalone context strip is a first-pass implementation detail and should not remain the primary context UI.
+
 ---
 
 ## Connection handling
@@ -119,7 +127,7 @@ SSE is the only transport for chat (`streamChat`/`streamResume` — see [sse-str
 - **Connection never opens / drops before any token arrives:** no auto-retry. Show "Connection failed — try again" in the composer area with a manual retry button. Resubmitting a half-sent message automatically would be worse than asking the user to re-trigger it.
 - **Connection drops mid-stream** (after some tokens, before a `{ type: "done" }` event): the consuming component must track a local `sawDone` flag. If the generator returns without it ever being set, treat the response as incomplete — append "⚠ response may be incomplete" rather than presenting partial tokens as the full answer.
 
-Phase 5b now implements the first-pass workbench path: the Send button enables when the draft has text, Enter submits and Shift+Enter inserts a newline, `/app/rhizome` creates a thread only when the first message is sent, uses Cambium's returned thread id, and streams the assistant response into an in-progress Rhizome bubble. Stream failures render an attention banner under the thread title row with retry. The active-thread view also renders the dedicated session-context display/edit controls, the themed read-only model selector, the first-pass pending interaction review panel with resume streaming, and pinned context search/add/remove.
+Phase 5b now implements the first-pass workbench path: the Send button enables when the draft has text, Enter submits and Shift+Enter inserts a newline, `/app/rhizome` creates a thread only when the first message is sent, uses Cambium's returned thread id, and streams the assistant response into an in-progress Rhizome bubble. Stream failures render an attention banner under the thread title row with retry. The active-thread view also renders the dedicated session-context display/edit controls, the themed read-only model selector, the first-pass pending interaction review panel with resume streaming, and composer-based context search/add/remove.
 
 ---
 
@@ -161,7 +169,7 @@ The Rhizome page can be entered from any other page in the app with pre-loaded c
 
 ---
 
-## Pinned context — how Rhizome uses it
+## Context — how Rhizome uses it
 
 When the user sends a message in a thread with pinned context, `session_context_intake` loads the current state of all pinned objects and prepends them to the session context:
 

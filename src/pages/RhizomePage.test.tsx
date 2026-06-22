@@ -435,13 +435,14 @@ describe('RhizomePage', () => {
     expect(await screen.findByText('Decision saved.')).toBeInTheDocument()
   })
 
-  it('adds and removes pinned context through search', async () => {
+  it('adds and removes pinned context through the composer tray', async () => {
     const user = userEvent.setup()
     renderRhizome('/app/rhizome/thread-1')
 
-    expect(await screen.findByLabelText('Pinned context')).toHaveTextContent('No pinned context')
     await user.click(screen.getByRole('button', { name: 'Add context' }))
-    expect(await screen.findByRole('dialog', { name: 'Add context' })).toBeInTheDocument()
+    expect(await screen.findByLabelText('Pinned context')).toHaveTextContent(
+      'Search below or type a prefix like plant:tomato.',
+    )
 
     await user.type(screen.getByLabelText('Search context'), 'tom')
     expect(await screen.findByRole('button', { name: /Cherry Tomato/i })).toBeInTheDocument()
@@ -451,15 +452,46 @@ describe('RhizomePage', () => {
       expect(mocks.addThreadContext).toHaveBeenCalledWith('thread-1', {
         subject_type: 'plant',
         subject_id: 'plant-1',
+        label: 'Cherry Tomato',
       }),
     )
-    expect(await screen.findByText('Plant plant-1')).toBeInTheDocument()
+    expect(await screen.findByText('Cherry Tomato')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Remove Plant plant-1 context' }))
+    await user.click(screen.getByRole('button', { name: 'Remove Cherry Tomato context' }))
     await waitFor(() =>
       expect(mocks.removeThreadContext).toHaveBeenCalledWith('thread-1', 'plant', 'plant-1'),
     )
-    expect(screen.getByLabelText('Pinned context')).toHaveTextContent('No pinned context')
+    expect(screen.getByLabelText('Pinned context')).toHaveTextContent(
+      'Search below or type a prefix like plant:tomato.',
+    )
+  })
+
+  it('attaches context before creating a first thread', async () => {
+    const user = userEvent.setup()
+    mocks.listThreads.mockResolvedValue([])
+    mocks.getThreadMessages.mockResolvedValue({ thread_id: 'thread-new', messages: [] })
+    renderRhizome()
+
+    await user.click(screen.getByRole('button', { name: 'Add context' }))
+    expect(await screen.findByLabelText('Attached context')).toBeInTheDocument()
+    await user.type(screen.getByLabelText('Search context'), 'plant:tom')
+    await user.click(await screen.findByRole('button', { name: /Cherry Tomato/i }))
+    expect(await screen.findByText('Cherry Tomato')).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Message Rhizome'), 'How is this plant doing?')
+    await user.click(screen.getByRole('button', { name: /Send/i }))
+
+    await waitFor(() =>
+      expect(mocks.createThread).toHaveBeenCalledWith({
+        initial_context: [
+          {
+            subject_type: 'plant',
+            subject_id: 'plant-1',
+            label: 'Cherry Tomato',
+          },
+        ],
+      }),
+    )
   })
 
   it('creates a thread on first send and renders the streamed response', async () => {

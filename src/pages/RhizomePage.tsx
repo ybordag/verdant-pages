@@ -47,6 +47,7 @@ const RECENT_THREAD_LIMIT = 3
 const EMPTY_THREADS: ThreadView[] = []
 const EMPTY_CONTEXT: ContextObject[] = []
 const EMPTY_SEARCH_RESULTS: SearchResultItemView[] = []
+const CONTEXT_TYPES = new Set(['plant', 'bed', 'container', 'task', 'project', 'incident'])
 
 type EnergyLevel = NonNullable<SessionContextView['energy_level']>
 type LocationType = NonNullable<SessionContextView['preferred_location_type']>
@@ -125,7 +126,17 @@ function sessionFocusLabel(context?: SessionContextView): string {
 }
 
 function contextLabel(context: ContextObject): string {
+  if (context.label?.trim()) return context.label
   return `${titleCase(context.subject_type)} ${context.subject_id}`
+}
+
+function parseContextSearchTerm(term: string): { q: string; types?: string } {
+  const trimmed = term.trim()
+  const typedMatch = trimmed.match(/^([a-z_]+):(.*)$/i)
+  if (!typedMatch) return { q: trimmed }
+  const type = typedMatch[1].toLowerCase()
+  if (!CONTEXT_TYPES.has(type)) return { q: trimmed }
+  return { q: typedMatch[2].trim(), types: type }
 }
 
 function interactionTypeLabel(type: string): string {
@@ -184,8 +195,9 @@ export default function RhizomePage() {
   const [sessionDraft, setSessionDraft] = useState<SessionDraft>(EMPTY_SESSION_DRAFT)
   const [sessionError, setSessionError] = useState<string | null>(null)
   const [interactionNotes, setInteractionNotes] = useState('')
-  const [contextSearchOpen, setContextSearchOpen] = useState(false)
+  const [contextTrayOpen, setContextTrayOpen] = useState(false)
   const [contextSearchTerm, setContextSearchTerm] = useState('')
+  const [pendingInitialContext, setPendingInitialContext] = useState<ContextObject[]>([])
   const streamControllerRef = useRef<AbortController | null>(null)
 
   const threadsQuery = useQuery({
@@ -217,10 +229,11 @@ export default function RhizomePage() {
     queryKey: ['interactions', 'pending'],
     queryFn: getPendingInteraction,
   })
+  const parsedContextSearch = parseContextSearchTerm(contextSearchTerm)
   const contextSearchQuery = useQuery({
-    queryKey: ['search', 'context', contextSearchTerm],
-    queryFn: () => search({ q: contextSearchTerm.trim(), limit: 8 }),
-    enabled: contextSearchOpen && contextSearchTerm.trim().length >= 2,
+    queryKey: ['search', 'context', parsedContextSearch.types ?? 'all', parsedContextSearch.q],
+    queryFn: () => search({ ...parsedContextSearch, limit: 8 }),
+    enabled: contextTrayOpen && parsedContextSearch.q.length >= 2,
   })
   const updateSessionMutation = useMutation({
     mutationFn: (data: UpdateSessionContextRequest) =>
@@ -239,8 +252,6 @@ export default function RhizomePage() {
     mutationFn: (context: ContextObject) => addThreadContext(threadId ?? '', context),
     onSuccess: (_data, context) => {
       updateThreadContextCache(context, 'add')
-      setContextSearchOpen(false)
-      setContextSearchTerm('')
     },
   })
   const removeContextMutation = useMutation({
@@ -254,6 +265,7 @@ export default function RhizomePage() {
   const activeThread = activeThreadFromList ?? activeThreadQuery.data
   const sessionContext = sessionContextQuery.data
   const pinnedContext = activeThread?.pinned_context ?? EMPTY_CONTEXT
+  const composerContext = threadId ? pinnedContext : pendingInitialContext
   const pendingInteraction = streamInteraction ?? pendingInteractionQuery.data ?? null
   const messages = (messagesQuery.data?.messages ?? []).filter((message) => {
     const type = message.type ?? message.role
@@ -276,6 +288,15 @@ export default function RhizomePage() {
   const currentModelValue = currentModelLabel === 'Model not set' ? '' : 'current'
   const currentModelOptions =
     currentModelValue === 'current' ? [{ value: currentModelValue, label: currentModelLabel }] : []
+  const groupedContextResults = useMemo(() => {
+    const groups = new Map<string, SearchResultItemView[]>()
+    for (const result of contextSearchQuery.data?.results ?? EMPTY_SEARCH_RESULTS) {
+      const items = groups.get(result.subject_type) ?? []
+      items.push(result)
+      groups.set(result.subject_type, items)
+    }
+    return Array.from(groups.entries())
+  }, [contextSearchQuery.data?.results])
 
   useEffect(() => {
     return () => streamControllerRef.current?.abort()
@@ -335,12 +356,41 @@ export default function RhizomePage() {
     queryClient.setQueryData<ThreadView>(['threads', threadId], (thread) => (thread ? updateThread(thread) : thread))
   }
 
-  function pinContext(result: SearchResultItemView) {
-    if (!threadId) return
-    addContextMutation.mutate({
+  function contextFromSearchResult(result: SearchResultItemView): ContextObject {
+    return {
       subject_type: result.subject_type,
       subject_id: result.subject_id,
+      label: result.label,
+    }
+  }
+
+  function addContextFromSearchResult(result: SearchResultItemView) {
+    const context = contextFromSearchResult(result)
+    if (!threadId) {
+      setPendingInitialContext((current) => {
+        const exists = current.some(
+          (item) => item.subject_type === context.subject_type && item.subject_id === context.subject_id,
+        )
+        return exists ? current : [...current, context]
+      })
+      setContextSearchTerm('')
+      return
+    }
+    addContextMutation.mutate(context, {
+      onSuccess: () => setContextSearchTerm(''),
     })
+  }
+
+  function removeComposerContext(context: ContextObject) {
+    if (!threadId) {
+      setPendingInitialContext((current) =>
+        current.filter(
+          (item) => item.subject_type !== context.subject_type || item.subject_id !== context.subject_id,
+        ),
+      )
+      return
+    }
+    removeContextMutation.mutate(context)
   }
 
   async function resumeInteraction(action: InteractionActionView) {
@@ -415,9 +465,12 @@ export default function RhizomePage() {
 
     try {
       if (!targetThreadId) {
-        const createdThread = await createThread({})
+        const createdThread = await createThread(
+          pendingInitialContext.length > 0 ? { initial_context: pendingInitialContext } : {},
+        )
         targetThreadId = createdThread.thread_id
         navigate(`/app/rhizome/${encodeURIComponent(targetThreadId)}`)
+        setPendingInitialContext([])
       }
 
       const userMessage: ThreadMessageView = { role: 'user', content: message, type: 'human' }
@@ -773,39 +826,6 @@ export default function RhizomePage() {
             </div>
           )}
 
-          {threadId ? (
-            <div className={s.contextStrip} aria-label="Pinned context">
-              {pinnedContext.length > 0 ? (
-                pinnedContext.map((context) => (
-                  <span
-                    className={s.contextChip}
-                    key={`${context.subject_type}-${context.subject_id}`}
-                  >
-                    <span>{contextLabel(context)}</span>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${contextLabel(context)} context`}
-                      disabled={removeContextMutation.isPending}
-                      onClick={() => removeContextMutation.mutate(context)}
-                    >
-                      <X size={12} />
-                    </button>
-                  </span>
-                ))
-              ) : (
-                <span className={s.contextEmpty}>No pinned context</span>
-              )}
-              <button
-                className={s.addContextButton}
-                type="button"
-                onClick={() => setContextSearchOpen(true)}
-              >
-                <Plus size={13} />
-                Add context
-              </button>
-            </div>
-          ) : null}
-
           <div className={s.threadBody}>
             {threadId && activeThreadQuery.isLoading ? (
               <div className={s.emptyChat}>Loading thread</div>
@@ -897,22 +917,124 @@ export default function RhizomePage() {
               void submitMessage()
             }}
           >
-            <Textarea
-              aria-label="Message Rhizome"
-              placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault()
-                  void submitMessage()
-                }
-              }}
-            />
-            <Button type="submit" disabled={!canSend}>
-              <Send size={15} />
-              {isStreaming ? 'Sending' : 'Send'}
-            </Button>
+            {contextTrayOpen ? (
+              <div className={s.composerContextTray} aria-label={threadId ? 'Pinned context' : 'Attached context'}>
+                <div className={s.composerContextHeader}>
+                  <div>
+                    <span>{threadId ? 'Pinned context' : 'Attached context'}</span>
+                    <small>
+                      {threadId
+                        ? 'Available to Rhizome on every turn in this thread.'
+                        : 'Sent with the first message when the thread is created.'}
+                    </small>
+                  </div>
+                  <button
+                    aria-label="Close context tray"
+                    type="button"
+                    onClick={() => setContextTrayOpen(false)}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+
+                <div className={s.composerContextChips}>
+                  {composerContext.length > 0 ? (
+                    composerContext.map((context) => (
+                      <span
+                        className={s.contextChip}
+                        key={`${context.subject_type}-${context.subject_id}`}
+                      >
+                        <em>{context.subject_type}</em>
+                        <span>{contextLabel(context)}</span>
+                        <button
+                          type="button"
+                          aria-label={`Remove ${contextLabel(context)} context`}
+                          disabled={removeContextMutation.isPending}
+                          onClick={() => removeComposerContext(context)}
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <span className={s.contextEmpty}>
+                      Search below or type a prefix like plant:tomato.
+                    </span>
+                  )}
+                </div>
+
+                <label className={s.composerContextSearch}>
+                  <Search size={14} />
+                  <input
+                    aria-label="Search context"
+                    placeholder="Search context, or use plant:, task:, project:, incident:..."
+                    value={contextSearchTerm}
+                    onChange={(event) => setContextSearchTerm(event.target.value)}
+                  />
+                </label>
+
+                <div className={s.composerContextResults}>
+                  {contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2 ? (
+                    <div className={s.contextSearchState}>Type at least two characters after the prefix.</div>
+                  ) : contextSearchQuery.isLoading ? (
+                    <div className={s.contextSearchState}>Searching context</div>
+                  ) : contextSearchQuery.isError ? (
+                    <div className={s.contextSearchState}>Context search is unavailable.</div>
+                  ) : groupedContextResults.length > 0 ? (
+                    groupedContextResults.map(([type, results]) => (
+                      <section className={s.contextResultGroup} key={type}>
+                        <h3>{titleCase(type)}</h3>
+                        {results.map((result) => (
+                          <button
+                            key={`${result.subject_type}-${result.subject_id}`}
+                            type="button"
+                            className={s.contextResult}
+                            disabled={addContextMutation.isPending}
+                            onClick={() => addContextFromSearchResult(result)}
+                          >
+                            <span>
+                              <strong>{result.label}</strong>
+                              <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
+                            </span>
+                            <em>{result.subject_type}</em>
+                          </button>
+                        ))}
+                      </section>
+                    ))
+                  ) : parsedContextSearch.q.length >= 2 ? (
+                    <div className={s.contextSearchState}>No context found.</div>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+
+            <div className={s.composerInputRow}>
+              <button
+                aria-expanded={contextTrayOpen}
+                aria-label={contextTrayOpen ? 'Close context tray' : 'Add context'}
+                className={s.composerAddContext}
+                type="button"
+                onClick={() => setContextTrayOpen((open) => !open)}
+              >
+                <Plus size={16} />
+              </button>
+              <Textarea
+                aria-label="Message Rhizome"
+                placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault()
+                    void submitMessage()
+                  }
+                }}
+              />
+              <Button type="submit" disabled={!canSend}>
+                <Send size={15} />
+                {isStreaming ? 'Sending' : 'Send'}
+              </Button>
+            </div>
           </form>
         </section>
 
@@ -985,69 +1107,6 @@ export default function RhizomePage() {
         ) : null}
       </section>
 
-      {contextSearchOpen ? (
-        <div
-          className={s.contextSearchBackdrop}
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setContextSearchOpen(false)
-          }}
-        >
-          <section className={s.contextSearchModal} role="dialog" aria-label="Add context">
-            <header>
-              <div>
-                <p className={s.eyebrow}>Pinned context</p>
-                <h2>Add context</h2>
-              </div>
-              <button
-                aria-label="Close context search"
-                className={s.iconButton}
-                type="button"
-                onClick={() => setContextSearchOpen(false)}
-              >
-                <X size={16} />
-              </button>
-            </header>
-            <label className={s.contextSearchField}>
-              <Search size={15} />
-              <input
-                autoFocus
-                aria-label="Search context"
-                placeholder="Search plants, beds, tasks, projects, or incidents..."
-                value={contextSearchTerm}
-                onChange={(event) => setContextSearchTerm(event.target.value)}
-              />
-            </label>
-            <div className={s.contextResults}>
-              {contextSearchTerm.trim().length < 2 ? (
-                <div className={s.contextSearchState}>Type at least two characters.</div>
-              ) : contextSearchQuery.isLoading ? (
-                <div className={s.contextSearchState}>Searching context</div>
-              ) : contextSearchQuery.isError ? (
-                <div className={s.contextSearchState}>Context search is unavailable.</div>
-              ) : (contextSearchQuery.data?.results ?? EMPTY_SEARCH_RESULTS).length > 0 ? (
-                (contextSearchQuery.data?.results ?? EMPTY_SEARCH_RESULTS).map((result) => (
-                  <button
-                    key={`${result.subject_type}-${result.subject_id}`}
-                    type="button"
-                    className={s.contextResult}
-                    disabled={addContextMutation.isPending}
-                    onClick={() => pinContext(result)}
-                  >
-                    <span>
-                      <strong>{result.label}</strong>
-                      <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
-                    </span>
-                    <em>{result.subject_type}</em>
-                  </button>
-                ))
-              ) : (
-                <div className={s.contextSearchState}>No context found.</div>
-              )}
-            </div>
-          </section>
-        </div>
-      ) : null}
     </main>
   )
 }

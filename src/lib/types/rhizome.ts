@@ -733,6 +733,7 @@ export interface ThreadMessagesResponse {
 export interface ContextObject {
   subject_type: string
   subject_id: string
+  label?: string
 }
 
 export interface CreateThreadRequest {
