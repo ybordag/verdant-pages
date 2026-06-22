@@ -714,7 +714,7 @@ export interface ThreadView {
   last_active_at?: string
   message_count: number
   pinned_context: ContextObject[]
-  session_context?: SessionContextView | null
+  session_context?: Record<string, unknown> | null
   created_at: string
 }
 

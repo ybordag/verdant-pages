@@ -43,7 +43,7 @@ A persistent narrow strip at the top of the chat area (below the topbar) showing
 
 **Left — Startup intake:** Rhizome should expose three structured session context values: "How much time do you have?", "What's your energy level?", and "What do you want to focus on?" Display them as compact tiles. These ground Rhizome's recommendations for the session.
 
-Current backend note: rhizome#146 is complete. Rhizome persists structured thread session context and exposes GET/PATCH session-context routes internally. Verdant's normal API path is still waiting on cambium#23 to proxy those routes as `/api/v1/threads/{id}/session-context`; until then, render honest "Not set" / unavailable placeholders and do not invent client-only state that Rhizome cannot use.
+Current backend note: rhizome#146 is complete and Cambium now proxies `GET/PATCH /api/v1/threads/{id}/session-context`. Verdant should use the dedicated `SessionContextView` endpoint for SessionStrip display/edit flows. `ThreadView.session_context`, when present on thread metadata, is Rhizome's raw stored JSON and is not the frontend display/edit contract.
 
 **Right — System status:** Weather snapshot timestamp, count of pending reviews needing approval. Clicking the review count jumps to the interaction panel.
 
@@ -181,7 +181,7 @@ Rhizome can reference these directly without the user re-describing them. The su
 | `GET /api/v1/threads?limit=20` | Thread list in topbar |
 | `GET /api/v1/threads/{id}` | Load active thread metadata |
 | `GET /api/v1/threads/{id}/messages` | Load thread history |
-| `GET /api/v1/threads/{id}/session-context` | Load structured startup/session context once cambium#23 lands |
+| `GET /api/v1/threads/{id}/session-context` | Load structured startup/session context |
 | `PATCH /api/v1/threads/{id}/session-context` | Save user-edited session context once editing is enabled |
 | `DELETE /api/v1/threads/{id}` | Delete thread |
 | `POST /api/v1/chat/stream` | Send message (SSE) |
