@@ -194,6 +194,17 @@ Startup intake is now structured in Rhizome via rhizome#146. Verdant has typed c
 
 **5a status:** Implemented on `sugar-maple`. Activity history intentionally uses lazy infinite scroll instead of numbered pagination; the page consumes Rhizome's `before_timestamp` cursor through a scroll sentinel so users can scan backward through the journal without leaving the current filter context. Coverage includes API query construction, page-level filter/date validation, activity feed states, event row rendering, custom filter controls, infinite-scroll observer behavior, cursor pagination with duplicate suppression, filter reset after pagination, and mocked Playwright E2E for busy feeds, filter queries, invalid date guards, dropdown/calendar close behavior, mobile overflow, and stale-response races. An opt-in live backend activity smoke exists behind `VERDANT_LIVE_ACTIVITY_E2E=1`.
 
+#### 5b implementation slices
+
+1. **Contract and blocker audit:** Align chat/thread types and docs with the closed Rhizome session-context work, add Verdant wrappers for `GET/PATCH /threads/{id}/session-context`, and track Cambium proxy follow-up separately.
+2. **Workbench shell and thread home:** Replace the placeholder `/app/rhizome` with the thread rail, blank new-thread state, recent-thread list, selected-thread route shell, read-only model display, and honest session-context placeholders.
+3. **Message history and composer:** Load `/threads/{id}/messages`, render user/Rhizome bubbles with day separators and empty/error states, and prepare first-message/new-thread behavior without silently creating threads.
+4. **Streaming send/resume:** Wire `streamChat`, token accumulation, cancellation, stream-complete handling, and basic error recovery for user-submitted messages.
+5. **Thread switcher and responsive polish:** Add the compact active-thread switcher, mobile/tablet layout states, keyboard focus behavior, and selected-thread navigation polish.
+6. **Test and live smoke pass:** Add focused component/page coverage plus an opt-in live Cambium/Rhizome smoke for real streaming with the available providers.
+
+**5b status:** Slices 1-2 are implemented and pushed on `red-maple`. `/app/rhizome` now has an API-backed workbench shell, recent-thread list, no-thread/new-thread state, active thread route shell, read-only model display, and placeholder SessionStrip values while cambium#23 remains open.
+
 ### Today page
 
 `TodayConditionsPanel` (weather), `RhizomeBriefingPanel` (triage + inline `InteractionCard` for pending approvals), `TodayOverviewPanel` (projects + `MiniCalendar`), `TodayTasksStrip` (top 5 with quick-complete), `ThisWeekStrip`. **Page:** `TodayPage`
