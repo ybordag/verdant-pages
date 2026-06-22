@@ -1,6 +1,6 @@
 # Activity — Global Feed
 
-**Last updated:** 2026-06-21
+**Last updated:** 2026-06-22
 
 ## Purpose
 
@@ -11,6 +11,8 @@ Per-object history is surfaced on each object's detail page using the same `Obje
 ---
 
 ## Page (`/app/activity`)
+
+**Status:** Phase 5a implemented on `sugar-maple`. The page is wired to real `GET /api/v1/activity` data, custom Verdant-themed filters/date pickers, lazy infinite scroll, loading/error/empty states, mobile overflow coverage, and focused unit/component/E2E tests.
 
 ### Layout
 
@@ -23,6 +25,8 @@ Filter rail (left) + activity feed (main, infinite scroll).
 - **Since / Before:** date range pickers
 - **Subject:** plant/bed/container/project picker — filters to events involving a specific object
 
+Date filters validate before querying: `Since` cannot be in the future, and `Before` must be after `Since`.
+
 ### Activity feed
 
 Cursor-paginated, newest first. Each row:
@@ -32,7 +36,9 @@ Cursor-paginated, newest first. Each row:
 - Actor label — "Rhizome" or "You"
 - Affected objects as clickable chips (navigate to detail page)
 
-Infinite scroll via `before_timestamp` cursor. "Load more" fallback for accessibility.
+Sentinel-driven infinite scroll fetches older events with the `before_timestamp` cursor. Each page appends to the feed while de-duping by event id so overlapping cursor responses do not duplicate rows.
+
+**Decision:** Activity history uses lazy infinite scroll rather than numbered pagination. This page is a chronological journal/audit trail, so the primary workflow is scanning backward through time while preserving filter context. Numbered pages would add navigation chrome without giving the user a meaningful page number model. The backend still exposes cursor-style pagination through `before_timestamp`; Verdant consumes that cursor through a scroll sentinel.
 
 ### API coverage
 
@@ -55,8 +61,14 @@ Used in two places:
 
 ```typescript
 interface ObjectActivityFeedProps {
-  endpoint: string;          // '/api/v1/activity' or '/api/v1/garden/plants/:id/activity'
-  showFilters?: boolean;     // true on full page, false on detail page sections
-  limit?: number;            // default 20
+  events: ActivityEventView[]
+  isLoading?: boolean
+  error?: string | null
+  hasMore?: boolean
+  isFetchingMore?: boolean
+  onRetry?: () => void
+  onLoadMore?: () => void
 }
 ```
+
+The page owns API querying and filter state. `ObjectActivityFeed` stays presentational so it can be reused later with object-scoped activity endpoints.

@@ -49,9 +49,39 @@ Unit-tested (fake `ReadableStream`, no live backend needed for these): token ord
 
 **What's deferred:** No `coverage` config (v8/istanbul) is set up in `vite.config.ts`. There's no CI gate preventing a coverage regression.
 
-**Why deferred:** Coverage thresholds are only meaningful once there's a stable baseline of real feature code to measure against. Gating on coverage during Phase 1–3 (scaffold and shell) would mostly just penalize legitimate stub pages.
+**Why deferred:** Coverage thresholds are only meaningful once there's a stable baseline of real feature code to measure against. Gating on coverage during Phase 1–3 (scaffold and shell) would mostly just penalize legitimate stub pages. Phase 5a now has enough real Activity coverage to make visibility useful, but there is still no CI gate to enforce thresholds consistently.
 
-**Re-enable when:** Phase 4 lands with its own tests (auth, API client) — this has now happened (323 Vitest tests + 20 Playwright tests at completion, including audit passes that closed gaps in `auth.ts`, `NavContext`, `ThemeToggle`, `AppNav`, `NotificationDrawer`, `PasswordStrengthMeter`, and direct token refresh behavior). Still no `@vitest/coverage-v8` wired into `vite.config.ts`'s `test` block, and no CI to gate on it (CI itself is also on hold — see project notes). Worth adding the coverage tool itself now to get visibility, but hold off on enforcing a threshold until CI exists to enforce it against.
+**Re-enable when:** Add `@vitest/coverage-v8` once CI is introduced or once Phase 5 has at least two built pages, whichever comes first. Start with report-only coverage; enforce thresholds only after CI exists and there is a stable baseline across real pages, not stubs.
+
+---
+
+### Activity visual regression tests
+
+**What's deferred:** No screenshot/visual-regression tests for `/app/activity` light/dark mode, desktop/mobile layout, custom dropdowns, or the calendar popover.
+
+**Why deferred:** The functional coverage is now strong: Activity has focused tests for API params, page state, `FilterControls`, `ActivityEventRow`, `ObjectActivityFeed`, `useInfiniteSentinel`, pagination, invalid date guards, and mocked Playwright E2E for busy feeds, filter/reset behavior, mobile overflow, stale-response races, and dropdown/calendar close behavior. Screenshot assertions need either a stable visual baseline workflow or a deliberate Playwright screenshot policy; adding brittle screenshots ad hoc would create review noise without a clear update process.
+
+**Re-enable when:** Before merging the final `sugar-maple` PR or during Phase 5f hardening, pick a visual baseline policy and add Activity screenshots for: desktop light, desktop dark, mobile light, mobile dark, dropdown open, and calendar open.
+
+---
+
+### Broader Playwright browser matrix
+
+**What's deferred:** Playwright still runs only Desktop Chrome/Chromium by default. There is no Firefox, WebKit, tablet, or dedicated mobile project in `playwright.config.ts`.
+
+**Why deferred:** Phase 5a needed fast iteration on one page, and the current Activity E2E includes an explicit mobile viewport overflow check inside Chromium. Adding a full browser/device matrix now would slow every local E2E run before the other Phase 5 pages exist.
+
+**Re-enable when:** Phase 5f hardening starts, or sooner if another page introduces browser-sensitive behavior. At minimum add a mobile project and one non-Chromium project for the core Phase 5 smoke paths.
+
+---
+
+### Activity live backend smoke by default
+
+**What's deferred:** `e2e/activity.spec.ts` includes a live backend smoke test, but it is skipped unless `VERDANT_LIVE_ACTIVITY_E2E=1` is set with Cambium/Rhizome running.
+
+**Why deferred:** The default E2E path should be runnable without local backend state. The mocked route fixtures cover UI behavior deterministically; the live smoke exists to catch contract drift when the full stack is available.
+
+**Re-enable when:** There is a reliable seeded full-stack test environment. Then move the live Activity smoke into the default pre-merge suite, or into a separate required integration job.
 
 ---
 

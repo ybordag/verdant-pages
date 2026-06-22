@@ -176,12 +176,23 @@ Startup intake remains a backend contract gap tracked as rhizome#146: Rhizome in
 
 | Subphase | Branch | Tangible output | Smoke test |
 |---|---|---|---|
-| 5a Activity foundation | `sugar-maple` | `FilterRail`, `ObjectActivityFeed`, `ActivityPage` with real `GET /api/v1/activity` data and cursor pagination | Global feed renders recent events; category filter narrows results; Load more uses `before_timestamp` |
+| 5a Activity foundation | `sugar-maple` | `FilterRail`, `ObjectActivityFeed`, `ActivityPage` with real `GET /api/v1/activity` data and lazy infinite scroll | Global feed renders recent events; category filter narrows results; scrolling loads older events via `before_timestamp` |
 | 5b Thread home and streaming chat | `red-maple` | `/app/rhizome` thread home/list, `/app/rhizome/:threadId`, composer, streaming messages, topbar thread switcher, read-only model display | No-thread state can start a thread; existing threads are selectable; sending a message streams tokens and ends cleanly |
 | 5c Interactions and context | `silver-maple` | Interaction panel, compact interaction summaries, resume stream actions, context strip/search/pinning, context-aware entry modal | Pending interaction opens review panel; approve resumes stream; adding/removing context updates chips and backend |
 | 5d Incidents and treatment plans | `japanese-maple` | Incidents list/detail/new route, filters, manual treatment plan editor, Rhizome draft trigger, approve/resolve flows | Create incident; add manual plan; approve plan generates tasks; resolve incident updates status |
 | 5e Today page integration | `vine-maple` | Real Today page using weather, latest triage, pending interactions, active projects, top tasks, mini calendar | Today shows real briefing/conditions/tasks; pending interaction is actionable; links navigate to Rhizome/Tasks/Calendar |
 | 5f Phase 5 hardening | `bigleaf-maple` | Cross-page polish, loading/error/empty states, E2E coverage for core Phase 5 flows, docs finalization | Full Phase 5 smoke suite passes against live Cambium/Rhizome |
+
+#### 5a implementation slices
+
+1. **API and shape audit:** Confirm `activity.ts`, `ActivityEventView`, supported list params, and existing tests. Fix small API/type drift before UI work.
+2. **Static Activity page skeleton:** Replace the placeholder `/app/activity` with the final responsive layout using local sample data: left `FilterRail`, main chronological feed, event rows, and loading/empty/error placeholders.
+3. **Real data wiring:** Connect `ActivityPage` to `listActivity()`, including initial load, loading state, error/retry, empty state, and real event rendering.
+4. **Filters:** Wire the filter rail to supported activity query params, starting with category, event type, since/before dates, and reset behavior.
+5. **Lazy infinite scroll:** Add sentinel-driven pagination using `before_timestamp`, appending results without duplicates while preserving active filters.
+6. **Test and polish pass:** Add focused API/page/component coverage for rendering, filters, retry, empty state, and pagination; finish responsive polish and update docs to mark 5a implemented.
+
+**5a status:** Implemented on `sugar-maple`. Activity history intentionally uses lazy infinite scroll instead of numbered pagination; the page consumes Rhizome's `before_timestamp` cursor through a scroll sentinel so users can scan backward through the journal without leaving the current filter context. Coverage includes API query construction, page-level filter/date validation, activity feed states, event row rendering, custom filter controls, infinite-scroll observer behavior, cursor pagination with duplicate suppression, filter reset after pagination, and mocked Playwright E2E for busy feeds, filter queries, invalid date guards, dropdown/calendar close behavior, mobile overflow, and stale-response races. An opt-in live backend activity smoke exists behind `VERDANT_LIVE_ACTIVITY_E2E=1`.
 
 ### Today page
 
@@ -199,7 +210,7 @@ Build this one deliberately thin at first — real data for everything above, bu
 
 ### Activity
 
-`ActivityPage` — `FilterRail` (category, event_type, date range, subject picker) + `ObjectActivityFeed` (full-page variant, `showFilters: true`). The same `ObjectActivityFeed` component is reused (not rebuilt) on every other detail page across later phases.
+`ActivityPage` — `FilterRail` (category, event_type, date range, subject picker) + presentational `ObjectActivityFeed`. The page owns querying/filter state; the same feed component is reused (not rebuilt) on every other detail page across later phases with object-scoped activity data.
 
 **Smoke test:** Global feed shows recent events across all objects; filtering by category shows only those event types; infinite scroll loads more via `before_timestamp` cursor.
 
