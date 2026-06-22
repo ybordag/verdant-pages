@@ -198,10 +198,12 @@ Startup intake is now structured in Rhizome via rhizome#146. Verdant has typed c
 
 1. **Contract and blocker audit:** Align chat/thread types and docs with the closed Rhizome session-context work, add Verdant wrappers for `GET/PATCH /threads/{id}/session-context`, and track Cambium proxy follow-up separately.
 2. **Workbench shell and thread home:** Replace the placeholder `/app/rhizome` with the thread rail, blank new-thread state, recent-thread list, selected-thread route shell, read-only model display, and honest session-context placeholders.
-3. **Message history and composer:** Load `/threads/{id}/messages`, render user/Rhizome bubbles with day separators and empty/error states, and prepare first-message/new-thread behavior without silently creating threads.
-4. **Streaming send/resume:** Wire `streamChat`, token accumulation, cancellation, stream-complete handling, and basic error recovery for user-submitted messages.
-5. **Thread switcher and responsive polish:** Add the compact active-thread switcher, mobile/tablet layout states, keyboard focus behavior, and selected-thread navigation polish.
-6. **Test and live smoke pass:** Add focused component/page coverage plus an opt-in live Cambium/Rhizome smoke for real streaming with the available providers.
+3. **Message history and composer prep:** Load `/threads/{id}/messages`, render user/Rhizome bubbles with day separators, loading/error/empty states, and keep the composer prepared but not fully streaming yet.
+4. **New thread creation and first message flow:** From `/app/rhizome`, submitting the first message creates a thread, navigates to `/app/rhizome/:threadId`, and hands the message to the streaming path. The page must not silently create a thread on load.
+5. **Streaming send flow:** Wire `streamChat` with optimistic user bubbles, streaming Rhizome bubbles, token accumulation, done state, cancellation, and basic error recovery.
+6. **Resume and interaction basics:** Handle `interaction` SSE events enough to surface a minimal inline/review-panel summary, and wire `streamResume` only as far as needed for approve/confirm. Rich interaction management remains a 5c concern.
+7. **Thread switcher and responsive polish:** Add the compact active-thread switcher, mobile/tablet layout states, keyboard focus behavior, overflow handling, and selected-thread navigation polish.
+8. **5b test and live smoke pass:** Add focused component/page coverage for route loads, fallback `getThread`, history rendering, composer state, stream races/cancel/error, plus an opt-in live Cambium/Rhizome smoke for real streaming with the available providers.
 
 **5b status:** Slices 1-2 are implemented and pushed on `red-maple`. `/app/rhizome` now has an API-backed workbench shell, recent-thread list, no-thread/new-thread state, active thread route shell, read-only model display, and placeholder SessionStrip values while cambium#23 remains open.
 
