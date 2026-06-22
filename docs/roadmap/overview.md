@@ -192,7 +192,7 @@ Startup intake remains a backend contract gap tracked as rhizome#146: Rhizome in
 5. **Lazy infinite scroll:** Add sentinel-driven pagination using `before_timestamp`, appending results without duplicates while preserving active filters.
 6. **Test and polish pass:** Add focused API/page/component coverage for rendering, filters, retry, empty state, and pagination; finish responsive polish and update docs to mark 5a implemented.
 
-**5a status:** Implemented on `sugar-maple`. Coverage includes API query construction, page-level filter/date validation, activity feed states, event row rendering, custom filter controls, infinite-scroll observer behavior, cursor pagination with duplicate suppression, filter reset after pagination, and mocked Playwright E2E for busy feeds, filter queries, invalid date guards, dropdown/calendar close behavior, mobile overflow, and stale-response races. An opt-in live backend activity smoke exists behind `VERDANT_LIVE_ACTIVITY_E2E=1`.
+**5a status:** Implemented on `sugar-maple`. Activity history intentionally uses lazy infinite scroll instead of numbered pagination; the page consumes Rhizome's `before_timestamp` cursor through a scroll sentinel so users can scan backward through the journal without leaving the current filter context. Coverage includes API query construction, page-level filter/date validation, activity feed states, event row rendering, custom filter controls, infinite-scroll observer behavior, cursor pagination with duplicate suppression, filter reset after pagination, and mocked Playwright E2E for busy feeds, filter queries, invalid date guards, dropdown/calendar close behavior, mobile overflow, and stale-response races. An opt-in live backend activity smoke exists behind `VERDANT_LIVE_ACTIVITY_E2E=1`.
 
 ### Today page
 
@@ -210,7 +210,7 @@ Build this one deliberately thin at first — real data for everything above, bu
 
 ### Activity
 
-`ActivityPage` — `FilterRail` (category, event_type, date range, subject picker) + `ObjectActivityFeed` (full-page variant, `showFilters: true`). The same `ObjectActivityFeed` component is reused (not rebuilt) on every other detail page across later phases.
+`ActivityPage` — `FilterRail` (category, event_type, date range, subject picker) + presentational `ObjectActivityFeed`. The page owns querying/filter state; the same feed component is reused (not rebuilt) on every other detail page across later phases with object-scoped activity data.
 
 **Smoke test:** Global feed shows recent events across all objects; filtering by category shows only those event types; infinite scroll loads more via `before_timestamp` cursor.
 
