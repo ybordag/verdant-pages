@@ -559,8 +559,7 @@
   justify-content: space-between;
   gap: 10px;
   overflow: hidden;
-  border-bottom: 1px solid rgb(var(--clay-rgb) / 0.62);
-  border-top: 0;
+  border-block: 0;
   background: rgb(var(--clay-rgb) / 0.12);
   color: var(--text-primary);
   font-size: 12px;
@@ -568,9 +567,9 @@
   padding: 11px 16px;
 }
 
-.streamError::before {
+.streamError::before,
+.streamError::after {
   position: absolute;
-  inset: 0 auto auto 0;
   width: 100%;
   height: 1px;
   background: linear-gradient(
@@ -589,6 +588,14 @@
   content: '';
   pointer-events: none;
   animation: streamErrorSweep 2.1s linear infinite;
+}
+
+.streamError::before {
+  inset: 0 auto auto 0;
+}
+
+.streamError::after {
+  inset: auto auto 0 0;
 }
 
 .streamError span,
