@@ -263,6 +263,6 @@
 }
 
 [data-theme='light'] .day[data-selected='true'] {
-  background: var(--chartreuse-deep);
-  color: var(--vellum-white);
+  background: var(--chartreuse);
+  color: var(--dark-fern);
 }
