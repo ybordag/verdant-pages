@@ -1,7 +1,7 @@
 .rail {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 13px;
   min-width: 0;
 }
 
@@ -15,7 +15,7 @@
 .title {
   color: var(--text-primary);
   font-family: var(--font-label);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -23,19 +23,19 @@
 .groups {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
 }
 
 .group {
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 5px;
 }
 
 .label {
   color: var(--text-muted);
   font-family: var(--font-label);
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 700;
   text-transform: uppercase;
 }

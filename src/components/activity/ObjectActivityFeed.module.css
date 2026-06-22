@@ -6,26 +6,26 @@
 .state {
   display: flex;
   width: 100%;
-  min-height: 240px;
+  min-height: 210px;
   flex-direction: column;
   justify-content: center;
-  gap: 8px;
+  gap: 7px;
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius-soft);
-  padding: 28px;
+  padding: 24px;
   background: var(--surface-dark-card);
 }
 
 .stateTitle {
   color: var(--text-primary);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 800;
 }
 
 .stateBody {
   max-width: 52ch;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.5;
 }
 
