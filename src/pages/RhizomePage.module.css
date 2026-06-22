@@ -258,6 +258,130 @@
   font-size: 14px;
 }
 
+.interactionCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid rgb(var(--clay-rgb) / 0.42);
+  border-radius: var(--radius-soft);
+  background:
+    linear-gradient(130deg, rgb(var(--clay-rgb) / 0.12), transparent 50%),
+    var(--bg);
+  padding: 14px;
+}
+
+.interactionType {
+  width: fit-content;
+  border: 1px solid rgb(var(--clay-rgb) / 0.4);
+  border-radius: var(--radius-tight);
+  color: var(--dark-clay);
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 900;
+  padding: 4px 6px;
+  text-transform: uppercase;
+}
+
+.interactionCard p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.interactionSections {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.interactionSections div {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--bg);
+  padding: 8px;
+}
+
+.interactionSections dt,
+.notesField span {
+  color: var(--text-muted);
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.interactionSections dd {
+  margin: 3px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.notesField {
+  display: grid;
+  gap: 5px;
+}
+
+.notesField textarea {
+  min-height: 72px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  padding: 8px;
+}
+
+.notesField textarea:focus {
+  border-color: var(--nav-accent);
+  outline: none;
+}
+
+.interactionActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.interactionActions button {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 900;
+  padding: 8px 10px;
+  text-transform: uppercase;
+}
+
+.interactionActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.primaryAction {
+  border-color: var(--chartreuse);
+  background: var(--chartreuse);
+  color: var(--dark-fern);
+}
+
+.secondaryAction {
+  background: var(--bg);
+  color: var(--text-secondary);
+}
+
+.dangerAction {
+  border-color: var(--clay);
+  background: transparent;
+  color: var(--clay);
+}
+
 .chatPane {
   display: flex;
   flex-direction: column;
@@ -302,6 +426,8 @@
 .modelSelector {
   display: grid;
   gap: 3px;
+  justify-self: end;
+  text-align: right;
   width: min(220px, 34vw);
 }
 
@@ -311,6 +437,72 @@
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.contextStrip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  padding: 8px 16px;
+}
+
+.contextChip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--pine-light);
+  border-radius: var(--radius-soft);
+  background: rgb(var(--pine-rgb) / 0.1);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 6px 5px 9px;
+}
+
+.contextChip button,
+.addContextButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-tight);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.contextChip button {
+  width: 20px;
+  height: 20px;
+  border-color: transparent;
+  padding: 0;
+}
+
+.contextChip button:hover,
+.addContextButton:hover {
+  border-color: var(--nav-accent);
+  color: var(--nav-accent);
+}
+
+.contextEmpty {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.addContextButton {
+  flex: 0 0 auto;
+  gap: 5px;
+  min-height: 28px;
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 900;
+  padding: 0 8px;
   text-transform: uppercase;
 }
 
@@ -723,6 +915,116 @@
 .streamError button:hover {
   border-color: var(--dark-clay);
   background: var(--dark-clay);
+}
+
+.contextSearchBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.34);
+  padding: 20px;
+}
+
+.contextSearchModal {
+  display: flex;
+  width: min(640px, 100%);
+  max-height: min(720px, 88vh);
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-journal);
+  background: var(--bg-nav);
+  padding: 16px;
+}
+
+.contextSearchModal header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.contextSearchModal h2 {
+  margin-top: 3px;
+  color: var(--text-primary);
+  font-size: 20px;
+}
+
+.contextSearchField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--input-bg);
+  color: var(--text-muted);
+  padding: 0 10px;
+}
+
+.contextSearchField input {
+  width: 100%;
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  outline: 0;
+}
+
+.contextResults {
+  display: grid;
+  gap: 2px;
+  overflow: auto;
+  border-top: 1px solid var(--line-subtle);
+}
+
+.contextResult {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 0;
+  border-bottom: 1px solid var(--line-subtle);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 10px 2px;
+  text-align: left;
+}
+
+.contextResult:hover {
+  background: var(--surface-muted);
+}
+
+.contextResult strong {
+  display: block;
+  font-size: 13px;
+}
+
+.contextResult small {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.contextResult em {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.contextSearchState {
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 16px 0;
 }
 
 @keyframes streamErrorSweep {

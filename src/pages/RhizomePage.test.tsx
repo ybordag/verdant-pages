@@ -3,28 +3,44 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { vi } from 'vitest'
-import type { ThreadView } from '@/lib/types/rhizome'
+import type { InteractionEnvelopeView, ThreadView } from '@/lib/types/rhizome'
 import RhizomePage from './RhizomePage'
 
 const mocks = vi.hoisted(() => ({
+  addThreadContext: vi.fn(),
   createThread: vi.fn(),
   getThread: vi.fn(),
   getThreadMessages: vi.fn(),
   getThreadSessionContext: vi.fn(),
+  getPendingInteraction: vi.fn(),
   listThreads: vi.fn(),
+  removeThreadContext: vi.fn(),
+  search: vi.fn(),
   streamChat: vi.fn(),
+  streamResume: vi.fn(),
   updateThreadSessionContext: vi.fn(),
   useAuth: vi.fn(),
 }))
 
 vi.mock('@/lib/api/chat', () => ({
+  addThreadContext: mocks.addThreadContext,
   createThread: mocks.createThread,
   getThread: mocks.getThread,
   getThreadMessages: mocks.getThreadMessages,
   getThreadSessionContext: mocks.getThreadSessionContext,
   listThreads: mocks.listThreads,
+  removeThreadContext: mocks.removeThreadContext,
   streamChat: mocks.streamChat,
+  streamResume: mocks.streamResume,
   updateThreadSessionContext: mocks.updateThreadSessionContext,
+}))
+
+vi.mock('@/lib/api/interactions', () => ({
+  getPendingInteraction: mocks.getPendingInteraction,
+}))
+
+vi.mock('@/lib/api/search', () => ({
+  search: mocks.search,
 }))
 
 vi.mock('@/lib/auth/context', () => ({
@@ -67,6 +83,23 @@ const THREADS: ThreadView[] = [
   },
 ]
 
+const PENDING_INTERACTION: InteractionEnvelopeView = {
+  id: 'interaction-1',
+  interaction_type: 'weather_change_review',
+  status: 'pending',
+  title: 'Review watering changes',
+  summary: 'Rain is likely tonight, so Rhizome wants to skip porch watering.',
+  body: 'Approve this to update the task plan.',
+  sections: [{ title: 'Rain window', summary: '9 PM to 2 AM' }],
+  actions: [
+    { id: 'request_revision', label: 'Request Revision', kind: 'revise', style_hint: 'secondary' },
+    { id: 'reject', label: 'Reject', kind: 'reject', style_hint: 'danger' },
+    { id: 'confirm', label: 'Approve', kind: 'confirm', style_hint: 'primary' },
+  ],
+  context: {},
+  created_at: '2026-06-21T18:00:00Z',
+}
+
 function renderRhizome(path = '/app/rhizome') {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
@@ -81,7 +114,7 @@ function renderRhizome(path = '/app/rhizome') {
   )
 }
 
-async function* streamEvents(events: Array<{ type: string; content?: string }>) {
+async function* streamEvents(events: Array<{ type: string; content?: string; payload?: unknown }>) {
   for (const event of events) yield event
 }
 
@@ -93,8 +126,10 @@ async function* failedStream() {
 describe('RhizomePage', () => {
   beforeEach(() => {
     mocks.createThread.mockResolvedValue({ thread_id: 'thread-new' })
+    mocks.addThreadContext.mockResolvedValue(undefined)
     mocks.listThreads.mockResolvedValue(THREADS)
     mocks.getThread.mockResolvedValue(THREADS[0])
+    mocks.getPendingInteraction.mockResolvedValue(null)
     mocks.getThreadMessages.mockResolvedValue({
       thread_id: 'thread-1',
       messages: [
@@ -134,6 +169,24 @@ describe('RhizomePage', () => {
         { type: 'done' },
       ]),
     )
+    mocks.streamResume.mockImplementation(() =>
+      streamEvents([
+        { type: 'token', content: 'Decision saved.' },
+        { type: 'done' },
+      ]),
+    )
+    mocks.removeThreadContext.mockResolvedValue(undefined)
+    mocks.search.mockResolvedValue({
+      results: [
+        {
+          subject_type: 'plant',
+          subject_id: 'plant-1',
+          label: 'Cherry Tomato',
+          secondary_label: 'Growbag A',
+        },
+      ],
+      by_type: { plant: 1 },
+    })
   })
 
   afterEach(() => {
@@ -350,6 +403,63 @@ describe('RhizomePage', () => {
     expect(screen.queryByText('No pending approvals')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Collapse reviews panel' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Open pending reviews' })).not.toBeInTheDocument()
+  })
+
+  it('opens the interaction panel from a streamed approval and resumes with notes', async () => {
+    const user = userEvent.setup()
+    mocks.streamChat.mockImplementationOnce(() =>
+      streamEvents([
+        { type: 'token', content: 'I need your approval first.' },
+        { type: 'interaction', payload: PENDING_INTERACTION },
+      ]),
+    )
+
+    renderRhizome('/app/rhizome/thread-1')
+
+    await user.type(await screen.findByLabelText('Message Rhizome'), 'Adjust watering')
+    await user.click(screen.getByRole('button', { name: 'Send' }))
+
+    expect(await screen.findByRole('complementary', { name: 'Pending Rhizome reviews' })).toBeInTheDocument()
+    expect(screen.getByText('Review watering changes')).toBeInTheDocument()
+    expect(screen.getByText('Rain is likely tonight, so Rhizome wants to skip porch watering.')).toBeInTheDocument()
+    await user.type(screen.getByLabelText('Decision notes'), 'Still water the basil.')
+    await user.click(screen.getByRole('button', { name: 'Approve' }))
+
+    await waitFor(() =>
+      expect(mocks.streamResume).toHaveBeenCalledWith(
+        'thread-1',
+        'confirm\n\nNotes: Still water the basil.',
+        expect.any(AbortSignal),
+      ),
+    )
+    expect(await screen.findByText('Decision saved.')).toBeInTheDocument()
+  })
+
+  it('adds and removes pinned context through search', async () => {
+    const user = userEvent.setup()
+    renderRhizome('/app/rhizome/thread-1')
+
+    expect(await screen.findByLabelText('Pinned context')).toHaveTextContent('No pinned context')
+    await user.click(screen.getByRole('button', { name: 'Add context' }))
+    expect(await screen.findByRole('dialog', { name: 'Add context' })).toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Search context'), 'tom')
+    expect(await screen.findByRole('button', { name: /Cherry Tomato/i })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Cherry Tomato/i }))
+
+    await waitFor(() =>
+      expect(mocks.addThreadContext).toHaveBeenCalledWith('thread-1', {
+        subject_type: 'plant',
+        subject_id: 'plant-1',
+      }),
+    )
+    expect(await screen.findByText('Plant plant-1')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Remove Plant plant-1 context' }))
+    await waitFor(() =>
+      expect(mocks.removeThreadContext).toHaveBeenCalledWith('thread-1', 'plant', 'plant-1'),
+    )
+    expect(screen.getByLabelText('Pinned context')).toHaveTextContent('No pinned context')
   })
 
   it('creates a thread on first send and renders the streamed response', async () => {

@@ -119,13 +119,15 @@ SSE is the only transport for chat (`streamChat`/`streamResume` — see [sse-str
 - **Connection never opens / drops before any token arrives:** no auto-retry. Show "Connection failed — try again" in the composer area with a manual retry button. Resubmitting a half-sent message automatically would be worse than asking the user to re-trigger it.
 - **Connection drops mid-stream** (after some tokens, before a `{ type: "done" }` event): the consuming component must track a local `sawDone` flag. If the generator returns without it ever being set, treat the response as incomplete — append "⚠ response may be incomplete" rather than presenting partial tokens as the full answer.
 
-Phase 5b now implements the first-pass composer path: the Send button enables when the draft has text, Enter submits and Shift+Enter inserts a newline, `/app/rhizome` creates a thread only when the first message is sent, uses Cambium's returned thread id, and streams the assistant response into an in-progress Rhizome bubble. Stream failures render an attention banner under the thread title row with retry.
+Phase 5b now implements the first-pass workbench path: the Send button enables when the draft has text, Enter submits and Shift+Enter inserts a newline, `/app/rhizome` creates a thread only when the first message is sent, uses Cambium's returned thread id, and streams the assistant response into an in-progress Rhizome bubble. Stream failures render an attention banner under the thread title row with retry. The active-thread view also renders the dedicated session-context display/edit controls, the themed read-only model selector, the first-pass pending interaction review panel with resume streaming, and pinned context search/add/remove.
 
 ---
 
 ## Interaction panel (right, slides open)
 
 Opens automatically when the stream delivers an `{ type: "interaction" }` event. Closed when no pending interactions exist.
+
+Phase 5b implementation note: Verdant currently consumes the pending-interaction API as a single `InteractionEnvelopeView | null` because that is the available client contract. The panel renders the active interaction and action buttons now; the "pending list" queue affordance remains a 5c polish item unless the API exposes multiple simultaneous pending interactions.
 
 **Panel header:** "Current interaction" label, interaction title, brief description.
 

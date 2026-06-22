@@ -8,6 +8,7 @@ import {
   Search,
   Send,
   Sprout,
+  X,
 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { FilterSelect } from '@/components/activity/FilterControls'
@@ -15,16 +16,25 @@ import Button from '@/components/primitives/Button/Button'
 import MarkdownMessage from '@/components/primitives/MarkdownMessage/MarkdownMessage'
 import Textarea from '@/components/primitives/Textarea/Textarea'
 import {
+  addThreadContext,
   createThread,
   getThread,
   getThreadMessages,
   getThreadSessionContext,
   listThreads,
+  removeThreadContext,
   streamChat,
+  streamResume,
   updateThreadSessionContext,
 } from '@/lib/api/chat'
+import { getPendingInteraction } from '@/lib/api/interactions'
+import { search } from '@/lib/api/search'
 import { useAuth } from '@/lib/auth/context'
 import type {
+  ContextObject,
+  InteractionActionView,
+  InteractionEnvelopeView,
+  SearchResultItemView,
   SessionContextView,
   ThreadMessageView,
   ThreadView,
@@ -35,6 +45,8 @@ import s from './RhizomePage.module.css'
 const THREAD_LIMIT = 20
 const RECENT_THREAD_LIMIT = 3
 const EMPTY_THREADS: ThreadView[] = []
+const EMPTY_CONTEXT: ContextObject[] = []
+const EMPTY_SEARCH_RESULTS: SearchResultItemView[] = []
 
 type EnergyLevel = NonNullable<SessionContextView['energy_level']>
 type LocationType = NonNullable<SessionContextView['preferred_location_type']>
@@ -112,6 +124,24 @@ function sessionFocusLabel(context?: SessionContextView): string {
   return context?.focus_label?.trim() || 'Not set'
 }
 
+function contextLabel(context: ContextObject): string {
+  return `${titleCase(context.subject_type)} ${context.subject_id}`
+}
+
+function interactionTypeLabel(type: string): string {
+  return type.replaceAll('_', ' ')
+}
+
+function actionButtonLabel(action: InteractionActionView): string {
+  return action.label || titleCase(action.id.replaceAll('_', ' '))
+}
+
+function actionButtonClass(action: InteractionActionView): string {
+  if (action.style_hint === 'primary' || action.kind === 'confirm' || action.id === 'confirm') return s.primaryAction
+  if (action.style_hint === 'danger' || action.kind === 'reject' || action.id === 'reject') return s.dangerAction
+  return s.secondaryAction
+}
+
 function messageLabel(message: ThreadMessageView): string {
   return message.role === 'user' ? 'You' : 'Rhizome'
 }
@@ -145,6 +175,7 @@ export default function RhizomePage() {
   const [reviewsPanelOpen, setReviewsPanelOpen] = useState(false)
   const [streamThreadId, setStreamThreadId] = useState<string | null>(null)
   const [pendingMessages, setPendingMessages] = useState<ThreadMessageView[]>([])
+  const [streamInteraction, setStreamInteraction] = useState<InteractionEnvelopeView | null>(null)
   const [streamingText, setStreamingText] = useState('')
   const [streamError, setStreamError] = useState<string | null>(null)
   const [retryMessage, setRetryMessage] = useState<string | null>(null)
@@ -152,6 +183,9 @@ export default function RhizomePage() {
   const [sessionEditing, setSessionEditing] = useState(false)
   const [sessionDraft, setSessionDraft] = useState<SessionDraft>(EMPTY_SESSION_DRAFT)
   const [sessionError, setSessionError] = useState<string | null>(null)
+  const [interactionNotes, setInteractionNotes] = useState('')
+  const [contextSearchOpen, setContextSearchOpen] = useState(false)
+  const [contextSearchTerm, setContextSearchTerm] = useState('')
   const streamControllerRef = useRef<AbortController | null>(null)
 
   const threadsQuery = useQuery({
@@ -179,6 +213,15 @@ export default function RhizomePage() {
     queryFn: () => getThreadSessionContext(threadId ?? ''),
     enabled: Boolean(threadId),
   })
+  const pendingInteractionQuery = useQuery({
+    queryKey: ['interactions', 'pending'],
+    queryFn: getPendingInteraction,
+  })
+  const contextSearchQuery = useQuery({
+    queryKey: ['search', 'context', contextSearchTerm],
+    queryFn: () => search({ q: contextSearchTerm.trim(), limit: 8 }),
+    enabled: contextSearchOpen && contextSearchTerm.trim().length >= 2,
+  })
   const updateSessionMutation = useMutation({
     mutationFn: (data: UpdateSessionContextRequest) =>
       updateThreadSessionContext(threadId ?? '', data),
@@ -192,9 +235,26 @@ export default function RhizomePage() {
       setSessionError('Session context could not be saved.')
     },
   })
+  const addContextMutation = useMutation({
+    mutationFn: (context: ContextObject) => addThreadContext(threadId ?? '', context),
+    onSuccess: (_data, context) => {
+      updateThreadContextCache(context, 'add')
+      setContextSearchOpen(false)
+      setContextSearchTerm('')
+    },
+  })
+  const removeContextMutation = useMutation({
+    mutationFn: (context: ContextObject) =>
+      removeThreadContext(threadId ?? '', context.subject_type, context.subject_id),
+    onSuccess: (_data, context) => {
+      updateThreadContextCache(context, 'remove')
+    },
+  })
 
   const activeThread = activeThreadFromList ?? activeThreadQuery.data
   const sessionContext = sessionContextQuery.data
+  const pinnedContext = activeThread?.pinned_context ?? EMPTY_CONTEXT
+  const pendingInteraction = streamInteraction ?? pendingInteractionQuery.data ?? null
   const messages = (messagesQuery.data?.messages ?? []).filter((message) => {
     const type = message.type ?? message.role
     return ['human', 'ai', 'user', 'assistant'].includes(type) && message.content.trim()
@@ -209,7 +269,7 @@ export default function RhizomePage() {
   const hasThreads = threads.length > 0
   const recentThreads = threads.slice(0, RECENT_THREAD_LIMIT)
   const isNewThread = !threadId
-  const pendingReviewCount = 0
+  const pendingReviewCount = pendingInteraction ? 1 : 0
   const hasPendingReviews = pendingReviewCount > 0
   const canSend = draft.trim().length > 0 && !isStreaming
   const currentModelLabel = modelLabel(user?.preferred_provider, user?.preferred_model)
@@ -253,6 +313,93 @@ export default function RhizomePage() {
     updateSessionMutation.mutate(payload)
   }
 
+  function updateThreadContextCache(context: ContextObject, mode: 'add' | 'remove') {
+    function updateThread(thread: ThreadView): ThreadView {
+      const exists = thread.pinned_context.some(
+        (item) => item.subject_type === context.subject_type && item.subject_id === context.subject_id,
+      )
+      const pinned_context =
+        mode === 'add'
+          ? exists
+            ? thread.pinned_context
+            : [...thread.pinned_context, context]
+          : thread.pinned_context.filter(
+              (item) => item.subject_type !== context.subject_type || item.subject_id !== context.subject_id,
+            )
+      return { ...thread, pinned_context }
+    }
+
+    queryClient.setQueryData<ThreadView[]>(['threads', { limit: THREAD_LIMIT }], (threads) =>
+      threads?.map((thread) => (thread.thread_id === threadId ? updateThread(thread) : thread)),
+    )
+    queryClient.setQueryData<ThreadView>(['threads', threadId], (thread) => (thread ? updateThread(thread) : thread))
+  }
+
+  function pinContext(result: SearchResultItemView) {
+    if (!threadId) return
+    addContextMutation.mutate({
+      subject_type: result.subject_type,
+      subject_id: result.subject_id,
+    })
+  }
+
+  async function resumeInteraction(action: InteractionActionView) {
+    if (!threadId || isStreaming) return
+    const controller = new AbortController()
+    streamControllerRef.current?.abort()
+    streamControllerRef.current = controller
+    setIsStreaming(true)
+    setStreamError(null)
+    setStreamingText('')
+    setStreamThreadId(threadId)
+
+    try {
+      let responseText = ''
+      let sawDone = false
+      const resolution = interactionNotes.trim()
+        ? `${action.id}\n\nNotes: ${interactionNotes.trim()}`
+        : action.id
+      for await (const event of streamResume(threadId, resolution, controller.signal)) {
+        if (event.type === 'token') {
+          responseText += event.content
+          setStreamingText(responseText)
+        } else if (event.type === 'interaction') {
+          setStreamInteraction(event.payload)
+          setReviewsPanelOpen(true)
+          queryClient.setQueryData(['interactions', 'pending'], event.payload)
+        } else if (event.type === 'done') {
+          sawDone = true
+          break
+        }
+      }
+
+      if (!sawDone) {
+        setStreamingText(`${responseText}\n\nResponse may be incomplete.`)
+        setStreamError('Connection dropped before Rhizome finished.')
+        return
+      }
+
+      if (responseText.trim()) {
+        setPendingMessages((current) => [
+          ...current,
+          { role: 'assistant', content: responseText, type: 'ai' },
+        ])
+      }
+      setStreamingText('')
+      setStreamInteraction(null)
+      setInteractionNotes('')
+      queryClient.setQueryData(['interactions', 'pending'], null)
+      void queryClient.invalidateQueries({ queryKey: ['interactions', 'pending'] })
+      void queryClient.invalidateQueries({ queryKey: ['threads', threadId, 'messages'] })
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
+      setStreamError('Connection failed - try again.')
+    } finally {
+      if (streamControllerRef.current === controller) streamControllerRef.current = null
+      setIsStreaming(false)
+    }
+  }
+
   async function submitMessage(messageOverride?: string) {
     const message = (messageOverride ?? draft).trim()
     if (!message || isStreaming) return
@@ -282,10 +429,16 @@ export default function RhizomePage() {
 
       let responseText = ''
       let sawDone = false
+      let sawInteraction = false
       for await (const event of streamChat(targetThreadId, message, controller.signal)) {
         if (event.type === 'token') {
           responseText += event.content
           setStreamingText(responseText)
+        } else if (event.type === 'interaction') {
+          sawInteraction = true
+          setStreamInteraction(event.payload)
+          setReviewsPanelOpen(true)
+          queryClient.setQueryData(['interactions', 'pending'], event.payload)
         } else if (event.type === 'done') {
           sawDone = true
           break
@@ -293,6 +446,18 @@ export default function RhizomePage() {
       }
 
       if (!sawDone) {
+        if (sawInteraction) {
+          if (responseText.trim()) {
+            setPendingMessages((current) => [
+              ...current,
+              { role: 'assistant', content: responseText, type: 'ai' },
+            ])
+          }
+          setStreamingText('')
+          setStreamError(null)
+          setRetryMessage(null)
+          return
+        }
         const incompleteText = `${responseText}\n\nResponse may be incomplete.`
         setStreamingText(incompleteText)
         setStreamError('Connection dropped before Rhizome finished.')
@@ -608,6 +773,39 @@ export default function RhizomePage() {
             </div>
           )}
 
+          {threadId ? (
+            <div className={s.contextStrip} aria-label="Pinned context">
+              {pinnedContext.length > 0 ? (
+                pinnedContext.map((context) => (
+                  <span
+                    className={s.contextChip}
+                    key={`${context.subject_type}-${context.subject_id}`}
+                  >
+                    <span>{contextLabel(context)}</span>
+                    <button
+                      type="button"
+                      aria-label={`Remove ${contextLabel(context)} context`}
+                      disabled={removeContextMutation.isPending}
+                      onClick={() => removeContextMutation.mutate(context)}
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <span className={s.contextEmpty}>No pinned context</span>
+              )}
+              <button
+                className={s.addContextButton}
+                type="button"
+                onClick={() => setContextSearchOpen(true)}
+              >
+                <Plus size={13} />
+                Add context
+              </button>
+            </div>
+          ) : null}
+
           <div className={s.threadBody}>
             {threadId && activeThreadQuery.isLoading ? (
               <div className={s.emptyChat}>Loading thread</div>
@@ -722,7 +920,10 @@ export default function RhizomePage() {
           <aside className={s.reviewPanel} aria-label="Pending Rhizome reviews">
             <div className={s.railContent}>
               <div className={s.railHeader}>
-                <p className={s.eyebrow}>Reviews</p>
+                <div>
+                  <p className={s.eyebrow}>Current interaction</p>
+                  <h2>{pendingInteraction?.title ?? 'Pending review'}</h2>
+                </div>
                 <button
                   aria-label="Collapse reviews panel"
                   className={s.iconButton}
@@ -732,14 +933,121 @@ export default function RhizomePage() {
                   <PanelRightClose size={16} />
                 </button>
               </div>
-              <div className={s.reviewEmpty}>
-                <strong>No pending approvals</strong>
-                <span>Rhizome decisions that need review will appear here.</span>
-              </div>
+              {pendingInteraction ? (
+                <div className={s.interactionCard}>
+                  <div className={s.interactionType}>
+                    {interactionTypeLabel(pendingInteraction.interaction_type)}
+                  </div>
+                  <p>{pendingInteraction.summary}</p>
+                  {pendingInteraction.body ? <MarkdownMessage content={pendingInteraction.body} /> : null}
+                  {pendingInteraction.sections.length > 0 ? (
+                    <dl className={s.interactionSections}>
+                      {pendingInteraction.sections.map((section, index) => (
+                        <div key={index}>
+                          <dt>{String(section.title ?? section.label ?? `Detail ${index + 1}`)}</dt>
+                          <dd>
+                            {String(
+                              section.summary ??
+                                section.body ??
+                                section.value ??
+                                JSON.stringify(section),
+                            )}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  ) : null}
+                  <label className={s.notesField}>
+                    <span>Decision notes</span>
+                    <textarea
+                      value={interactionNotes}
+                      placeholder="Add a note for Rhizome..."
+                      onChange={(event) => setInteractionNotes(event.target.value)}
+                    />
+                  </label>
+                  <div className={s.interactionActions}>
+                    {pendingInteraction.actions.map((action) => (
+                      <button
+                        key={action.id}
+                        className={actionButtonClass(action)}
+                        type="button"
+                        disabled={isStreaming || !threadId}
+                        onClick={() => void resumeInteraction(action)}
+                      >
+                        {actionButtonLabel(action)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </aside>
         ) : null}
       </section>
+
+      {contextSearchOpen ? (
+        <div
+          className={s.contextSearchBackdrop}
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setContextSearchOpen(false)
+          }}
+        >
+          <section className={s.contextSearchModal} role="dialog" aria-label="Add context">
+            <header>
+              <div>
+                <p className={s.eyebrow}>Pinned context</p>
+                <h2>Add context</h2>
+              </div>
+              <button
+                aria-label="Close context search"
+                className={s.iconButton}
+                type="button"
+                onClick={() => setContextSearchOpen(false)}
+              >
+                <X size={16} />
+              </button>
+            </header>
+            <label className={s.contextSearchField}>
+              <Search size={15} />
+              <input
+                autoFocus
+                aria-label="Search context"
+                placeholder="Search plants, beds, tasks, projects, or incidents..."
+                value={contextSearchTerm}
+                onChange={(event) => setContextSearchTerm(event.target.value)}
+              />
+            </label>
+            <div className={s.contextResults}>
+              {contextSearchTerm.trim().length < 2 ? (
+                <div className={s.contextSearchState}>Type at least two characters.</div>
+              ) : contextSearchQuery.isLoading ? (
+                <div className={s.contextSearchState}>Searching context</div>
+              ) : contextSearchQuery.isError ? (
+                <div className={s.contextSearchState}>Context search is unavailable.</div>
+              ) : (contextSearchQuery.data?.results ?? EMPTY_SEARCH_RESULTS).length > 0 ? (
+                (contextSearchQuery.data?.results ?? EMPTY_SEARCH_RESULTS).map((result) => (
+                  <button
+                    key={`${result.subject_type}-${result.subject_id}`}
+                    type="button"
+                    className={s.contextResult}
+                    disabled={addContextMutation.isPending}
+                    onClick={() => pinContext(result)}
+                  >
+                    <span>
+                      <strong>{result.label}</strong>
+                      <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
+                    </span>
+                    <em>{result.subject_type}</em>
+                  </button>
+                ))
+              ) : (
+                <div className={s.contextSearchState}>No context found.</div>
+              )}
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   )
 }

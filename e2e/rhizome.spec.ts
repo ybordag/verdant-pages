@@ -78,6 +78,26 @@ test('Rhizome thread navigator opens, switches threads, and closes cleanly', asy
   await expect(page.getByRole('heading', { name: 'Threads' })).not.toBeVisible()
 })
 
+test('Rhizome pinned context can be searched, added, and removed', async ({ page }) => {
+  const state = await mockAuthenticatedRhizomeApi(page)
+
+  await page.goto('/app/rhizome/thread-1')
+  await expect(page.getByLabel('Pinned context')).toContainText('No pinned context')
+
+  await page.getByRole('button', { name: 'Add context' }).click()
+  await page.getByLabel('Search context').fill('tom')
+  await page.getByRole('button', { name: /Cherry Tomato/i }).click()
+
+  await expect(page.getByLabel('Pinned context')).toContainText('Plant plant-1')
+  await expect.poll(() => state.threads[0].pinned_context).toEqual([
+    { subject_type: 'plant', subject_id: 'plant-1' },
+  ])
+
+  await page.getByRole('button', { name: 'Remove Plant plant-1 context' }).click()
+  await expect(page.getByLabel('Pinned context')).toContainText('No pinned context')
+  await expect.poll(() => state.threads[0].pinned_context).toEqual([])
+})
+
 test('Rhizome chat shell remains usable in light and dark themes', async ({ page }) => {
   await mockAuthenticatedRhizomeApi(page)
 

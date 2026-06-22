@@ -6,8 +6,13 @@ export interface ThreadFixture {
   last_message_preview?: string
   last_active_at?: string
   message_count?: number
-  pinned_context?: []
+  pinned_context?: ContextFixture[]
   created_at?: string
+}
+
+export interface ContextFixture {
+  subject_type: string
+  subject_id: string
 }
 
 export interface ThreadMessageFixture {
@@ -24,6 +29,7 @@ export interface StreamRequestRecord {
 
 export interface RhizomeFixtureState {
   createdThreadIds: string[]
+  resumeRequests: StreamRequestRecord[]
   streamRequests: StreamRequestRecord[]
   threads: ThreadFixture[]
   messages: Record<string, ThreadMessageFixture[]>
@@ -53,6 +59,7 @@ export async function mockAuthenticatedRhizomeApi(
 ): Promise<RhizomeFixtureState> {
   const state: RhizomeFixtureState = {
     createdThreadIds: [],
+    resumeRequests: [],
     streamRequests: [],
     threads: options.threads ?? makeThreads(),
     messages: {
@@ -152,6 +159,36 @@ export async function mockAuthenticatedRhizomeApi(
       }
     }
 
+    const threadContext = path.match(/^\/api\/v1\/threads\/([^/]+)\/context$/)
+    if (request.method() === 'POST' && threadContext) {
+      const threadId = decodeURIComponent(threadContext[1])
+      const context = JSON.parse(request.postData() ?? '{}') as ContextFixture
+      const thread = state.threads.find((item) => item.thread_id === threadId)
+      if (thread) {
+        const pinned = thread.pinned_context ?? []
+        if (!pinned.some((item) => item.subject_type === context.subject_type && item.subject_id === context.subject_id)) {
+          thread.pinned_context = [...pinned, context]
+        }
+      }
+      await json(route, {})
+      return
+    }
+
+    const removeThreadContext = path.match(/^\/api\/v1\/threads\/([^/]+)\/context\/([^/]+)\/([^/]+)$/)
+    if (request.method() === 'DELETE' && removeThreadContext) {
+      const threadId = decodeURIComponent(removeThreadContext[1])
+      const subjectType = decodeURIComponent(removeThreadContext[2])
+      const subjectId = decodeURIComponent(removeThreadContext[3])
+      const thread = state.threads.find((item) => item.thread_id === threadId)
+      if (thread) {
+        thread.pinned_context = (thread.pinned_context ?? []).filter(
+          (item) => item.subject_type !== subjectType || item.subject_id !== subjectId,
+        )
+      }
+      await json(route, {})
+      return
+    }
+
     const threadDetail = path.match(/^\/api\/v1\/threads\/([^/]+)$/)
     if (request.method() === 'GET' && threadDetail) {
       const threadId = decodeURIComponent(threadDetail[1])
@@ -198,6 +235,41 @@ export async function mockAuthenticatedRhizomeApi(
         sse({ type: 'token', content: [{ type: 'text', text: response }] }),
         sse({ type: 'done' }),
       ].join(''),
+    })
+  })
+
+  await page.route('**/api/v1/chat/resume/stream**', async (route) => {
+    const body = JSON.parse(route.request().postData() ?? '{}') as { thread_id?: string; resolution?: string }
+    const threadId = body.thread_id ?? ''
+    const message = body.resolution ?? ''
+    state.resumeRequests.push({ threadId, message })
+    const response = 'Decision recorded.'
+    state.messages[threadId] = [
+      ...(state.messages[threadId] ?? []),
+      { role: 'assistant', type: 'ai', content: response },
+    ]
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/event-stream',
+      body: [sse({ type: 'token', content: response }), sse({ type: 'done' })].join(''),
+    })
+  })
+
+  await page.route('**/api/v1/interactions/pending', async (route) => {
+    await json(route, null)
+  })
+
+  await page.route('**/api/v1/search**', async (route) => {
+    await json(route, {
+      results: [
+        {
+          subject_type: 'plant',
+          subject_id: 'plant-1',
+          label: 'Cherry Tomato',
+          secondary_label: 'Growbag A',
+        },
+      ],
+      by_type: { plant: 1 },
     })
   })
 
