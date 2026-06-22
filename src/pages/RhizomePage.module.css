@@ -855,17 +855,23 @@
   height: 26px;
   align-items: center;
   justify-content: center;
-  border: 1px solid transparent;
+  border: 1px solid var(--chartreuse);
   border-radius: var(--radius-soft);
-  background: rgb(var(--pine-rgb) / 0.08);
-  color: var(--pine-light);
+  background: rgb(var(--chartreuse-rgb) / 0.24);
+  color: var(--chartreuse);
   cursor: pointer;
+}
+
+[data-theme='light'] .composerAddContext {
+  border-color: var(--chartreuse-deep);
+  color: var(--chartreuse-deep);
 }
 
 .composerAddContext:hover,
 .composerAddContext[aria-expanded='true'] {
-  background: rgb(var(--chartreuse-rgb) / 0.18);
-  color: var(--nav-accent);
+  border-color: var(--chartreuse);
+  background: var(--chartreuse);
+  color: var(--inkwell);
 }
 
 .composerSend {
