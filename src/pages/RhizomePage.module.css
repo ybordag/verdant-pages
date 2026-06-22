@@ -318,14 +318,19 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   gap: 8px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid rgb(var(--clay-rgb) / 0.55);
+  background:
+    linear-gradient(112deg, rgb(var(--clay-rgb) / 0.16), transparent 48%),
+    linear-gradient(252deg, rgb(var(--chartreuse-rgb) / 0.08), transparent 58%),
+    var(--bg);
   padding: 10px 16px;
 }
 
 .sessionStrip div,
 .reviewButton {
-  border: 1px solid var(--line);
+  border: 1px solid rgb(var(--clay-rgb) / 0.35);
   border-radius: var(--radius-soft);
+  background: var(--bg);
   padding: 8px 10px;
 }
 
@@ -350,10 +355,11 @@
 
 .sessionStrip span {
   display: block;
-  color: var(--text-muted);
+  color: var(--dark-clay);
   font-family: var(--font-label);
   font-size: 9px;
   font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -368,6 +374,7 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
+  background-color: var(--bg);
   background-image: radial-gradient(var(--dot) 0.8px, transparent 0.8px);
   background-position: 0 0;
   background-size: 14px 14px;
@@ -381,6 +388,14 @@
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius-journal);
   text-align: center;
+}
+
+.emptyChat > svg {
+  color: var(--chartreuse);
+}
+
+:global([data-theme='light']) .emptyChat > svg {
+  color: var(--chartreuse-deep);
 }
 
 .emptyChat button {
@@ -430,7 +445,7 @@
   max-width: min(72ch, 78%);
   border: 1px solid var(--line);
   border-radius: var(--radius-journal);
-  background: var(--bg);
+  background: var(--bg-nav);
   padding: 10px 12px;
   text-align: left;
 }

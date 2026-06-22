@@ -49,6 +49,10 @@
 }
 .logoBtn:hover { opacity: 0.8; }
 
+:global([data-theme='light']) .logoBtn {
+  color: var(--chartreuse-deep);
+}
+
 .logoLetter {
   font-family: var(--font-display);
   font-weight: var(--display-weight);
