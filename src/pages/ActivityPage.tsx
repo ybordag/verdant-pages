@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import FilterRail, { type ActivityFilters } from '@/components/activity/FilterRail'
 import ObjectActivityFeed from '@/components/activity/ObjectActivityFeed'
 import { listActivity } from '@/lib/api/activity'
@@ -54,14 +54,24 @@ function uniqueSorted(values: string[]): string[] {
   return [...new Set(values)].sort((a, b) => a.localeCompare(b))
 }
 
-function buildActivityParams(filters: ActivityFilters): ActivityListParams {
+function buildActivityParams(filters: ActivityFilters, cursor?: string): ActivityListParams {
   const params: ActivityListParams = { limit: PAGE_SIZE }
   if (filters.category) params.category = filters.category
   if (filters.eventType) params.event_type = filters.eventType
   if (filters.subjectType) params.subject_type = filters.subjectType
   if (filters.since) params.since = filters.since
-  if (filters.before) params.before_timestamp = filters.before
+  if (cursor) params.before_timestamp = cursor
+  else if (filters.before) params.before_timestamp = filters.before
   return params
+}
+
+function uniqueEvents(pages: ActivityEventView[][]): ActivityEventView[] {
+  const seen = new Set<string>()
+  return pages.flat().filter((event) => {
+    if (seen.has(event.id)) return false
+    seen.add(event.id)
+    return true
+  })
 }
 
 export default function ActivityPage() {
@@ -69,13 +79,18 @@ export default function ActivityPage() {
   const filterErrors = useMemo(() => getFilterErrors(filters), [filters])
   const hasFilterErrors = Boolean(filterErrors.since || filterErrors.before)
   const activityParams = useMemo(() => buildActivityParams(filters), [filters])
-  const activityQuery = useQuery({
+  const activityQuery = useInfiniteQuery({
     queryKey: ['activity', 'list', activityParams],
-    queryFn: () => listActivity(activityParams),
+    queryFn: ({ pageParam }) => listActivity(buildActivityParams(filters, pageParam)),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => {
+      if (lastPage.length < PAGE_SIZE) return undefined
+      return lastPage[lastPage.length - 1]?.created_at
+    },
     enabled: !hasFilterErrors,
   })
 
-  const events = activityQuery.data ?? EMPTY_EVENTS
+  const events = useMemo(() => uniqueEvents(activityQuery.data?.pages ?? [EMPTY_EVENTS]), [activityQuery.data])
 
   const categoryOptions = useMemo(
     () => uniqueSorted([...CATEGORY_OPTIONS, ...events.map((event) => event.category)]),
@@ -123,7 +138,10 @@ export default function ActivityPage() {
           events={events}
           isLoading={activityQuery.isLoading}
           error={activityQuery.isError ? 'Recent activity is unavailable right now.' : null}
+          hasMore={activityQuery.hasNextPage}
+          isFetchingMore={activityQuery.isFetchingNextPage}
           onRetry={() => void activityQuery.refetch()}
+          onLoadMore={() => void activityQuery.fetchNextPage()}
         />
       </div>
     </main>

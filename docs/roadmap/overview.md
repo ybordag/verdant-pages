@@ -176,7 +176,7 @@ Startup intake remains a backend contract gap tracked as rhizome#146: Rhizome in
 
 | Subphase | Branch | Tangible output | Smoke test |
 |---|---|---|---|
-| 5a Activity foundation | `sugar-maple` | `FilterRail`, `ObjectActivityFeed`, `ActivityPage` with real `GET /api/v1/activity` data and cursor pagination | Global feed renders recent events; category filter narrows results; Load more uses `before_timestamp` |
+| 5a Activity foundation | `sugar-maple` | `FilterRail`, `ObjectActivityFeed`, `ActivityPage` with real `GET /api/v1/activity` data and lazy infinite scroll | Global feed renders recent events; category filter narrows results; scrolling loads older events via `before_timestamp` |
 | 5b Thread home and streaming chat | `red-maple` | `/app/rhizome` thread home/list, `/app/rhizome/:threadId`, composer, streaming messages, topbar thread switcher, read-only model display | No-thread state can start a thread; existing threads are selectable; sending a message streams tokens and ends cleanly |
 | 5c Interactions and context | `silver-maple` | Interaction panel, compact interaction summaries, resume stream actions, context strip/search/pinning, context-aware entry modal | Pending interaction opens review panel; approve resumes stream; adding/removing context updates chips and backend |
 | 5d Incidents and treatment plans | `japanese-maple` | Incidents list/detail/new route, filters, manual treatment plan editor, Rhizome draft trigger, approve/resolve flows | Create incident; add manual plan; approve plan generates tasks; resolve incident updates status |
@@ -189,7 +189,7 @@ Startup intake remains a backend contract gap tracked as rhizome#146: Rhizome in
 2. **Static Activity page skeleton:** Replace the placeholder `/app/activity` with the final responsive layout using local sample data: left `FilterRail`, main chronological feed, event rows, and loading/empty/error placeholders.
 3. **Real data wiring:** Connect `ActivityPage` to `listActivity()`, including initial load, loading state, error/retry, empty state, and real event rendering.
 4. **Filters:** Wire the filter rail to supported activity query params, starting with category, event type, since/before dates, and reset behavior.
-5. **Cursor pagination:** Add explicit `Load more` pagination using `before_timestamp`, appending results without duplicates while preserving active filters.
+5. **Lazy infinite scroll:** Add sentinel-driven pagination using `before_timestamp`, appending results without duplicates while preserving active filters.
 6. **Test and polish pass:** Add focused API/page/component coverage for rendering, filters, retry, empty state, and pagination; finish responsive polish and update docs to mark 5a implemented.
 
 ### Today page

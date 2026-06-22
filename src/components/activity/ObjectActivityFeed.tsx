@@ -1,6 +1,6 @@
-import Button from '@/components/primitives/Button/Button'
 import type { ActivityEventView } from '@/lib/types/rhizome'
 import ActivityEventRow from './ActivityEventRow'
+import { useInfiniteSentinel } from './useInfiniteSentinel'
 import s from './ObjectActivityFeed.module.css'
 
 interface ObjectActivityFeedProps {
@@ -8,6 +8,7 @@ interface ObjectActivityFeedProps {
   isLoading?: boolean
   error?: string | null
   hasMore?: boolean
+  isFetchingMore?: boolean
   onRetry?: () => void
   onLoadMore?: () => void
 }
@@ -17,9 +18,17 @@ export default function ObjectActivityFeed({
   isLoading = false,
   error,
   hasMore = false,
+  isFetchingMore = false,
   onRetry,
   onLoadMore,
 }: ObjectActivityFeedProps) {
+  const sentinelRef = useInfiniteSentinel({
+    disabled: !hasMore || isFetchingMore || !onLoadMore,
+    onIntersect: () => {
+      onLoadMore?.()
+    },
+  })
+
   if (isLoading) {
     return (
       <section className={s.state} aria-live="polite">
@@ -36,9 +45,9 @@ export default function ObjectActivityFeed({
         <p className={s.stateBody}>{error}</p>
         {onRetry && (
           <div>
-            <Button type="button" variant="ghost" onClick={onRetry}>
+            <button type="button" className={s.retry} onClick={onRetry}>
               Retry
-            </Button>
+            </button>
           </div>
         )}
       </section>
@@ -61,13 +70,11 @@ export default function ObjectActivityFeed({
           <ActivityEventRow key={event.id} event={event} />
         ))}
       </div>
-      {hasMore && onLoadMore && (
-        <div className={s.pagination}>
-          <Button type="button" variant="ghost" onClick={onLoadMore}>
-            Load more
-          </Button>
-        </div>
-      )}
+      <div className={s.footer} aria-live="polite">
+        {hasMore && <div ref={sentinelRef} className={s.sentinel} aria-hidden="true" />}
+        {isFetchingMore && <span>Loading older activity...</span>}
+        {!hasMore && <span>End of activity</span>}
+      </div>
     </section>
   )
 }

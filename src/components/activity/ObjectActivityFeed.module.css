@@ -37,10 +37,41 @@
   flex-direction: column;
 }
 
-.pagination {
+.footer {
   display: flex;
   justify-content: center;
-  padding: 22px 0 4px;
+  min-height: 32px;
+  padding: 18px 0 4px;
+  color: var(--text-muted);
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.sentinel {
+  width: 1px;
+  height: 1px;
+}
+
+.retry {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 6px 10px;
+  text-transform: uppercase;
+}
+
+.retry:hover,
+.retry:focus-visible {
+  border-color: var(--nav-accent);
+  color: var(--nav-accent);
+  outline: none;
 }
 
 .state {
