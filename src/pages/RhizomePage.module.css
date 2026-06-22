@@ -571,8 +571,8 @@
   position: absolute;
   inset: 0;
   padding: 1px;
-  background: conic-gradient(
-    from var(--stream-error-angle),
+  background: linear-gradient(
+    90deg,
     var(--dark-clay),
     var(--clay),
     var(--buttercup),
@@ -583,6 +583,7 @@
     var(--clay),
     var(--dark-clay)
   );
+  background-size: 200% 100%;
   content: '';
   mask:
     linear-gradient(#000 0 0) content-box,
@@ -618,18 +619,12 @@
 
 @keyframes streamErrorSweep {
   from {
-    --stream-error-angle: 0turn;
+    background-position: 100% 50%;
   }
 
   to {
-    --stream-error-angle: 1turn;
+    background-position: 0% 50%;
   }
-}
-
-@property --stream-error-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0turn;
 }
 
 @media (max-width: 1180px) {
