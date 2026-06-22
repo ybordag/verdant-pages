@@ -8,6 +8,7 @@
   width: 100%;
   min-height: 210px;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 7px;
   border: 1px dashed var(--line-strong);
@@ -17,16 +18,18 @@
 }
 
 .stateTitle {
-  color: var(--text-primary);
+  color: var(--empty-state-text, var(--text-primary));
   font-size: 15px;
   font-weight: 800;
+  text-align: center;
 }
 
 .stateBody {
   max-width: 52ch;
-  color: var(--text-secondary);
+  color: var(--empty-state-text, var(--text-secondary));
   font-size: 12px;
   line-height: 1.5;
+  text-align: center;
 }
 
 .list {
@@ -38,4 +41,8 @@
   display: flex;
   justify-content: center;
   padding: 22px 0 4px;
+}
+
+[data-theme='light'] .state {
+  --empty-state-text: var(--inkwell-light);
 }

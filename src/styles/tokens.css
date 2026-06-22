@@ -2,6 +2,7 @@
 :root {
   /* Ink / vellum scale */
   --inkwell: #1C1814;
+  --inkwell-light: #6F665A;
   --vellum-dark: #E9DEB7;
   --vellum: #F2E8C9;
   --vellum-page: #F4ECD5;
