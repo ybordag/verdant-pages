@@ -227,15 +227,19 @@ describe('RhizomePage', () => {
     expect(await screen.findByText('No messages in this thread yet.')).toBeInTheDocument()
   })
 
-  it('ignores blank history messages', async () => {
+  it('ignores blank and non-chat history messages', async () => {
     mocks.getThreadMessages.mockResolvedValue({
       thread_id: 'thread-1',
-      messages: [{ role: 'assistant', content: '   ', type: 'ai' }],
+      messages: [
+        { role: 'assistant', content: '   ', type: 'ai' },
+        { role: 'assistant', content: 'Error: no garden profile found.', type: 'tool' },
+      ],
     })
 
     renderRhizome('/app/rhizome/thread-1')
 
     expect(await screen.findByText('No messages in this thread yet.')).toBeInTheDocument()
+    expect(screen.queryByText('Error: no garden profile found.')).not.toBeInTheDocument()
   })
 
   it('shows a retry state when message history fails', async () => {

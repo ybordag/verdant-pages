@@ -85,6 +85,16 @@ Unit-tested (fake `ReadableStream`, no live backend needed for these): token ord
 
 ---
 
+### Rhizome chat live outage and visual-baseline E2E
+
+**What's deferred:** The deterministic Rhizome chat browser flows are covered in `e2e/rhizome.spec.ts` with mocked Cambium routes: markdown rendering for assistant and user messages, first-send thread creation and navigation, streaming/thinking state, `[object Object]` prevention, refresh/history cleanup, retry banner, thread navigation, and light/dark shell usability. What remains outside the default E2E suite is a live service outage/restart test and screenshot/contrast assertions for chat surfaces.
+
+**Why deferred:** Stopping and restarting Rhizome or Cambium from Playwright would make the default E2E suite depend on local process ownership and a full-stack environment. The mocked retry test proves Verdant's UI behavior when the stream endpoint fails; the live outage path should live in a full-stack integration job once service orchestration is reliable. Likewise, light/dark contrast and exact visual polish need an approved screenshot-baseline workflow; ad hoc pixel assertions would be brittle while the Phase 5 UI is still moving.
+
+**Re-enable when:** Add a seeded full-stack E2E job that can control Cambium/Rhizome lifecycle, then promote the live connection-failure/retry path into that job. Add chat screenshots during Phase 5f hardening after the visual-baseline policy is chosen, covering dark/light chat bubbles, markdown lists, retry banner, composer, and Rhizome/user bubble borders.
+
+---
+
 ### `NotificationDrawer` and `Toast` real implementations
 
 **What's deferred:** Both components render empty shells. `NotificationDrawer` opens/closes but shows no content; `Toast` accepts a `toasts` array but nothing ever populates it.
