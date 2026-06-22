@@ -186,11 +186,10 @@
 }
 
 .activeThread {
+  border-top: 1px solid var(--nav-accent);
   border-bottom-color: var(--nav-accent);
-  border-left: 2px solid var(--nav-accent);
   background: var(--nav-active-bg);
   color: var(--text-primary);
-  padding-left: 12px;
 }
 
 .threadRow strong {
