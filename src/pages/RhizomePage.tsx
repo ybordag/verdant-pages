@@ -426,6 +426,7 @@ export default function RhizomePage() {
     onRemove: (context: ContextObject) => void
   }) {
     const isActive = activeContextTarget === target
+    const shouldShowAutocomplete = isActive && contextSearchTerm.trim().length > 0
     return (
       <div className={s.contextInlineBox} aria-label={label}>
         <div className={s.contextInlineTitle}>
@@ -475,7 +476,7 @@ export default function RhizomePage() {
             />
           </span>
         </label>
-        {isActive ? (
+        {shouldShowAutocomplete ? (
           <div className={s.contextAutocomplete}>
             {contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2 ? (
               <div className={s.contextSearchState}>Type at least two characters after the prefix.</div>

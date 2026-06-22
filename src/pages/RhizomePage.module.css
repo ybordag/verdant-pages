@@ -834,7 +834,7 @@
 .composerBox {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
   background: var(--input-bg);
@@ -926,7 +926,7 @@
 .contextInlineBox {
   position: relative;
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
 .contextInlineTitle {
@@ -965,17 +965,16 @@
   display: flex;
   align-items: flex-start;
   gap: 7px;
-  min-height: 36px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-soft);
-  background: var(--bg);
+  min-height: 28px;
+  border: 0;
+  background: transparent;
   color: var(--text-muted);
-  padding: 7px 9px;
+  padding: 1px 0 0;
 }
 
 .contextInlineInput > svg {
   flex: 0 0 auto;
-  margin-top: 4px;
+  margin-top: 5px;
 }
 
 .contextInlineChips {
@@ -1000,10 +999,18 @@
 }
 
 .contextAutocomplete {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
   display: grid;
   max-height: 220px;
   overflow: auto;
-  border-top: 1px solid var(--line-subtle);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--bg-nav);
+  padding: 6px 8px;
 }
 
 .contextResultGroup {
@@ -1095,7 +1102,7 @@
   background: transparent;
   color: var(--text-primary);
   cursor: pointer;
-  padding: 10px 2px;
+  padding: 8px 2px;
   text-align: left;
 }
 
@@ -1128,7 +1135,7 @@
 .contextSearchState {
   color: var(--text-muted);
   font-size: 13px;
-  padding: 16px 0;
+  padding: 10px 2px;
 }
 
 @keyframes streamErrorSweep {
