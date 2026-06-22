@@ -18,9 +18,9 @@ vi.mock('@/lib/auth/context', () => ({
   }),
 }))
 
-function renderNav() {
+function renderNav(path = '/app/today') {
   return render(
-    <MemoryRouter initialEntries={['/app/today']}>
+    <MemoryRouter initialEntries={[path]}>
       <ThemeProvider>
         <NavProvider>
           <AppNav />
@@ -43,6 +43,20 @@ describe('AppNav', () => {
     expect(screen.getByRole('link', { name: /Plants/ })).toHaveAttribute('href', '/app/plants')
     expect(screen.getByRole('link', { name: /Beds/ })).toHaveAttribute('href', '/app/beds')
     expect(screen.getByRole('link', { name: /Containers/ })).toHaveAttribute('href', '/app/containers')
+  })
+
+  it('does not render fake nav badge counts', () => {
+    renderNav()
+    const nav = screen.getByRole('navigation', { name: 'Main navigation' })
+    expect(nav).not.toHaveTextContent('12')
+    expect(nav).not.toHaveTextContent('5')
+    expect(nav).not.toHaveTextContent('2')
+  })
+
+  it('marks the active Garden Profile card link', () => {
+    renderNav('/app/plants')
+
+    expect(screen.getByRole('link', { name: /Plants/ })).toHaveAttribute('aria-current', 'page')
   })
 
   it('renders the Quick Actions card', () => {

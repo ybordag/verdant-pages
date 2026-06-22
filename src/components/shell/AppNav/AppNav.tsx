@@ -116,21 +116,49 @@ function GardenProfileCard() {
     <div className={s.card}>
       <span className={s.cardLabel}>Garden Profile</span>
       <div className={s.cardGrid}>
-        <NavLink to="/app/garden" className={`${s.cardGridBtn} ${s.cardGridChartreuse}`}>
+        <NavLink
+          to="/app/garden"
+          className={({ isActive }) =>
+            [s.cardGridBtn, s.cardGridChartreuse, isActive ? s.cardGridActiveChartreuse : '']
+              .filter(Boolean)
+              .join(' ')
+          }
+        >
           <span className={s.cardIcon}><Map size={16} /></span>
           Overview
         </NavLink>
         <span className={s.cardGridFiller} aria-hidden="true" />
-        <NavLink to="/app/plants" className={`${s.cardGridBtn} ${s.cardGridPine}`}>
+        <NavLink
+          to="/app/plants"
+          className={({ isActive }) =>
+            [s.cardGridBtn, s.cardGridPine, isActive ? s.cardGridActivePine : '']
+              .filter(Boolean)
+              .join(' ')
+          }
+        >
           <span className={s.cardIcon}><Flower2 size={16} /></span>
           Plants
         </NavLink>
-        <NavLink to="/app/beds" className={`${s.cardGridBtn} ${s.cardGridPine}`}>
+        <NavLink
+          to="/app/beds"
+          className={({ isActive }) =>
+            [s.cardGridBtn, s.cardGridPine, isActive ? s.cardGridActivePine : '']
+              .filter(Boolean)
+              .join(' ')
+          }
+        >
           <span className={s.cardIcon}><LayoutGrid size={16} /></span>
           Beds
         </NavLink>
         <span className={s.cardGridFiller} aria-hidden="true" />
-        <NavLink to="/app/containers" className={`${s.cardGridBtn} ${s.cardGridChartreuse}`}>
+        <NavLink
+          to="/app/containers"
+          className={({ isActive }) =>
+            [s.cardGridBtn, s.cardGridChartreuse, isActive ? s.cardGridActiveChartreuse : '']
+              .filter(Boolean)
+              .join(' ')
+          }
+        >
           <span className={s.cardIcon}><Package size={16} /></span>
           Containers
         </NavLink>
@@ -186,18 +214,18 @@ export default function AppNav() {
       {/* Nav items */}
       <div className={s.scroll}>
         <NavSection label="Orientation">
-          <NavItem to="/app/rhizome" icon={<Leaf size={16} />} label="Rhizome" badge={2} />
+          <NavItem to="/app/rhizome" icon={<Leaf size={16} />} label="Rhizome" />
           <NavItem to="/app/today" icon={<Sun size={16} />} label="Today" end />
         </NavSection>
 
         <NavSection label="Work">
-          <NavItem to="/app/tasks" icon={<CheckSquare size={16} />} label="Tasks" badge={12} />
+          <NavItem to="/app/tasks" icon={<CheckSquare size={16} />} label="Tasks" />
           <NavItem to="/app/calendar" icon={<Calendar size={16} />} label="Calendar" />
-          <NavItem to="/app/projects" icon={<FolderOpen size={16} />} label="Projects" badge={5} />
+          <NavItem to="/app/projects" icon={<FolderOpen size={16} />} label="Projects" />
         </NavSection>
 
         <NavSection label="Operational">
-          <NavItem to="/app/incidents" icon={<AlertTriangle size={16} />} label="Incidents" badge={2} />
+          <NavItem to="/app/incidents" icon={<AlertTriangle size={16} />} label="Incidents" />
           <NavItem to="/app/activity" icon={<Activity size={16} />} label="Activity" />
         </NavSection>
 

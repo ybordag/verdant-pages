@@ -389,6 +389,20 @@
   color: var(--chartreuse-deep);
 }
 
+.cardGridActiveChartreuse,
+[data-theme='light'] .cardGridActiveChartreuse {
+  border-color: var(--chartreuse);
+  background: var(--chartreuse);
+  color: var(--inkwell);
+}
+
+.cardGridActivePine,
+[data-theme='light'] .cardGridActivePine {
+  border-color: var(--pine);
+  background: var(--pine);
+  color: var(--vellum);
+}
+
 /* Blank decorative tiles — puzzle-piece filler, no content */
 .cardGridFiller {
   flex: 1 0 26px;
