@@ -14,7 +14,6 @@
   padding: 0 2px 14px;
 }
 
-.headerActions,
 .railActions {
   display: flex;
   align-items: center;
@@ -32,7 +31,10 @@
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .iconButton:hover {
@@ -43,23 +45,23 @@
 
 .workbench {
   display: grid;
-  grid-template-columns: minmax(230px, 280px) minmax(420px, 1fr) minmax(220px, 300px);
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   width: 100%;
   min-height: calc(100vh - 128px);
   min-width: 0;
 }
 
-.threadsCollapsed {
-  grid-template-columns: 48px minmax(420px, 1fr) minmax(220px, 300px);
+.withThreads {
+  grid-template-columns: minmax(230px, 280px) minmax(420px, 1fr);
 }
 
-.reviewsCollapsed {
-  grid-template-columns: minmax(230px, 280px) minmax(420px, 1fr) 48px;
+.withReviews {
+  grid-template-columns: minmax(420px, 1fr) minmax(220px, 300px);
 }
 
-.threadsCollapsed.reviewsCollapsed {
-  grid-template-columns: 48px minmax(420px, 1fr) 48px;
+.withThreads.withReviews {
+  grid-template-columns: minmax(230px, 280px) minmax(420px, 1fr) minmax(220px, 300px);
 }
 
 .threadRail,
@@ -77,23 +79,6 @@
   flex-direction: column;
   gap: 14px;
   padding: 14px;
-}
-
-.collapsedRail {
-  align-items: center;
-  padding: 8px;
-}
-
-.collapsedRail .railContent {
-  display: none;
-}
-
-.collapsedRailBar {
-  display: none;
-}
-
-.collapsedRail .collapsedRailBar {
-  display: flex;
 }
 
 .railContent {
@@ -126,17 +111,35 @@
   color: var(--text-primary);
   font-family: var(--font-display);
   font-size: clamp(34px, 4vw, 54px);
-  font-variation-settings: "BNCE" var(--display-bounce);
+  font-variation-settings: 'BNCE' var(--display-bounce);
   font-weight: var(--display-weight);
   letter-spacing: 0;
   line-height: 1;
 }
 
 .title span {
-  background: linear-gradient(105deg, var(--chartreuse) 8%, var(--pine-light) 45%, var(--pine) 100%);
+  background: linear-gradient(
+    105deg,
+    var(--chartreuse) 0%,
+    var(--chartreuse-deep) 34%,
+    var(--pine-light) 64%,
+    var(--pine) 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+:global([data-theme='light']) .title span {
+  background: linear-gradient(
+    105deg,
+    var(--pine) 0%,
+    var(--pine-light) 36%,
+    var(--chartreuse-deep) 68%,
+    var(--chartreuse) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 .railHeader h2 {
@@ -278,6 +281,28 @@
   line-height: 1.15;
 }
 
+.threadTitleButton {
+  display: inline-flex;
+  max-width: min(56vw, 520px);
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.15;
+  padding: 0;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.threadTitleButton:hover {
+  color: var(--nav-accent);
+}
+
 .modelPill {
   max-width: 280px;
   overflow: hidden;
@@ -295,16 +320,36 @@
 
 .sessionStrip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   gap: 8px;
   border-bottom: 1px solid var(--line);
   padding: 10px 16px;
 }
 
-.sessionStrip div {
+.sessionStrip div,
+.reviewButton {
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
   padding: 8px 10px;
+}
+
+.reviewButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  min-height: 100%;
+  background: transparent;
+  color: var(--nav-accent);
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reviewButton:hover {
+  border-color: var(--nav-accent);
+  background: var(--nav-active-bg);
 }
 
 .sessionStrip span {
@@ -338,6 +383,66 @@
   text-align: center;
 }
 
+.recentThreads {
+  display: grid;
+  gap: 7px;
+  width: min(460px, 100%);
+  margin-top: 14px;
+}
+
+.recentThreads a {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  color: var(--text-secondary);
+  padding: 9px 11px;
+  text-align: left;
+  text-decoration: none;
+}
+
+.recentThreads a:hover {
+  border-color: var(--nav-accent);
+  background: var(--surface-muted);
+}
+
+.recentThreads strong {
+  display: block;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recentThreads small {
+  display: block;
+  overflow: hidden;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recentThreads button {
+  justify-self: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 7px 10px;
+  text-transform: uppercase;
+}
+
+.recentThreads button:hover {
+  border-color: var(--nav-accent);
+  color: var(--text-primary);
+}
+
 .emptyChat span,
 .reviewEmpty span,
 .noThreads span {
@@ -358,14 +463,10 @@
 }
 
 @media (max-width: 1180px) {
-  .workbench {
+  .withThreads,
+  .withReviews,
+  .withThreads.withReviews {
     grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
-  }
-
-  .threadsCollapsed,
-  .reviewsCollapsed,
-  .threadsCollapsed.reviewsCollapsed {
-    grid-template-columns: 48px minmax(0, 1fr);
   }
 
   .reviewPanel {
@@ -382,9 +483,9 @@
     grid-template-columns: 1fr;
   }
 
-  .threadsCollapsed,
-  .reviewsCollapsed,
-  .threadsCollapsed.reviewsCollapsed {
+  .withThreads,
+  .withReviews,
+  .withThreads.withReviews {
     grid-template-columns: 1fr;
   }
 
@@ -397,18 +498,22 @@
     max-height: 280px;
   }
 
-  .collapsedRail {
-    display: none;
-  }
-
   .chatPane {
     min-height: 640px;
   }
 }
 
 @media (max-width: 560px) {
-  .sessionStrip,
   .composer {
     grid-template-columns: 1fr;
+  }
+
+  .sessionStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .reviewButton {
+    width: 100%;
+    min-height: 36px;
   }
 }

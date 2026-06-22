@@ -3,9 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import {
   MessageSquare,
   PanelLeftClose,
-  PanelLeftOpen,
   PanelRightClose,
-  PanelRightOpen,
   Plus,
   Search,
   Send,
@@ -20,13 +18,19 @@ import type { ThreadView } from '@/lib/types/rhizome'
 import s from './RhizomePage.module.css'
 
 const THREAD_LIMIT = 20
+const RECENT_THREAD_LIMIT = 3
 const EMPTY_THREADS: ThreadView[] = []
 
 function formatDate(value?: string): string {
   if (!value) return 'No activity yet'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return 'No activity yet'
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(date)
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date)
 }
 
 function threadTitle(thread?: ThreadView): string {
@@ -49,15 +53,18 @@ export default function RhizomePage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [draft, setDraft] = useState('')
-  const [threadsCollapsed, setThreadsCollapsed] = useState(false)
-  const [reviewsCollapsed, setReviewsCollapsed] = useState(false)
+  const [threadsPanelOpen, setThreadsPanelOpen] = useState(false)
+  const [reviewsPanelOpen, setReviewsPanelOpen] = useState(false)
 
   const threadsQuery = useQuery({
     queryKey: ['threads', { limit: THREAD_LIMIT }],
     queryFn: () => listThreads({ limit: THREAD_LIMIT }),
   })
   const threads = threadsQuery.data ?? EMPTY_THREADS
-  const activeThreadFromList = useMemo(() => threads.find((thread) => thread.thread_id === threadId), [threadId, threads])
+  const activeThreadFromList = useMemo(
+    () => threads.find((thread) => thread.thread_id === threadId),
+    [threadId, threads],
+  )
 
   const activeThreadQuery = useQuery({
     queryKey: ['threads', threadId],
@@ -67,7 +74,10 @@ export default function RhizomePage() {
 
   const activeThread = activeThreadFromList ?? activeThreadQuery.data
   const hasThreads = threads.length > 0
+  const recentThreads = threads.slice(0, RECENT_THREAD_LIMIT)
   const isNewThread = !threadId
+  const pendingReviewCount = 0
+  const hasPendingReviews = pendingReviewCount > 0
 
   return (
     <main className={s.page}>
@@ -78,121 +88,119 @@ export default function RhizomePage() {
             Ask <span>Rhizome</span>
           </h1>
         </div>
-        <div className={s.headerActions}>
-          <button
-            aria-label={threadsCollapsed ? 'Expand threads panel' : 'Collapse threads panel'}
-            className={s.iconButton}
-            type="button"
-            onClick={() => setThreadsCollapsed((value) => !value)}
-          >
-            {threadsCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-          </button>
-          <button
-            aria-label={reviewsCollapsed ? 'Expand reviews panel' : 'Collapse reviews panel'}
-            className={s.iconButton}
-            type="button"
-            onClick={() => setReviewsCollapsed((value) => !value)}
-          >
-            {reviewsCollapsed ? <PanelRightOpen size={16} /> : <PanelRightClose size={16} />}
-          </button>
-        </div>
       </header>
 
       <section
         className={[
           s.workbench,
-          threadsCollapsed ? s.threadsCollapsed : '',
-          reviewsCollapsed ? s.reviewsCollapsed : '',
-        ].filter(Boolean).join(' ')}
+          threadsPanelOpen ? s.withThreads : '',
+          hasPendingReviews && reviewsPanelOpen ? s.withReviews : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
         aria-label="Rhizome workbench"
       >
-        <aside
-          className={[s.threadRail, threadsCollapsed ? s.collapsedRail : ''].filter(Boolean).join(' ')}
-          aria-label="Rhizome threads"
-        >
-          <div className={s.collapsedRailBar} hidden={!threadsCollapsed}>
-            <button
-              aria-label="Expand threads panel"
-              className={s.iconButton}
-              type="button"
-              onClick={() => setThreadsCollapsed(false)}
-            >
-              <PanelLeftOpen size={16} />
-            </button>
-          </div>
-
-          <div className={s.railContent} hidden={threadsCollapsed}>
-            <div className={s.railHeader}>
-              <div>
-                <p className={s.eyebrow}>Navigator</p>
-                <h2>Threads</h2>
-              </div>
-              <div className={s.railActions}>
-                <button
-                  aria-label="Collapse threads panel"
-                  className={s.iconButton}
-                  type="button"
-                  onClick={() => setThreadsCollapsed(true)}
-                >
-                  <PanelLeftClose size={16} />
-                </button>
-                <Button size="sm" type="button" onClick={() => navigate('/app/rhizome')}>
-                  <Plus size={14} />
-                  New
-                </Button>
-              </div>
-            </div>
-
-            <div className={s.searchBox} aria-hidden="true">
-              <Search size={14} />
-              <span>Search threads</span>
-            </div>
-
-            {threadsQuery.isLoading ? (
-              <div className={s.railState}>Loading threads</div>
-            ) : threadsQuery.isError ? (
-              <div className={s.railState}>Threads are unavailable right now.</div>
-            ) : hasThreads ? (
-              <nav className={s.threadList} aria-label="Recent threads">
-                <Link className={[s.threadRow, isNewThread ? s.activeThread : ''].filter(Boolean).join(' ')} to="/app/rhizome">
-                  <span className={s.threadIcon}><Plus size={15} /></span>
-                  <span>
-                    <strong>New thread</strong>
-                    <small>Start with a blank composer</small>
-                  </span>
-                </Link>
-                {threads.map((thread) => (
-                  <Link
-                    className={[s.threadRow, thread.thread_id === threadId ? s.activeThread : ''].filter(Boolean).join(' ')}
-                    key={thread.thread_id}
-                    to={`/app/rhizome/${encodeURIComponent(thread.thread_id)}`}
+        {threadsPanelOpen ? (
+          <aside className={s.threadRail} aria-label="Rhizome threads">
+            <div className={s.railContent}>
+              <div className={s.railHeader}>
+                <div>
+                  <p className={s.eyebrow}>Navigator</p>
+                  <h2>Threads</h2>
+                </div>
+                <div className={s.railActions}>
+                  <button
+                    aria-label="Collapse threads panel"
+                    className={s.iconButton}
+                    type="button"
+                    onClick={() => setThreadsPanelOpen(false)}
                   >
-                    <span className={s.threadIcon}><MessageSquare size={15} /></span>
-                    <span>
-                      <strong>{threadTitle(thread)}</strong>
-                      <small>{threadPreview(thread)}</small>
-                    </span>
-                    <time>{formatDate(thread.last_active_at)}</time>
-                  </Link>
-                ))}
-              </nav>
-            ) : (
-              <div className={s.noThreads}>
-                <Sprout size={22} />
-                <strong>No threads yet</strong>
-                <span>Start with a question, a plan, or a garden object you want Rhizome to reason about.</span>
+                    <PanelLeftClose size={16} />
+                  </button>
+                  <Button size="sm" type="button" onClick={() => navigate('/app/rhizome')}>
+                    <Plus size={14} />
+                    New
+                  </Button>
+                </div>
               </div>
-            )}
-          </div>
-        </aside>
+
+              <div className={s.searchBox} aria-hidden="true">
+                <Search size={14} />
+                <span>Search threads</span>
+              </div>
+
+              {threadsQuery.isLoading ? (
+                <div className={s.railState}>Loading threads</div>
+              ) : threadsQuery.isError ? (
+                <div className={s.railState}>Threads are unavailable right now.</div>
+              ) : hasThreads ? (
+                <nav className={s.threadList} aria-label="Recent threads">
+                  <Link
+                    className={[s.threadRow, isNewThread ? s.activeThread : '']
+                      .filter(Boolean)
+                      .join(' ')}
+                    to="/app/rhizome"
+                  >
+                    <span className={s.threadIcon}>
+                      <Plus size={15} />
+                    </span>
+                    <span>
+                      <strong>New thread</strong>
+                      <small>Start with a blank composer</small>
+                    </span>
+                  </Link>
+                  {threads.map((thread) => (
+                    <Link
+                      className={[s.threadRow, thread.thread_id === threadId ? s.activeThread : '']
+                        .filter(Boolean)
+                        .join(' ')}
+                      key={thread.thread_id}
+                      to={`/app/rhizome/${encodeURIComponent(thread.thread_id)}`}
+                    >
+                      <span className={s.threadIcon}>
+                        <MessageSquare size={15} />
+                      </span>
+                      <span>
+                        <strong>{threadTitle(thread)}</strong>
+                        <small>{threadPreview(thread)}</small>
+                      </span>
+                      <time>{formatDate(thread.last_active_at)}</time>
+                    </Link>
+                  ))}
+                </nav>
+              ) : (
+                <div className={s.noThreads}>
+                  <Sprout size={22} />
+                  <strong>No threads yet</strong>
+                  <span>
+                    Start with a question, a plan, or a garden object you want Rhizome to reason
+                    about.
+                  </span>
+                </div>
+              )}
+            </div>
+          </aside>
+        ) : null}
 
         <section className={s.chatPane} aria-label="Conversation with Rhizome">
           <header className={s.topbar}>
             <div>
               <p className={s.eyebrow}>{isNewThread ? 'New conversation' : 'Active thread'}</p>
-              <h2>{isNewThread ? 'Blank thread' : threadTitle(activeThread)}</h2>
+              {isNewThread ? (
+                <h2>Blank thread</h2>
+              ) : (
+                <button
+                  className={s.threadTitleButton}
+                  type="button"
+                  onClick={() => setThreadsPanelOpen(true)}
+                >
+                  {threadTitle(activeThread)}
+                </button>
+              )}
             </div>
-            <div className={s.modelPill}>{modelLabel(user?.preferred_provider, user?.preferred_model)}</div>
+            <div className={s.modelPill}>
+              {modelLabel(user?.preferred_provider, user?.preferred_model)}
+            </div>
           </header>
 
           <div className={s.sessionStrip} aria-label="Session context">
@@ -208,6 +216,16 @@ export default function RhizomePage() {
               <span>Focus</span>
               <strong>Not set</strong>
             </div>
+            {hasPendingReviews ? (
+              <button
+                aria-label="Open pending reviews"
+                className={s.reviewButton}
+                type="button"
+                onClick={() => setReviewsPanelOpen(true)}
+              >
+                {pendingReviewCount}
+              </button>
+            ) : null}
           </div>
 
           <div className={s.threadBody}>
@@ -220,6 +238,24 @@ export default function RhizomePage() {
                 <Sprout size={26} />
                 <strong>Start a thread when you are ready.</strong>
                 <span>Rhizome will wait until you send the first message.</span>
+                {recentThreads.length > 0 ? (
+                  <div className={s.recentThreads} aria-label="Recent thread shortcuts">
+                    {recentThreads.map((thread) => (
+                      <Link
+                        key={thread.thread_id}
+                        to={`/app/rhizome/${encodeURIComponent(thread.thread_id)}`}
+                      >
+                        <strong>{threadTitle(thread)}</strong>
+                        <small>{threadPreview(thread)}</small>
+                      </Link>
+                    ))}
+                    {threads.length > RECENT_THREAD_LIMIT ? (
+                      <button type="button" onClick={() => setThreadsPanelOpen(true)}>
+                        Look through more threads
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div className={s.emptyChat}>
@@ -244,39 +280,27 @@ export default function RhizomePage() {
           </form>
         </section>
 
-        <aside
-          className={[s.reviewPanel, reviewsCollapsed ? s.collapsedRail : ''].filter(Boolean).join(' ')}
-          aria-label="Pending Rhizome reviews"
-        >
-          <div className={s.collapsedRailBar} hidden={!reviewsCollapsed}>
-            <button
-              aria-label="Expand reviews panel"
-              className={s.iconButton}
-              type="button"
-              onClick={() => setReviewsCollapsed(false)}
-            >
-              <PanelRightOpen size={16} />
-            </button>
-          </div>
-
-          <div className={s.railContent} hidden={reviewsCollapsed}>
-            <div className={s.railHeader}>
-              <p className={s.eyebrow}>Reviews</p>
-              <button
-                aria-label="Collapse reviews panel"
-                className={s.iconButton}
-                type="button"
-                onClick={() => setReviewsCollapsed(true)}
-              >
-                <PanelRightClose size={16} />
-              </button>
+        {hasPendingReviews && reviewsPanelOpen ? (
+          <aside className={s.reviewPanel} aria-label="Pending Rhizome reviews">
+            <div className={s.railContent}>
+              <div className={s.railHeader}>
+                <p className={s.eyebrow}>Reviews</p>
+                <button
+                  aria-label="Collapse reviews panel"
+                  className={s.iconButton}
+                  type="button"
+                  onClick={() => setReviewsPanelOpen(false)}
+                >
+                  <PanelRightClose size={16} />
+                </button>
+              </div>
+              <div className={s.reviewEmpty}>
+                <strong>No pending approvals</strong>
+                <span>Rhizome decisions that need review will appear here.</span>
+              </div>
             </div>
-            <div className={s.reviewEmpty}>
-              <strong>No pending approvals</strong>
-              <span>Rhizome decisions that need review will appear here.</span>
-            </div>
-          </div>
-        </aside>
+          </aside>
+        ) : null}
       </section>
     </main>
   )
