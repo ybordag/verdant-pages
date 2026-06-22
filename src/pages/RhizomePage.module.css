@@ -48,7 +48,8 @@
   grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   width: 100%;
-  min-height: calc(100vh - 128px);
+  height: calc(100vh - 128px);
+  min-height: 560px;
   min-width: 0;
 }
 
@@ -166,6 +167,7 @@
   flex: 1;
   flex-direction: column;
   margin-inline: -14px;
+  border-top: 1px solid var(--line-subtle);
   min-height: 0;
   overflow: auto;
 }
@@ -185,8 +187,10 @@
 
 .activeThread {
   border-bottom-color: var(--nav-accent);
+  border-left: 2px solid var(--nav-accent);
   background: var(--nav-active-bg);
   color: var(--text-primary);
+  padding-left: 12px;
 }
 
 .threadRow strong {
@@ -361,6 +365,9 @@
   flex: 1;
   min-height: 0;
   overflow: auto;
+  background-image: radial-gradient(var(--dot) 0.8px, transparent 0.8px);
+  background-position: 0 0;
+  background-size: 14px 14px;
   padding: 16px;
 }
 
@@ -420,7 +427,7 @@
   max-width: min(72ch, 78%);
   border: 1px solid var(--line);
   border-radius: var(--radius-journal);
-  background: var(--surface-dark-card);
+  background: var(--bg);
   padding: 10px 12px;
   text-align: left;
 }
