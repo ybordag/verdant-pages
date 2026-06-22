@@ -255,7 +255,13 @@ export default function RhizomePage() {
                       </button>
                     ) : null}
                   </div>
-                ) : null}
+                ) : (
+                  <div className={s.recentThreads} aria-label="Thread navigator shortcut">
+                    <button type="button" onClick={() => setThreadsPanelOpen(true)}>
+                      Browse threads
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className={s.emptyChat}>
