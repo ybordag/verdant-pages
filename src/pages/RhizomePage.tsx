@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Button from '@/components/primitives/Button/Button'
+import MarkdownMessage from '@/components/primitives/MarkdownMessage/MarkdownMessage'
 import Textarea from '@/components/primitives/Textarea/Textarea'
 import { createThread, getThread, getThreadMessages, listThreads, streamChat } from '@/lib/api/chat'
 import { useAuth } from '@/lib/auth/context'
@@ -418,7 +419,7 @@ export default function RhizomePage() {
                           {showDaySeparator ? <div className={s.daySeparator}>{label}</div> : null}
                           <article className={[s.messageBubble, messageClass(message)].join(' ')}>
                             <div className={s.messageMeta}>{messageLabel(message)}</div>
-                            <p>{message.content}</p>
+                            <MarkdownMessage content={message.content} />
                           </article>
                         </li>
                       )
@@ -427,7 +428,7 @@ export default function RhizomePage() {
                       <li>
                         <article className={[s.messageBubble, s.rhizomeMessage, s.streamingMessage].join(' ')}>
                           <div className={s.messageMeta}>Rhizome</div>
-                          <p>{visibleStreamingText || 'Rhizome is thinking...'}</p>
+                          <MarkdownMessage content={visibleStreamingText || 'Rhizome is thinking...'} />
                         </article>
                       </li>
                     ) : null}

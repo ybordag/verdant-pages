@@ -1,0 +1,57 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.root p,
+.root ul,
+.root ol {
+  margin: 0;
+}
+
+.root ul,
+.root ol {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 1.35em;
+}
+
+.root li {
+  padding-left: 0.1em;
+}
+
+.root strong {
+  color: var(--text-strong);
+  font-weight: 800;
+}
+
+.root em {
+  font-style: italic;
+}
+
+.root code {
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-tight);
+  background: var(--surface-muted);
+  padding: 0 0.28em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+.root a {
+  color: var(--nav-accent);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.root a:hover {
+  color: var(--text-primary);
+}

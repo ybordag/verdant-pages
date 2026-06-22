@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { vi } from 'vitest'
@@ -170,6 +170,31 @@ describe('RhizomePage', () => {
     expect(screen.getAllByText('Rhizome').length).toBeGreaterThan(0)
     expect(mocks.getThread).not.toHaveBeenCalled()
     expect(mocks.getThreadMessages).toHaveBeenCalledWith('thread-1')
+  })
+
+  it('renders markdown styling in user and Rhizome messages', async () => {
+    mocks.getThreadMessages.mockResolvedValue({
+      thread_id: 'thread-1',
+      messages: [
+        { role: 'user', content: 'I have **clay soil**', type: 'human' },
+        {
+          role: 'assistant',
+          content: 'Please confirm:\n\n* **Climate zone**\n* Last frost date',
+          type: 'ai',
+        },
+      ],
+    })
+
+    renderRhizome('/app/rhizome/thread-1')
+
+    const userStrongText = await screen.findByText('clay soil')
+    expect(userStrongText.tagName).toBe('STRONG')
+
+    const list = screen.getByText('Climate zone').closest('ul')
+    expect(list).not.toBeNull()
+    if (!list) return
+    expect(within(list).getByText('Climate zone').tagName).toBe('STRONG')
+    expect(within(list).getAllByRole('listitem')).toHaveLength(2)
   })
 
   it('loads the active thread when it is not in the recent-thread list', async () => {

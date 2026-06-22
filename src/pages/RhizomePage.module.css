@@ -436,14 +436,6 @@
   text-align: left;
 }
 
-.messageBubble p {
-  margin-top: 4px;
-  color: var(--text-secondary);
-  font-size: 13px;
-  line-height: 1.45;
-  white-space: pre-wrap;
-}
-
 .messageMeta {
   color: var(--text-muted);
   font-family: var(--font-label);
@@ -462,7 +454,7 @@
   border-left: 3px solid var(--clay);
 }
 
-.streamingMessage p::after {
+.streamingMessage > div:last-child::after {
   content: '';
   display: inline-block;
   width: 6px;
