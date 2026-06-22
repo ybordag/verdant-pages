@@ -126,7 +126,7 @@ test('login flow', async ({ page }) => {
 
 E2E tests that hit real API endpoints require Cambium and Rhizome to be running. Pure UI E2E tests (forms, navigation, rendering) work without the backend.
 
-For page behavior that depends on structured API data but does not need a live backend, add Playwright route fixtures under `e2e/fixtures/`. The Activity page uses this pattern in `e2e/activity.spec.ts`: it mocks auth/session plus `GET /api/v1/activity`, generates a busy feed, verifies infinite-scroll cursor requests, checks invalid filter ranges do not query, and covers a slow initial response racing with a newer filtered request.
+For page behavior that depends on structured API data but does not need a live backend, add Playwright route fixtures under `e2e/fixtures/`. The Activity page uses this pattern in `e2e/activity.spec.ts`: it mocks auth/session plus `GET /api/v1/activity`, generates a busy feed, verifies infinite-scroll cursor requests, checks invalid filter ranges do not query, covers reset/filter pagination behavior, checks mobile overflow, and covers a slow initial response racing with a newer filtered request. Its opt-in live backend smoke stays skipped unless `VERDANT_LIVE_ACTIVITY_E2E=1` is set with Cambium/Rhizome running.
 
 ---
 

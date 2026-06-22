@@ -192,7 +192,7 @@ Startup intake remains a backend contract gap tracked as rhizome#146: Rhizome in
 5. **Lazy infinite scroll:** Add sentinel-driven pagination using `before_timestamp`, appending results without duplicates while preserving active filters.
 6. **Test and polish pass:** Add focused API/page/component coverage for rendering, filters, retry, empty state, and pagination; finish responsive polish and update docs to mark 5a implemented.
 
-**5a status:** Implemented on `sugar-maple`. Coverage includes API query construction, page-level filter/date validation, activity feed states, cursor pagination with duplicate suppression, and mocked Playwright E2E for busy feeds, filter queries, invalid date guards, dropdown/calendar close behavior, and stale-response races.
+**5a status:** Implemented on `sugar-maple`. Coverage includes API query construction, page-level filter/date validation, activity feed states, event row rendering, custom filter controls, infinite-scroll observer behavior, cursor pagination with duplicate suppression, filter reset after pagination, and mocked Playwright E2E for busy feeds, filter queries, invalid date guards, dropdown/calendar close behavior, mobile overflow, and stale-response races. An opt-in live backend activity smoke exists behind `VERDANT_LIVE_ACTIVITY_E2E=1`.
 
 ### Today page
 

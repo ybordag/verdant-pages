@@ -89,6 +89,7 @@ function renderActivityPage() {
 function mockActivityResponses() {
   vi.mocked(listActivity).mockImplementation(async (params?: ActivityListParams) => {
     if (params?.category === 'incident') return [EVENTS[2]]
+    if (params?.event_type === 'task_completed') return [EVENTS[0]]
     if (params?.subject_type === 'plant' && params.since === '2026-06-20' && params.before_timestamp === '2026-06-21') {
       return [EVENTS[2]]
     }
@@ -183,6 +184,20 @@ describe('ActivityPage', () => {
     expect(screen.getByText('1 events')).toBeInTheDocument()
   })
 
+  it('requests activity filtered by event type', async () => {
+    renderActivityPage()
+
+    await screen.findByText('Completed morning watering for container tomatoes.')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Event type' }))
+    await userEvent.click(screen.getByRole('option', { name: 'task completed' }))
+
+    await waitFor(() => expect(listActivity).toHaveBeenLastCalledWith({ event_type: 'task_completed', limit: 20 }))
+    expect(await screen.findByText('Completed morning watering for container tomatoes.')).toBeInTheDocument()
+    expect(screen.queryByText('Updated cherry tomato transplant status.')).not.toBeInTheDocument()
+    expect(screen.getByText('1 events')).toBeInTheDocument()
+  })
+
   it('loads older activity when the feed sentinel intersects', async () => {
     const firstPage = Array.from({ length: 20 }, (_, index) =>
       makeEvent(index, `2026-06-${String(21 - index).padStart(2, '0')}T12:00:00`),
@@ -212,6 +227,55 @@ describe('ActivityPage', () => {
     expect(await screen.findByText('Activity event 20')).toBeInTheDocument()
     expect(screen.getAllByText('Activity event 19')).toHaveLength(1)
     expect(screen.getByText('21 events')).toBeInTheDocument()
+  })
+
+  it('stops pagination after an empty next page', async () => {
+    const firstPage = Array.from({ length: 20 }, (_, index) =>
+      makeEvent(index, `2026-06-${String(21 - index).padStart(2, '0')}T12:00:00`),
+    )
+    vi.mocked(listActivity).mockImplementation(async (params?: ActivityListParams) => {
+      if (params?.before_timestamp === firstPage[19].created_at) return []
+      return firstPage
+    })
+
+    renderActivityPage()
+
+    expect(await screen.findByText('Activity event 0')).toBeInTheDocument()
+
+    await act(async () => {
+      intersectionCallback?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver)
+    })
+
+    await waitFor(() => expect(screen.getByText('End of activity')).toBeInTheDocument())
+    expect(screen.getByText('20 events')).toBeInTheDocument()
+  })
+
+  it('resets pagination when filters change after loading older activity', async () => {
+    const firstPage = Array.from({ length: 20 }, (_, index) =>
+      makeEvent(index, `2026-06-${String(21 - index).padStart(2, '0')}T12:00:00`),
+    )
+    const secondPage = [makeEvent(20, '2026-06-01T12:00:00')]
+    vi.mocked(listActivity).mockImplementation(async (params?: ActivityListParams) => {
+      if (params?.category === 'incident') return [EVENTS[2]]
+      if (params?.before_timestamp === firstPage[19].created_at) return secondPage
+      return firstPage
+    })
+
+    renderActivityPage()
+
+    expect(await screen.findByText('Activity event 0')).toBeInTheDocument()
+    await act(async () => {
+      intersectionCallback?.([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver)
+    })
+    expect(await screen.findByText('Activity event 20')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Category' }))
+    await userEvent.click(screen.getByRole('option', { name: 'incident' }))
+
+    await waitFor(() => expect(listActivity).toHaveBeenLastCalledWith({ category: 'incident', limit: 20 }))
+    expect(await screen.findByText('Flagged aphid pressure on kale starts.')).toBeInTheDocument()
+    expect(screen.queryByText('Activity event 20')).not.toBeInTheDocument()
+    expect(screen.getByText('1 events')).toBeInTheDocument()
   })
 
   it('shows date filter errors and does not request an invalid date range', async () => {
