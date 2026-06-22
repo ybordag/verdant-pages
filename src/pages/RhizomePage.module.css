@@ -263,8 +263,8 @@
 }
 
 .chatPane {
-  display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -369,6 +369,7 @@
 }
 
 .threadBody {
+  flex: 1;
   min-height: 0;
   overflow: auto;
   padding: 16px;
@@ -552,21 +553,56 @@
 }
 
 .streamError {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  border-top: 1px solid var(--line);
-  color: var(--text-secondary);
+  overflow: hidden;
+  margin: 10px 16px 0;
+  border: 1px solid rgb(var(--clay-rgb) / 0.58);
+  border-radius: var(--radius-soft);
+  background: rgb(var(--clay-rgb) / 0.14);
+  color: var(--text-primary);
   font-size: 12px;
-  padding: 9px 16px 0;
+  font-weight: 800;
+  padding: 9px 11px;
+}
+
+.streamError::before {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    90deg,
+    rgb(var(--clay-rgb) / 0.35),
+    var(--clay),
+    var(--dark-clay),
+    var(--clay),
+    rgb(var(--clay-rgb) / 0.35)
+  );
+  background-size: 220% 100%;
+  content: '';
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: streamErrorBorder 1.8s linear infinite;
+}
+
+.streamError span,
+.streamError button {
+  position: relative;
+  z-index: 1;
 }
 
 .streamError button {
-  border: 1px solid var(--line);
+  border: 1px solid rgb(var(--clay-rgb) / 0.46);
   border-radius: var(--radius-soft);
-  background: transparent;
-  color: var(--text-secondary);
+  background: rgb(var(--clay-rgb) / 0.08);
+  color: var(--text-primary);
   cursor: pointer;
   font-family: var(--font-label);
   font-size: 10px;
@@ -576,8 +612,18 @@
 }
 
 .streamError button:hover {
-  border-color: var(--nav-accent);
-  color: var(--text-primary);
+  border-color: var(--clay);
+  background: rgb(var(--clay-rgb) / 0.16);
+}
+
+@keyframes streamErrorBorder {
+  from {
+    background-position: 0% 50%;
+  }
+
+  to {
+    background-position: 220% 50%;
+  }
 }
 
 @media (max-width: 1180px) {

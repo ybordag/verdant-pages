@@ -67,11 +67,6 @@ function dateLabel(value?: string): string | null {
   }).format(date)
 }
 
-function createLocalThreadId(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
-  return `thread-${Date.now()}-${Math.random().toString(16).slice(2)}`
-}
-
 export default function RhizomePage() {
   const { threadId } = useParams()
   const navigate = useNavigate()
@@ -129,7 +124,7 @@ export default function RhizomePage() {
     const message = (messageOverride ?? draft).trim()
     if (!message || isStreaming) return
 
-    const targetThreadId = threadId ?? createLocalThreadId()
+    let targetThreadId = threadId
     const controller = new AbortController()
     streamControllerRef.current?.abort()
     streamControllerRef.current = controller
@@ -139,8 +134,9 @@ export default function RhizomePage() {
     setStreamingText('')
 
     try {
-      if (!threadId) {
-        await createThread({ thread_id: targetThreadId })
+      if (!targetThreadId) {
+        const createdThread = await createThread({})
+        targetThreadId = createdThread.thread_id
         navigate(`/app/rhizome/${encodeURIComponent(targetThreadId)}`)
       }
 
@@ -313,6 +309,17 @@ export default function RhizomePage() {
             </div>
           </header>
 
+          {streamError ? (
+            <div className={s.streamError} role="alert">
+              <span>{streamError}</span>
+              {retryMessage ? (
+                <button type="button" onClick={() => void submitMessage(retryMessage)}>
+                  Retry
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className={s.sessionStrip} aria-label="Session context">
             <div>
               <span>Time</span>
@@ -421,17 +428,6 @@ export default function RhizomePage() {
               </>
             )}
           </div>
-
-          {streamError ? (
-            <div className={s.streamError} role="alert">
-              <span>{streamError}</span>
-              {retryMessage ? (
-                <button type="button" onClick={() => void submitMessage(retryMessage)}>
-                  Retry
-                </button>
-              ) : null}
-            </div>
-          ) : null}
 
           <form
             className={s.composer}

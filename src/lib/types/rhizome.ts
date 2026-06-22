@@ -736,7 +736,7 @@ export interface ContextObject {
 }
 
 export interface CreateThreadRequest {
-  thread_id: string
+  thread_id?: string
   title?: string
   project_id?: string
   initial_context?: ContextObject[]

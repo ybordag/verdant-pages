@@ -88,7 +88,6 @@ async function* failedStream() {
 
 describe('RhizomePage', () => {
   beforeEach(() => {
-    vi.stubGlobal('crypto', { randomUUID: () => 'thread-new' })
     mocks.createThread.mockResolvedValue({ thread_id: 'thread-new' })
     mocks.listThreads.mockResolvedValue(THREADS)
     mocks.getThread.mockResolvedValue(THREADS[0])
@@ -113,7 +112,6 @@ describe('RhizomePage', () => {
 
   afterEach(() => {
     vi.clearAllMocks()
-    vi.unstubAllGlobals()
   })
 
   it('shows a blank new-thread state without creating a thread', async () => {
@@ -249,7 +247,7 @@ describe('RhizomePage', () => {
     await user.type(screen.getByLabelText('Message Rhizome'), 'What should I do today?')
     await user.click(screen.getByRole('button', { name: 'Send' }))
 
-    expect(mocks.createThread).toHaveBeenCalledWith({ thread_id: 'thread-new' })
+    expect(mocks.createThread).toHaveBeenCalledWith({})
     await waitFor(() =>
       expect(mocks.streamChat).toHaveBeenCalledWith(
         'thread-new',
@@ -291,7 +289,10 @@ describe('RhizomePage', () => {
     await user.type(await screen.findByLabelText('Message Rhizome'), 'Try this')
     await user.click(screen.getByRole('button', { name: 'Send' }))
 
-    expect(await screen.findByText('Connection failed - try again.')).toBeInTheDocument()
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Connection failed - try again.')
+    const sessionStrip = screen.getByLabelText('Session context')
+    expect(alert.compareDocumentPosition(sessionStrip)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
     await user.click(screen.getByRole('button', { name: 'Retry' }))
 
     expect(await screen.findByText('Recovered.')).toBeInTheDocument()

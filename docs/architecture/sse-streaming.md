@@ -111,6 +111,6 @@ on { type: 'done' }:
 ## Thread management
 
 - Do not auto-create a thread on first visit to `/app/rhizome`
-- On first send from the blank state, Verdant generates a `thread_id`, calls `POST /api/v1/threads`, navigates to `/app/rhizome/:threadId`, then streams the message
+- On first send from the blank state, Verdant calls `POST /api/v1/threads`, uses Cambium's returned botanical `thread_id`, navigates to `/app/rhizome/:threadId`, then streams the message
 - Thread title auto-populates from Rhizome-side metadata when available
 - Thread list at `GET /api/v1/threads?limit=20` — shown in the thread navigator and blank-state shortcuts
