@@ -185,6 +185,10 @@
   background: var(--surface-muted);
 }
 
+.activeThread:hover {
+  background: rgb(var(--chartreuse-rgb) / 0.2);
+}
+
 .activeThread {
   border-top: 1px solid var(--nav-accent);
   border-bottom-color: var(--nav-accent);
