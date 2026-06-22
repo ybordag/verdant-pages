@@ -10,8 +10,10 @@ const mocks = vi.hoisted(() => ({
   createThread: vi.fn(),
   getThread: vi.fn(),
   getThreadMessages: vi.fn(),
+  getThreadSessionContext: vi.fn(),
   listThreads: vi.fn(),
   streamChat: vi.fn(),
+  updateThreadSessionContext: vi.fn(),
   useAuth: vi.fn(),
 }))
 
@@ -19,8 +21,10 @@ vi.mock('@/lib/api/chat', () => ({
   createThread: mocks.createThread,
   getThread: mocks.getThread,
   getThreadMessages: mocks.getThreadMessages,
+  getThreadSessionContext: mocks.getThreadSessionContext,
   listThreads: mocks.listThreads,
   streamChat: mocks.streamChat,
+  updateThreadSessionContext: mocks.updateThreadSessionContext,
 }))
 
 vi.mock('@/lib/auth/context', () => ({
@@ -98,6 +102,28 @@ describe('RhizomePage', () => {
         { role: 'assistant', content: 'Check moisture before the afternoon heat.', type: 'ai' },
       ],
     })
+    mocks.getThreadSessionContext.mockResolvedValue({
+      available_minutes: 45,
+      energy_level: 'medium',
+      focus_project_id: 'project-1',
+      focus_label: 'Seedlings',
+      preferred_location_type: 'bed',
+      open_to_outdoor_work: true,
+      wants_quick_wins: false,
+      source: 'inferred',
+      updated_at: '2026-06-21T18:00:00Z',
+    })
+    mocks.updateThreadSessionContext.mockResolvedValue({
+      available_minutes: 30,
+      energy_level: 'high',
+      focus_project_id: 'project-1',
+      focus_label: 'Seedlings',
+      preferred_location_type: 'container',
+      open_to_outdoor_work: false,
+      wants_quick_wins: true,
+      source: 'user',
+      updated_at: '2026-06-21T18:30:00Z',
+    })
     mocks.useAuth.mockReturnValue({
       user: { preferred_provider: 'openai', preferred_model: 'gpt-4.1' },
     })
@@ -170,13 +196,53 @@ describe('RhizomePage', () => {
     renderRhizome('/app/rhizome/thread-1')
 
     expect(await screen.findByRole('button', { name: 'Tomato care plan' })).toBeInTheDocument()
-    expect(screen.getByText('openai · gpt-4.1')).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Model' })).toHaveValue('openai · gpt-4.1')
+    expect(screen.getByRole('combobox', { name: 'Model' })).toBeDisabled()
     expect(await screen.findByText('Can you help with the tomatoes?')).toBeInTheDocument()
     expect(screen.getByText('Check moisture before the afternoon heat.')).toBeInTheDocument()
     expect(screen.getByText('You')).toBeInTheDocument()
     expect(screen.getAllByText('Rhizome').length).toBeGreaterThan(0)
     expect(mocks.getThread).not.toHaveBeenCalled()
     expect(mocks.getThreadMessages).toHaveBeenCalledWith('thread-1')
+  })
+
+  it('renders dedicated session context for the active thread', async () => {
+    renderRhizome('/app/rhizome/thread-1')
+
+    const sessionContext = await screen.findByLabelText('Session context')
+    expect(await within(sessionContext).findByText('45 minutes')).toBeInTheDocument()
+    expect(within(sessionContext).getByText('Medium')).toBeInTheDocument()
+    expect(within(sessionContext).getByText('Seedlings')).toBeInTheDocument()
+    expect(within(sessionContext).getByText('Inferred')).toBeInTheDocument()
+    expect(mocks.getThreadSessionContext).toHaveBeenCalledWith('thread-1')
+  })
+
+  it('saves editable session context through the dedicated endpoint', async () => {
+    const user = userEvent.setup()
+    renderRhizome('/app/rhizome/thread-1')
+
+    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.clear(screen.getByLabelText('Time today'))
+    await user.type(screen.getByLabelText('Time today'), '30')
+    await user.selectOptions(screen.getByLabelText('Energy'), 'high')
+    await user.selectOptions(screen.getByLabelText('Preferred location'), 'container')
+    await user.click(screen.getByLabelText('Outdoor work'))
+    await user.click(screen.getByLabelText('Quick wins'))
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() =>
+      expect(mocks.updateThreadSessionContext).toHaveBeenCalledWith('thread-1', {
+        available_minutes: 30,
+        energy_level: 'high',
+        preferred_location_type: 'container',
+        open_to_outdoor_work: false,
+        wants_quick_wins: true,
+        focus_project_id: 'project-1',
+      }),
+    )
+    expect(await screen.findByText('User set')).toBeInTheDocument()
+    expect(screen.getByText('30 minutes')).toBeInTheDocument()
+    expect(screen.getByText('High')).toBeInTheDocument()
   })
 
   it('renders markdown styling in user and Rhizome messages', async () => {
@@ -261,7 +327,8 @@ describe('RhizomePage', () => {
     mocks.useAuth.mockReturnValue({ user: { preferred_provider: null, preferred_model: null } })
     renderRhizome()
 
-    expect(await screen.findByText('Model not set')).toBeInTheDocument()
+    expect(await screen.findByRole('combobox', { name: 'Model' })).toHaveValue('Model not set')
+    expect(screen.getByRole('combobox', { name: 'Model' })).toBeDisabled()
   })
 
   it('opens and closes the thread navigator from the selected thread title', async () => {

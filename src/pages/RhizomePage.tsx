@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   MessageSquare,
   PanelLeftClose,
@@ -13,14 +13,46 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import Button from '@/components/primitives/Button/Button'
 import MarkdownMessage from '@/components/primitives/MarkdownMessage/MarkdownMessage'
 import Textarea from '@/components/primitives/Textarea/Textarea'
-import { createThread, getThread, getThreadMessages, listThreads, streamChat } from '@/lib/api/chat'
+import {
+  createThread,
+  getThread,
+  getThreadMessages,
+  getThreadSessionContext,
+  listThreads,
+  streamChat,
+  updateThreadSessionContext,
+} from '@/lib/api/chat'
 import { useAuth } from '@/lib/auth/context'
-import type { ThreadMessageView, ThreadView } from '@/lib/types/rhizome'
+import type {
+  SessionContextView,
+  ThreadMessageView,
+  ThreadView,
+  UpdateSessionContextRequest,
+} from '@/lib/types/rhizome'
 import s from './RhizomePage.module.css'
 
 const THREAD_LIMIT = 20
 const RECENT_THREAD_LIMIT = 3
 const EMPTY_THREADS: ThreadView[] = []
+
+type EnergyLevel = NonNullable<SessionContextView['energy_level']>
+type LocationType = NonNullable<SessionContextView['preferred_location_type']>
+
+interface SessionDraft {
+  available_minutes: string
+  energy_level: EnergyLevel | ''
+  preferred_location_type: LocationType | ''
+  open_to_outdoor_work: boolean
+  wants_quick_wins: boolean
+}
+
+const EMPTY_SESSION_DRAFT: SessionDraft = {
+  available_minutes: '',
+  energy_level: '',
+  preferred_location_type: '',
+  open_to_outdoor_work: false,
+  wants_quick_wins: false,
+}
 
 function formatDate(value?: string): string {
   if (!value) return 'No activity yet'
@@ -47,6 +79,36 @@ function modelLabel(provider?: string | null, model?: string | null): string {
   if (!provider) return model ?? 'Model not set'
   if (!model) return provider
   return `${provider} · ${model}`
+}
+
+function titleCase(value?: string | null): string {
+  if (!value) return 'Not set'
+  return value.slice(0, 1).toUpperCase() + value.slice(1)
+}
+
+function sessionDraftFromContext(context?: SessionContextView): SessionDraft {
+  if (!context) return EMPTY_SESSION_DRAFT
+  return {
+    available_minutes: context.available_minutes ? String(context.available_minutes) : '',
+    energy_level: context.energy_level ?? '',
+    preferred_location_type: context.preferred_location_type ?? '',
+    open_to_outdoor_work: Boolean(context.open_to_outdoor_work),
+    wants_quick_wins: Boolean(context.wants_quick_wins),
+  }
+}
+
+function sessionSourceLabel(context?: SessionContextView): string | null {
+  if (!context || context.source === 'unset') return null
+  return context.source === 'user' ? 'User set' : 'Inferred'
+}
+
+function sessionTimeLabel(context?: SessionContextView): string {
+  if (!context?.available_minutes) return 'Not set'
+  return `${context.available_minutes} minutes`
+}
+
+function sessionFocusLabel(context?: SessionContextView): string {
+  return context?.focus_label?.trim() || 'Not set'
 }
 
 function messageLabel(message: ThreadMessageView): string {
@@ -86,6 +148,9 @@ export default function RhizomePage() {
   const [streamError, setStreamError] = useState<string | null>(null)
   const [retryMessage, setRetryMessage] = useState<string | null>(null)
   const [isStreaming, setIsStreaming] = useState(false)
+  const [sessionEditing, setSessionEditing] = useState(false)
+  const [sessionDraft, setSessionDraft] = useState<SessionDraft>(EMPTY_SESSION_DRAFT)
+  const [sessionError, setSessionError] = useState<string | null>(null)
   const streamControllerRef = useRef<AbortController | null>(null)
 
   const threadsQuery = useQuery({
@@ -108,8 +173,27 @@ export default function RhizomePage() {
     queryFn: () => getThreadMessages(threadId ?? ''),
     enabled: Boolean(threadId),
   })
+  const sessionContextQuery = useQuery({
+    queryKey: ['threads', threadId, 'session-context'],
+    queryFn: () => getThreadSessionContext(threadId ?? ''),
+    enabled: Boolean(threadId),
+  })
+  const updateSessionMutation = useMutation({
+    mutationFn: (data: UpdateSessionContextRequest) =>
+      updateThreadSessionContext(threadId ?? '', data),
+    onSuccess: (context) => {
+      queryClient.setQueryData(['threads', threadId, 'session-context'], context)
+      setSessionDraft(sessionDraftFromContext(context))
+      setSessionEditing(false)
+      setSessionError(null)
+    },
+    onError: () => {
+      setSessionError('Session context could not be saved.')
+    },
+  })
 
   const activeThread = activeThreadFromList ?? activeThreadQuery.data
+  const sessionContext = sessionContextQuery.data
   const messages = (messagesQuery.data?.messages ?? []).filter((message) => {
     const type = message.type ?? message.role
     return ['human', 'ai', 'user', 'assistant'].includes(type) && message.content.trim()
@@ -127,10 +211,43 @@ export default function RhizomePage() {
   const pendingReviewCount = 0
   const hasPendingReviews = pendingReviewCount > 0
   const canSend = draft.trim().length > 0 && !isStreaming
+  const currentModelLabel = modelLabel(user?.preferred_provider, user?.preferred_model)
 
   useEffect(() => {
     return () => streamControllerRef.current?.abort()
   }, [])
+
+  function startSessionEdit() {
+    setSessionDraft(sessionDraftFromContext(sessionContext))
+    setSessionError(null)
+    setSessionEditing(true)
+  }
+
+  function cancelSessionEdit() {
+    setSessionDraft(sessionDraftFromContext(sessionContext))
+    setSessionError(null)
+    setSessionEditing(false)
+  }
+
+  function saveSessionContext() {
+    if (!threadId) return
+    const minutesText = sessionDraft.available_minutes.trim()
+    const minutes = minutesText ? Number(minutesText) : null
+    if (minutes !== null && (!Number.isInteger(minutes) || minutes < 0)) {
+      setSessionError('Time must be a whole number of minutes.')
+      return
+    }
+
+    const payload: UpdateSessionContextRequest = {
+      available_minutes: minutes,
+      energy_level: sessionDraft.energy_level || null,
+      preferred_location_type: sessionDraft.preferred_location_type || null,
+      open_to_outdoor_work: sessionDraft.open_to_outdoor_work,
+      wants_quick_wins: sessionDraft.wants_quick_wins,
+    }
+    if (sessionContext?.focus_project_id) payload.focus_project_id = sessionContext.focus_project_id
+    updateSessionMutation.mutate(payload)
+  }
 
   async function submitMessage(messageOverride?: string) {
     const message = (messageOverride ?? draft).trim()
@@ -188,6 +305,7 @@ export default function RhizomePage() {
       setStreamError(null)
       setRetryMessage(null)
       void queryClient.invalidateQueries({ queryKey: ['threads', { limit: THREAD_LIMIT }] })
+      void queryClient.invalidateQueries({ queryKey: ['threads', targetThreadId, 'session-context'] })
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
       setStreamError('Connection failed - try again.')
@@ -310,9 +428,15 @@ export default function RhizomePage() {
                 </button>
               )}
             </div>
-            <div className={s.modelPill}>
-              {modelLabel(user?.preferred_provider, user?.preferred_model)}
-            </div>
+            <label
+              className={s.modelSelector}
+              title="Model switching will be editable after Cambium supports profile updates."
+            >
+              <span>Model</span>
+              <select aria-label="Model" disabled value={currentModelLabel}>
+                <option value={currentModelLabel}>{currentModelLabel}</option>
+              </select>
+            </label>
           </header>
 
           {streamError ? (
@@ -326,30 +450,154 @@ export default function RhizomePage() {
             </div>
           ) : null}
 
-          <div className={s.sessionStrip} aria-label="Session context">
-            <div>
-              <span>Time</span>
-              <strong>Not set</strong>
+          {sessionEditing ? (
+            <form
+              className={[s.sessionStrip, s.sessionEditing].join(' ')}
+              aria-label="Session context"
+              onSubmit={(event) => {
+                event.preventDefault()
+                saveSessionContext()
+              }}
+            >
+              <label className={s.sessionCard}>
+                <span>Time today</span>
+                <input
+                  aria-label="Time today"
+                  inputMode="numeric"
+                  min="0"
+                  step="1"
+                  type="number"
+                  value={sessionDraft.available_minutes}
+                  onChange={(event) =>
+                    setSessionDraft((current) => ({
+                      ...current,
+                      available_minutes: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+              <label className={s.sessionCard}>
+                <span>Energy</span>
+                <select
+                  aria-label="Energy"
+                  value={sessionDraft.energy_level}
+                  onChange={(event) =>
+                    setSessionDraft((current) => ({
+                      ...current,
+                      energy_level: event.target.value as SessionDraft['energy_level'],
+                    }))
+                  }
+                >
+                  <option value="">Not set</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </label>
+              <div className={s.sessionCard}>
+                <span>Focus</span>
+                <strong>{sessionFocusLabel(sessionContext)}</strong>
+                <small>Project focus is set through Rhizome.</small>
+              </div>
+              <label className={s.sessionCard}>
+                <span>Location</span>
+                <select
+                  aria-label="Preferred location"
+                  value={sessionDraft.preferred_location_type}
+                  onChange={(event) =>
+                    setSessionDraft((current) => ({
+                      ...current,
+                      preferred_location_type: event.target.value as SessionDraft['preferred_location_type'],
+                    }))
+                  }
+                >
+                  <option value="">Not set</option>
+                  <option value="bed">Bed</option>
+                  <option value="container">Container</option>
+                </select>
+              </label>
+              <label className={[s.sessionCard, s.sessionCheck].join(' ')}>
+                <input
+                  type="checkbox"
+                  checked={sessionDraft.open_to_outdoor_work}
+                  onChange={(event) =>
+                    setSessionDraft((current) => ({
+                      ...current,
+                      open_to_outdoor_work: event.target.checked,
+                    }))
+                  }
+                />
+                <span>Outdoor work</span>
+              </label>
+              <label className={[s.sessionCard, s.sessionCheck].join(' ')}>
+                <input
+                  type="checkbox"
+                  checked={sessionDraft.wants_quick_wins}
+                  onChange={(event) =>
+                    setSessionDraft((current) => ({
+                      ...current,
+                      wants_quick_wins: event.target.checked,
+                    }))
+                  }
+                />
+                <span>Quick wins</span>
+              </label>
+              <div className={s.sessionActions}>
+                {sessionError ? <span role="alert">{sessionError}</span> : null}
+                <button
+                  type="submit"
+                  disabled={updateSessionMutation.isPending}
+                >
+                  {updateSessionMutation.isPending ? 'Saving' : 'Save'}
+                </button>
+                <button type="button" onClick={cancelSessionEdit}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className={s.sessionStrip} aria-label="Session context">
+              <div className={s.sessionCard}>
+                <span>Time</span>
+                <strong>
+                  {sessionContextQuery.isLoading ? 'Loading' : sessionTimeLabel(sessionContext)}
+                </strong>
+                {sessionSourceLabel(sessionContext) ? <small>{sessionSourceLabel(sessionContext)}</small> : null}
+              </div>
+              <div className={s.sessionCard}>
+                <span>Energy</span>
+                <strong>
+                  {sessionContextQuery.isLoading ? 'Loading' : titleCase(sessionContext?.energy_level)}
+                </strong>
+              </div>
+              <div className={s.sessionCard}>
+                <span>Focus</span>
+                <strong>
+                  {sessionContextQuery.isLoading ? 'Loading' : sessionFocusLabel(sessionContext)}
+                </strong>
+              </div>
+              <div className={s.sessionActions}>
+                {sessionContextQuery.isError ? <span role="alert">Session context unavailable.</span> : null}
+                <button
+                  type="button"
+                  disabled={!threadId || sessionContextQuery.isLoading || sessionContextQuery.isError}
+                  onClick={startSessionEdit}
+                >
+                  Edit
+                </button>
+              </div>
+              {hasPendingReviews ? (
+                <button
+                  aria-label="Open pending reviews"
+                  className={s.reviewButton}
+                  type="button"
+                  onClick={() => setReviewsPanelOpen(true)}
+                >
+                  {pendingReviewCount}
+                </button>
+              ) : null}
             </div>
-            <div>
-              <span>Energy</span>
-              <strong>Not set</strong>
-            </div>
-            <div>
-              <span>Focus</span>
-              <strong>Not set</strong>
-            </div>
-            {hasPendingReviews ? (
-              <button
-                aria-label="Open pending reviews"
-                className={s.reviewButton}
-                type="button"
-                onClick={() => setReviewsPanelOpen(true)}
-              >
-                {pendingReviewCount}
-              </button>
-            ) : null}
-          </div>
+          )}
 
           <div className={s.threadBody}>
             {threadId && activeThreadQuery.isLoading ? (

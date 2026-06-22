@@ -27,6 +27,19 @@ export interface RhizomeFixtureState {
   streamRequests: StreamRequestRecord[]
   threads: ThreadFixture[]
   messages: Record<string, ThreadMessageFixture[]>
+  sessionContexts: Record<string, SessionContextFixture>
+}
+
+export interface SessionContextFixture {
+  available_minutes?: number | null
+  energy_level?: 'low' | 'medium' | 'high' | null
+  focus_project_id?: string | null
+  focus_label?: string | null
+  preferred_location_type?: 'bed' | 'container' | null
+  open_to_outdoor_work?: boolean | null
+  wants_quick_wins?: boolean | null
+  source: 'unset' | 'inferred' | 'user'
+  updated_at?: string | null
 }
 
 export async function mockAuthenticatedRhizomeApi(
@@ -53,6 +66,10 @@ export async function mockAuthenticatedRhizomeApi(
       ],
       'thread-2': [{ role: 'assistant', type: 'ai', content: 'Second thread history.' }],
       ...(options.initialMessages ?? {}),
+    },
+    sessionContexts: {
+      'thread-1': makeSessionContext(),
+      'thread-2': makeSessionContext({ available_minutes: 20, energy_level: 'low', focus_label: 'Seedlings' }),
     },
   }
   let streamCount = 0
@@ -97,6 +114,7 @@ export async function mockAuthenticatedRhizomeApi(
         })
       }
       state.messages[threadId] = state.messages[threadId] ?? []
+      state.sessionContexts[threadId] = makeSessionContext({ source: 'unset' })
       state.createdThreadIds.push(threadId)
       await json(route, { thread_id: threadId })
       return
@@ -112,6 +130,26 @@ export async function mockAuthenticatedRhizomeApi(
       const threadId = decodeURIComponent(threadMessages[1])
       await json(route, { thread_id: threadId, messages: state.messages[threadId] ?? [] })
       return
+    }
+
+    const threadSessionContext = path.match(/^\/api\/v1\/threads\/([^/]+)\/session-context$/)
+    if (threadSessionContext) {
+      const threadId = decodeURIComponent(threadSessionContext[1])
+      if (request.method() === 'GET') {
+        await json(route, state.sessionContexts[threadId] ?? makeSessionContext({ source: 'unset' }))
+        return
+      }
+      if (request.method() === 'PATCH') {
+        const body = JSON.parse(request.postData() ?? '{}') as Partial<SessionContextFixture>
+        state.sessionContexts[threadId] = {
+          ...(state.sessionContexts[threadId] ?? makeSessionContext({ source: 'unset' })),
+          ...body,
+          source: 'user',
+          updated_at: '2026-06-22T04:50:00Z',
+        }
+        await json(route, state.sessionContexts[threadId])
+        return
+      }
     }
 
     const threadDetail = path.match(/^\/api\/v1\/threads\/([^/]+)$/)
@@ -182,6 +220,21 @@ function makeThread(threadId: string, title = threadId, preview = 'No messages y
     message_count: 2,
     pinned_context: [],
     created_at: '2026-06-22T04:00:00Z',
+  }
+}
+
+function makeSessionContext(overrides: Partial<SessionContextFixture> = {}): SessionContextFixture {
+  return {
+    available_minutes: 45,
+    energy_level: 'medium',
+    focus_project_id: 'project-1',
+    focus_label: 'Autumn flower bed',
+    preferred_location_type: 'bed',
+    open_to_outdoor_work: true,
+    wants_quick_wins: false,
+    source: 'inferred',
+    updated_at: '2026-06-22T04:30:00Z',
+    ...overrides,
   }
 }
 

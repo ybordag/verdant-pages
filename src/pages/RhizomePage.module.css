@@ -299,11 +299,26 @@
   color: var(--nav-accent);
 }
 
-.modelPill {
+.modelSelector {
+  display: grid;
+  gap: 3px;
   max-width: 280px;
+}
+
+.modelSelector span {
+  color: var(--text-muted);
+  font-family: var(--font-label);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.modelSelector select {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
+  background: transparent;
   color: var(--text-secondary);
   font-family: var(--font-label);
   font-size: 10px;
@@ -314,9 +329,14 @@
   white-space: nowrap;
 }
 
+.modelSelector select:disabled {
+  cursor: not-allowed;
+  opacity: 0.84;
+}
+
 .sessionStrip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto auto;
   gap: 8px;
   border-top: 1px solid rgb(var(--clay-rgb) / 0.55);
   border-bottom: 1px solid rgb(var(--clay-rgb) / 0.55);
@@ -327,12 +347,20 @@
   padding: 10px 16px;
 }
 
-.sessionStrip div,
+.sessionEditing {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sessionCard,
 .reviewButton {
   border: 1px solid rgb(var(--clay-rgb) / 0.35);
   border-radius: var(--radius-soft);
   background: var(--bg);
   padding: 8px 10px;
+}
+
+.sessionCard {
+  min-width: 0;
 }
 
 .reviewButton {
@@ -354,7 +382,8 @@
   background: var(--nav-active-bg);
 }
 
-.sessionStrip span {
+.sessionStrip span,
+.sessionCard span {
   display: block;
   color: var(--dark-clay);
   font-family: var(--font-label);
@@ -364,11 +393,103 @@
   text-transform: uppercase;
 }
 
-.sessionStrip strong {
+.sessionStrip strong,
+.sessionCard strong {
   display: block;
   margin-top: 2px;
   color: var(--text-secondary);
   font-size: 13px;
+}
+
+.sessionCard small {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.sessionCard input[type='number'],
+.sessionCard select {
+  width: 100%;
+  min-height: 28px;
+  margin-top: 5px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 7px;
+}
+
+.sessionCard input[type='number']:focus,
+.sessionCard select:focus {
+  border-color: var(--nav-accent);
+  outline: 2px solid rgb(var(--chartreuse-rgb) / 0.18);
+}
+
+.sessionCheck {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sessionCheck input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--chartreuse);
+}
+
+.sessionCheck span {
+  color: var(--text-secondary);
+}
+
+.sessionActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.sessionActions span {
+  color: var(--dark-clay);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: none;
+}
+
+.sessionActions button {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 7px 10px;
+  text-transform: uppercase;
+}
+
+.sessionActions button:hover:not(:disabled) {
+  border-color: var(--nav-accent);
+  color: var(--text-primary);
+}
+
+.sessionActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.sessionActions button[type='submit'] {
+  border-color: var(--clay);
+  background: var(--clay);
+  color: var(--vellum-white);
+}
+
+.sessionEditing .sessionActions {
+  grid-column: 1 / -1;
 }
 
 .threadBody {
