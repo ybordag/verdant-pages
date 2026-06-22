@@ -23,6 +23,8 @@ Filter rail (left) + activity feed (main, infinite scroll).
 - **Since / Before:** date range pickers
 - **Subject:** plant/bed/container/project picker — filters to events involving a specific object
 
+Date filters validate before querying: `Since` cannot be in the future, and `Before` must be after `Since`.
+
 ### Activity feed
 
 Cursor-paginated, newest first. Each row:
@@ -32,7 +34,7 @@ Cursor-paginated, newest first. Each row:
 - Actor label — "Rhizome" or "You"
 - Affected objects as clickable chips (navigate to detail page)
 
-Infinite scroll via `before_timestamp` cursor. "Load more" fallback for accessibility.
+Sentinel-driven infinite scroll fetches older events with the `before_timestamp` cursor. Each page appends to the feed while de-duping by event id so overlapping cursor responses do not duplicate rows.
 
 ### API coverage
 
