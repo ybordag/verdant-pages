@@ -116,7 +116,7 @@
 
 .calendar {
   width: 222px;
-  padding: 8px;
+  padding: 7px;
 }
 
 .calendarHeader {
@@ -124,7 +124,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  margin-bottom: 7px;
+  margin-bottom: 5px;
 }
 
 .month {
@@ -143,8 +143,8 @@
 
 .iconButton {
   display: inline-flex;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--line);
@@ -165,11 +165,12 @@
 .days {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 2px;
+  row-gap: 0;
+  column-gap: 2px;
 }
 
 .weekdays {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .weekday {
@@ -183,7 +184,7 @@
 
 .day {
   display: inline-flex;
-  aspect-ratio: 1;
+  height: 24px;
   align-items: center;
   justify-content: center;
   border: 1px solid transparent;
@@ -217,7 +218,7 @@
   display: flex;
   justify-content: space-between;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 5px;
 }
 
 .footerButton {
