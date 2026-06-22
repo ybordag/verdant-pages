@@ -467,7 +467,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: var(--radius-tight);
   background: transparent;
   color: var(--text-secondary);
@@ -482,7 +482,6 @@
 }
 
 .contextChip button:hover {
-  border-color: var(--nav-accent);
   color: var(--nav-accent);
 }
 
@@ -849,7 +848,14 @@
   padding: 0 8px 8px;
 }
 
-.composerAddContext {
+.composerContextButtons {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.composerAddContext,
+.composerPinContext {
   display: inline-flex;
   width: 28px;
   height: 26px;
@@ -874,6 +880,24 @@
   color: var(--inkwell);
 }
 
+.composerPinContext {
+  border-color: var(--clay);
+  background: rgb(var(--clay-rgb) / 0.16);
+  color: var(--clay);
+}
+
+.composerPinContext:hover,
+.composerPinContext[aria-expanded='true'] {
+  border-color: var(--clay);
+  background: var(--clay);
+  color: var(--vellum-white);
+}
+
+.composerPinContext:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
 .composerSend {
   min-height: 30px;
   padding-block: 0;
@@ -888,86 +912,94 @@
   resize: none;
 }
 
-.composerContextTray {
-  display: grid;
-  gap: 10px;
+.pinnedContextSection {
   border-bottom: 1px solid var(--line);
-  background: transparent;
-  padding: 10px 10px 11px;
+  background: var(--bg);
+  padding: 9px 16px;
 }
 
-.composerContextHeader {
+.messageContextSection {
+  border-bottom: 1px solid var(--line);
+  padding: 9px 10px 10px;
+}
+
+.contextInlineBox {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+
+.contextInlineTitle {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
 
-.composerContextHeader span {
-  display: block;
-  color: var(--text-primary);
+.contextInlineTitle span {
+  color: var(--text-muted);
   font-family: var(--font-label);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.composerContextHeader small {
-  display: block;
-  margin-top: 2px;
-  color: var(--text-muted);
-  font-size: 11px;
-}
-
-.composerContextHeader button {
+.contextInlineTitle button {
   display: inline-flex;
-  width: 28px;
-  height: 28px;
-  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: var(--radius-tight);
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   cursor: pointer;
 }
 
-.composerContextHeader button:hover {
-  border-color: var(--nav-accent);
+.contextInlineTitle button:hover {
   color: var(--nav-accent);
 }
 
-.composerContextChips {
+.contextInlineInput {
   display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--bg);
+  color: var(--text-muted);
+  padding: 7px 9px;
+}
+
+.contextInlineInput > svg {
+  flex: 0 0 auto;
+  margin-top: 4px;
+}
+
+.contextInlineChips {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
 }
 
-.composerContextSearch {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-soft);
-  background: var(--bg);
-  color: var(--text-muted);
-  padding: 0 9px;
-}
-
-.composerContextSearch input {
-  width: 100%;
-  min-height: 34px;
+.contextInlineChips input {
+  min-width: 160px;
+  flex: 1 1 180px;
   border: 0;
   background: transparent;
   color: var(--text-primary);
   font: inherit;
   font-size: 12px;
   outline: 0;
+  padding: 4px 0;
 }
 
-.composerContextResults {
+.contextAutocomplete {
   display: grid;
   max-height: 220px;
   overflow: auto;

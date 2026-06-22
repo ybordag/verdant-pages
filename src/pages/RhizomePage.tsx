@@ -4,6 +4,7 @@ import {
   MessageSquare,
   PanelLeftClose,
   PanelRightClose,
+  Pin,
   Plus,
   Search,
   Send,
@@ -195,9 +196,11 @@ export default function RhizomePage() {
   const [sessionDraft, setSessionDraft] = useState<SessionDraft>(EMPTY_SESSION_DRAFT)
   const [sessionError, setSessionError] = useState<string | null>(null)
   const [interactionNotes, setInteractionNotes] = useState('')
-  const [contextTrayOpen, setContextTrayOpen] = useState(false)
+  const [messageContextOpen, setMessageContextOpen] = useState(false)
+  const [pinnedContextOpen, setPinnedContextOpen] = useState(false)
+  const [activeContextTarget, setActiveContextTarget] = useState<'message' | 'thread' | null>(null)
   const [contextSearchTerm, setContextSearchTerm] = useState('')
-  const [pendingInitialContext, setPendingInitialContext] = useState<ContextObject[]>([])
+  const [messageContext, setMessageContext] = useState<ContextObject[]>([])
   const streamControllerRef = useRef<AbortController | null>(null)
 
   const threadsQuery = useQuery({
@@ -233,7 +236,7 @@ export default function RhizomePage() {
   const contextSearchQuery = useQuery({
     queryKey: ['search', 'context', parsedContextSearch.types ?? 'all', parsedContextSearch.q],
     queryFn: () => search({ ...parsedContextSearch, limit: 8 }),
-    enabled: contextTrayOpen && parsedContextSearch.q.length >= 2,
+    enabled: Boolean(activeContextTarget) && parsedContextSearch.q.length >= 2,
   })
   const updateSessionMutation = useMutation({
     mutationFn: (data: UpdateSessionContextRequest) =>
@@ -265,7 +268,6 @@ export default function RhizomePage() {
   const activeThread = activeThreadFromList ?? activeThreadQuery.data
   const sessionContext = sessionContextQuery.data
   const pinnedContext = activeThread?.pinned_context ?? EMPTY_CONTEXT
-  const composerContext = threadId ? pinnedContext : pendingInitialContext
   const pendingInteraction = streamInteraction ?? pendingInteractionQuery.data ?? null
   const messages = (messagesQuery.data?.messages ?? []).filter((message) => {
     const type = message.type ?? message.role
@@ -366,8 +368,8 @@ export default function RhizomePage() {
 
   function addContextFromSearchResult(result: SearchResultItemView) {
     const context = contextFromSearchResult(result)
-    if (!threadId) {
-      setPendingInitialContext((current) => {
+    if (activeContextTarget === 'message') {
+      setMessageContext((current) => {
         const exists = current.some(
           (item) => item.subject_type === context.subject_type && item.subject_id === context.subject_id,
         )
@@ -376,21 +378,139 @@ export default function RhizomePage() {
       setContextSearchTerm('')
       return
     }
+    if (!threadId) return
     addContextMutation.mutate(context, {
       onSuccess: () => setContextSearchTerm(''),
     })
   }
 
-  function removeComposerContext(context: ContextObject) {
-    if (!threadId) {
-      setPendingInitialContext((current) =>
-        current.filter(
-          (item) => item.subject_type !== context.subject_type || item.subject_id !== context.subject_id,
-        ),
-      )
-      return
-    }
+  function removeMessageContext(context: ContextObject) {
+    setMessageContext((current) =>
+      current.filter(
+        (item) => item.subject_type !== context.subject_type || item.subject_id !== context.subject_id,
+      ),
+    )
+  }
+
+  function removePinnedContext(context: ContextObject) {
+    if (!threadId) return
     removeContextMutation.mutate(context)
+  }
+
+  function openContextTarget(target: 'message' | 'thread') {
+    setActiveContextTarget((current) => {
+      const nextTarget = current === target ? null : target
+      setContextSearchTerm('')
+      setMessageContextOpen(nextTarget === 'message')
+      setPinnedContextOpen(nextTarget === 'thread')
+      return nextTarget
+    })
+  }
+
+  function closeContextTarget(target: 'message' | 'thread') {
+    setContextSearchTerm('')
+    setActiveContextTarget((current) => (current === target ? null : current))
+    if (target === 'message') setMessageContextOpen(false)
+    else setPinnedContextOpen(false)
+  }
+
+  function renderContextInlineInput({
+    target,
+    label,
+    contexts,
+    onRemove,
+  }: {
+    target: 'message' | 'thread'
+    label: string
+    contexts: ContextObject[]
+    onRemove: (context: ContextObject) => void
+  }) {
+    const isActive = activeContextTarget === target
+    return (
+      <div className={s.contextInlineBox} aria-label={label}>
+        <div className={s.contextInlineTitle}>
+          <span>{label}</span>
+          <button
+            aria-label={`Close ${label}`}
+            type="button"
+            onClick={() => closeContextTarget(target)}
+          >
+            <X size={13} />
+          </button>
+        </div>
+        <label className={s.contextInlineInput}>
+          <Search size={14} />
+          <span className={s.contextInlineChips}>
+            {contexts.map((context) => (
+              <span
+                className={s.contextChip}
+                key={`${target}-${context.subject_type}-${context.subject_id}`}
+              >
+                <em>{context.subject_type}</em>
+                <span>{contextLabel(context)}</span>
+                <button
+                  type="button"
+                  aria-label={`Remove ${contextLabel(context)} context`}
+                  disabled={target === 'thread' && removeContextMutation.isPending}
+                  onClick={() => onRemove(context)}
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+            <input
+              aria-label={`Search ${label}`}
+              placeholder={contexts.length > 0 ? 'Add another...' : 'Search context...'}
+              value={isActive ? contextSearchTerm : ''}
+              onFocus={() => {
+                if (!isActive) {
+                  setActiveContextTarget(target)
+                  setContextSearchTerm('')
+                }
+              }}
+              onChange={(event) => {
+                if (!isActive) setActiveContextTarget(target)
+                setContextSearchTerm(event.target.value)
+              }}
+            />
+          </span>
+        </label>
+        {isActive ? (
+          <div className={s.contextAutocomplete}>
+            {contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2 ? (
+              <div className={s.contextSearchState}>Type at least two characters after the prefix.</div>
+            ) : contextSearchQuery.isLoading ? (
+              <div className={s.contextSearchState}>Searching context</div>
+            ) : contextSearchQuery.isError ? (
+              <div className={s.contextSearchState}>Context search is unavailable.</div>
+            ) : groupedContextResults.length > 0 ? (
+              groupedContextResults.map(([type, results]) => (
+                <section className={s.contextResultGroup} key={type}>
+                  <h3>{titleCase(type)}</h3>
+                  {results.map((result) => (
+                    <button
+                      key={`${result.subject_type}-${result.subject_id}`}
+                      type="button"
+                      className={s.contextResult}
+                      disabled={target === 'thread' && addContextMutation.isPending}
+                      onClick={() => addContextFromSearchResult(result)}
+                    >
+                      <span>
+                        <strong>{result.label}</strong>
+                        <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
+                      </span>
+                      <em>{result.subject_type}</em>
+                    </button>
+                  ))}
+                </section>
+              ))
+            ) : parsedContextSearch.q.length >= 2 ? (
+              <div className={s.contextSearchState}>No context found.</div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    )
   }
 
   async function resumeInteraction(action: InteractionActionView) {
@@ -465,12 +585,9 @@ export default function RhizomePage() {
 
     try {
       if (!targetThreadId) {
-        const createdThread = await createThread(
-          pendingInitialContext.length > 0 ? { initial_context: pendingInitialContext } : {},
-        )
+        const createdThread = await createThread({})
         targetThreadId = createdThread.thread_id
         navigate(`/app/rhizome/${encodeURIComponent(targetThreadId)}`)
-        setPendingInitialContext([])
       }
 
       const userMessage: ThreadMessageView = { role: 'user', content: message, type: 'human' }
@@ -826,6 +943,17 @@ export default function RhizomePage() {
             </div>
           )}
 
+          {threadId && (pinnedContextOpen || pinnedContext.length > 0) ? (
+            <div className={s.pinnedContextSection}>
+              {renderContextInlineInput({
+                target: 'thread',
+                label: 'Pinned context for this thread',
+                contexts: pinnedContext,
+                onRemove: removePinnedContext,
+              })}
+            </div>
+          ) : null}
+
           <div className={s.threadBody}>
             {threadId && activeThreadQuery.isLoading ? (
               <div className={s.emptyChat}>Loading thread</div>
@@ -918,90 +1046,14 @@ export default function RhizomePage() {
             }}
           >
             <div className={s.composerBox}>
-              {contextTrayOpen ? (
-                <div className={s.composerContextTray} aria-label={threadId ? 'Pinned context' : 'Attached context'}>
-                  <div className={s.composerContextHeader}>
-                    <div>
-                      <span>{threadId ? 'Pinned context' : 'Attached context'}</span>
-                      <small>
-                        {threadId
-                          ? 'Available to Rhizome on every turn in this thread.'
-                          : 'Sent with the first message when the thread is created.'}
-                      </small>
-                    </div>
-                    <button
-                      aria-label="Close context tray"
-                      type="button"
-                      onClick={() => setContextTrayOpen(false)}
-                    >
-                      <X size={14} />
-                    </button>
-                  </div>
-
-                  {composerContext.length > 0 ? (
-                    <div className={s.composerContextChips}>
-                      {composerContext.map((context) => (
-                        <span
-                          className={s.contextChip}
-                          key={`${context.subject_type}-${context.subject_id}`}
-                        >
-                          <em>{context.subject_type}</em>
-                          <span>{contextLabel(context)}</span>
-                          <button
-                            type="button"
-                            aria-label={`Remove ${contextLabel(context)} context`}
-                            disabled={removeContextMutation.isPending}
-                            onClick={() => removeComposerContext(context)}
-                          >
-                            <X size={12} />
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-
-                  <label className={s.composerContextSearch}>
-                    <Search size={14} />
-                    <input
-                      aria-label="Search context"
-                      placeholder="Search context, or use plant:, task:, project:, incident:..."
-                      value={contextSearchTerm}
-                      onChange={(event) => setContextSearchTerm(event.target.value)}
-                    />
-                  </label>
-
-                  <div className={s.composerContextResults}>
-                    {contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2 ? (
-                      <div className={s.contextSearchState}>Type at least two characters after the prefix.</div>
-                    ) : contextSearchQuery.isLoading ? (
-                      <div className={s.contextSearchState}>Searching context</div>
-                    ) : contextSearchQuery.isError ? (
-                      <div className={s.contextSearchState}>Context search is unavailable.</div>
-                    ) : groupedContextResults.length > 0 ? (
-                      groupedContextResults.map(([type, results]) => (
-                        <section className={s.contextResultGroup} key={type}>
-                          <h3>{titleCase(type)}</h3>
-                          {results.map((result) => (
-                            <button
-                              key={`${result.subject_type}-${result.subject_id}`}
-                              type="button"
-                              className={s.contextResult}
-                              disabled={addContextMutation.isPending}
-                              onClick={() => addContextFromSearchResult(result)}
-                            >
-                              <span>
-                                <strong>{result.label}</strong>
-                                <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
-                              </span>
-                              <em>{result.subject_type}</em>
-                            </button>
-                          ))}
-                        </section>
-                      ))
-                    ) : parsedContextSearch.q.length >= 2 ? (
-                      <div className={s.contextSearchState}>No context found.</div>
-                    ) : null}
-                  </div>
+              {messageContextOpen ? (
+                <div className={s.messageContextSection}>
+                  {renderContextInlineInput({
+                    target: 'message',
+                    label: 'Message context',
+                    contexts: messageContext,
+                    onRemove: removeMessageContext,
+                  })}
                 </div>
               ) : null}
 
@@ -1018,15 +1070,27 @@ export default function RhizomePage() {
                 }}
               />
               <div className={s.composerControlRow}>
-                <button
-                  aria-expanded={contextTrayOpen}
-                  aria-label={contextTrayOpen ? 'Close context tray' : 'Add context'}
-                  className={s.composerAddContext}
-                  type="button"
-                  onClick={() => setContextTrayOpen((open) => !open)}
-                >
-                  <Plus size={14} />
-                </button>
+                <div className={s.composerContextButtons}>
+                  <button
+                    aria-expanded={messageContextOpen}
+                    aria-label={messageContextOpen ? 'Close message context' : 'Add message context'}
+                    className={s.composerAddContext}
+                    type="button"
+                    onClick={() => openContextTarget('message')}
+                  >
+                    <Plus size={14} />
+                  </button>
+                  <button
+                    aria-expanded={pinnedContextOpen}
+                    aria-label={pinnedContextOpen ? 'Close pinned context' : 'Add pinned context'}
+                    className={s.composerPinContext}
+                    type="button"
+                    disabled={!threadId}
+                    onClick={() => openContextTarget('thread')}
+                  >
+                    <Pin size={13} />
+                  </button>
+                </div>
                 <Button className={s.composerSend} size="sm" type="submit" disabled={!canSend}>
                   <Send size={15} />
                   {isStreaming ? 'Sending' : 'Send'}
