@@ -10,6 +10,7 @@ import {
   Sprout,
 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { FilterSelect } from '@/components/activity/FilterControls'
 import Button from '@/components/primitives/Button/Button'
 import MarkdownMessage from '@/components/primitives/MarkdownMessage/MarkdownMessage'
 import Textarea from '@/components/primitives/Textarea/Textarea'
@@ -212,6 +213,9 @@ export default function RhizomePage() {
   const hasPendingReviews = pendingReviewCount > 0
   const canSend = draft.trim().length > 0 && !isStreaming
   const currentModelLabel = modelLabel(user?.preferred_provider, user?.preferred_model)
+  const currentModelValue = currentModelLabel === 'Model not set' ? '' : 'current'
+  const currentModelOptions =
+    currentModelValue === 'current' ? [{ value: currentModelValue, label: currentModelLabel }] : []
 
   useEffect(() => {
     return () => streamControllerRef.current?.abort()
@@ -428,15 +432,20 @@ export default function RhizomePage() {
                 </button>
               )}
             </div>
-            <label
+            <div
               className={s.modelSelector}
               title="Model switching will be editable after Cambium supports profile updates."
             >
               <span>Model</span>
-              <select aria-label="Model" disabled value={currentModelLabel}>
-                <option value={currentModelLabel}>{currentModelLabel}</option>
-              </select>
-            </label>
+              <FilterSelect
+                label="Model"
+                value={currentModelValue}
+                placeholder="Model not set"
+                options={currentModelOptions}
+                disabled
+                onChange={() => {}}
+              />
+            </div>
           </header>
 
           {streamError ? (

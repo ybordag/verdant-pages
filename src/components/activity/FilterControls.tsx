@@ -12,6 +12,7 @@ interface FilterSelectProps {
   value: string
   placeholder: string
   options: FilterOption[]
+  disabled?: boolean
   onChange: (value: string) => void
 }
 
@@ -84,7 +85,14 @@ function buildMonthDays(month: Date): Date[] {
   })
 }
 
-export function FilterSelect({ label, value, placeholder, options, onChange }: FilterSelectProps) {
+export function FilterSelect({
+  label,
+  value,
+  placeholder,
+  options,
+  disabled = false,
+  onChange,
+}: FilterSelectProps) {
   const [open, setOpen] = useState(false)
   const selected = options.find((option) => option.value === value)
   const allOptions = [{ value: '', label: placeholder }, ...options]
@@ -99,7 +107,11 @@ export function FilterSelect({ label, value, placeholder, options, onChange }: F
         aria-label={label}
         aria-haspopup="listbox"
         aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
+        disabled={disabled}
+        onClick={() => {
+          if (disabled) return
+          setOpen((current) => !current)
+        }}
       >
         <span className={[s.triggerText, value ? '' : s.placeholder].filter(Boolean).join(' ')}>
           {selected?.label ?? placeholder}

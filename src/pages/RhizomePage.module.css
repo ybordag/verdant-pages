@@ -302,7 +302,7 @@
 .modelSelector {
   display: grid;
   gap: 3px;
-  max-width: 280px;
+  width: min(220px, 34vw);
 }
 
 .modelSelector span {
@@ -312,26 +312,6 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.modelSelector select {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-soft);
-  background: transparent;
-  color: var(--text-secondary);
-  font-family: var(--font-label);
-  font-size: 10px;
-  font-weight: 800;
-  padding: 6px 9px;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.modelSelector select:disabled {
-  cursor: not-allowed;
-  opacity: 0.84;
 }
 
 .sessionStrip {

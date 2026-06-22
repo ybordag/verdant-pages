@@ -196,8 +196,8 @@ describe('RhizomePage', () => {
     renderRhizome('/app/rhizome/thread-1')
 
     expect(await screen.findByRole('button', { name: 'Tomato care plan' })).toBeInTheDocument()
-    expect(screen.getByRole('combobox', { name: 'Model' })).toHaveValue('openai · gpt-4.1')
-    expect(screen.getByRole('combobox', { name: 'Model' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Model' })).toHaveTextContent('openai · gpt-4.1')
+    expect(screen.getByRole('button', { name: 'Model' })).toBeDisabled()
     expect(await screen.findByText('Can you help with the tomatoes?')).toBeInTheDocument()
     expect(screen.getByText('Check moisture before the afternoon heat.')).toBeInTheDocument()
     expect(screen.getByText('You')).toBeInTheDocument()
@@ -327,8 +327,8 @@ describe('RhizomePage', () => {
     mocks.useAuth.mockReturnValue({ user: { preferred_provider: null, preferred_model: null } })
     renderRhizome()
 
-    expect(await screen.findByRole('combobox', { name: 'Model' })).toHaveValue('Model not set')
-    expect(screen.getByRole('combobox', { name: 'Model' })).toBeDisabled()
+    expect(await screen.findByRole('button', { name: 'Model' })).toHaveTextContent('Model not set')
+    expect(screen.getByRole('button', { name: 'Model' })).toBeDisabled()
   })
 
   it('opens and closes the thread navigator from the selected thread title', async () => {
