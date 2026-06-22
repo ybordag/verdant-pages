@@ -1005,7 +1005,19 @@ export default function RhizomePage() {
                 </div>
               ) : null}
 
-              <div className={s.composerInputRow}>
+              <Textarea
+                aria-label="Message Rhizome"
+                placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault()
+                    void submitMessage()
+                  }
+                }}
+              />
+              <div className={s.composerControlRow}>
                 <button
                   aria-expanded={contextTrayOpen}
                   aria-label={contextTrayOpen ? 'Close context tray' : 'Add context'}
@@ -1015,19 +1027,7 @@ export default function RhizomePage() {
                 >
                   <Plus size={14} />
                 </button>
-                <Textarea
-                  aria-label="Message Rhizome"
-                  placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
-                  value={draft}
-                  onChange={(event) => setDraft(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                      event.preventDefault()
-                      void submitMessage()
-                    }
-                  }}
-                />
-                <Button type="submit" disabled={!canSend}>
+                <Button className={s.composerSend} size="sm" type="submit" disabled={!canSend}>
                   <Send size={15} />
                   {isStreaming ? 'Sending' : 'Send'}
                 </Button>

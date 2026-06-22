@@ -841,39 +841,43 @@
   background: var(--input-bg);
 }
 
-.composerInputRow {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+.composerControlRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  align-items: end;
-  padding: 8px;
+  padding: 0 8px 8px;
 }
 
 .composerAddContext {
   display: inline-flex;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 26px;
   align-items: center;
   justify-content: center;
-  align-self: end;
   border: 1px solid transparent;
   border-radius: var(--radius-soft);
-  background: transparent;
-  color: var(--text-secondary);
+  background: rgb(var(--pine-rgb) / 0.08);
+  color: var(--pine-light);
   cursor: pointer;
 }
 
 .composerAddContext:hover,
 .composerAddContext[aria-expanded='true'] {
-  border-color: var(--nav-accent);
+  background: rgb(var(--chartreuse-rgb) / 0.18);
   color: var(--nav-accent);
 }
 
+.composerSend {
+  min-height: 30px;
+  padding-block: 0;
+}
+
 .composer textarea {
-  min-height: 52px;
+  min-height: 50px;
   border: 0;
   background: transparent;
-  padding: 8px 6px;
+  padding: 10px 14px 6px;
   outline: 0;
   resize: none;
 }
@@ -882,9 +886,7 @@
   display: grid;
   gap: 10px;
   border-bottom: 1px solid var(--line);
-  background:
-    linear-gradient(140deg, rgb(var(--pine-rgb) / 0.08), transparent 48%),
-    transparent;
+  background: transparent;
   padding: 10px 10px 11px;
 }
 
