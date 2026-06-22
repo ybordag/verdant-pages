@@ -1,9 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { vi } from 'vitest'
 import { listActivity } from '@/lib/api/activity'
-import type { ActivityEventView } from '@/lib/types/rhizome'
+import type { ActivityEventView, ActivityListParams } from '@/lib/types/rhizome'
 import ActivityPage from './ActivityPage'
 
 vi.mock('@/lib/api/activity', () => ({ listActivity: vi.fn() }))
@@ -70,9 +70,19 @@ function renderActivityPage() {
   )
 }
 
+function mockActivityResponses() {
+  vi.mocked(listActivity).mockImplementation(async (params?: ActivityListParams) => {
+    if (params?.category === 'incident') return [EVENTS[2]]
+    if (params?.subject_type === 'plant' && params.since === '2026-06-20' && params.before_timestamp === '2026-06-21') {
+      return [EVENTS[2]]
+    }
+    return EVENTS
+  })
+}
+
 describe('ActivityPage', () => {
   beforeEach(() => {
-    vi.mocked(listActivity).mockResolvedValue(EVENTS)
+    mockActivityResponses()
   })
 
   afterEach(() => {
@@ -91,7 +101,7 @@ describe('ActivityPage', () => {
     expect(listActivity).toHaveBeenCalledWith({ limit: 20 })
   })
 
-  it('filters sample events by category and resets filters', async () => {
+  it('requests activity filtered by category and resets filters', async () => {
     renderActivityPage()
 
     await screen.findByText('Completed morning watering for container tomatoes.')
@@ -99,17 +109,19 @@ describe('ActivityPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Category' }))
     await userEvent.click(screen.getByRole('option', { name: 'incident' }))
 
-    expect(screen.getByText('Flagged aphid pressure on kale starts.')).toBeInTheDocument()
+    await waitFor(() => expect(listActivity).toHaveBeenLastCalledWith({ category: 'incident', limit: 20 }))
+    expect(await screen.findByText('Flagged aphid pressure on kale starts.')).toBeInTheDocument()
     expect(screen.queryByText('Completed morning watering for container tomatoes.')).not.toBeInTheDocument()
     expect(screen.getByText('1 events')).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Reset' }))
 
-    expect(screen.getByText('Completed morning watering for container tomatoes.')).toBeInTheDocument()
+    await waitFor(() => expect(listActivity).toHaveBeenLastCalledWith({ limit: 20 }))
+    expect(await screen.findByText('Completed morning watering for container tomatoes.')).toBeInTheDocument()
     expect(screen.getByText('4 events')).toBeInTheDocument()
   })
 
-  it('filters sample events by subject and date bounds', async () => {
+  it('requests activity filtered by subject and date bounds', async () => {
     renderActivityPage()
 
     await screen.findByText('Completed morning watering for container tomatoes.')
@@ -121,7 +133,15 @@ describe('ActivityPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Before' }))
     await userEvent.click(screen.getByRole('button', { name: 'Before 06/21/2026' }))
 
-    expect(screen.getByText('Flagged aphid pressure on kale starts.')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(listActivity).toHaveBeenLastCalledWith({
+        subject_type: 'plant',
+        since: '2026-06-20',
+        before_timestamp: '2026-06-21',
+        limit: 20,
+      }),
+    )
+    expect(await screen.findByText('Flagged aphid pressure on kale starts.')).toBeInTheDocument()
     expect(screen.queryByText('Updated cherry tomato transplant status.')).not.toBeInTheDocument()
     expect(screen.getByText('1 events')).toBeInTheDocument()
   })
