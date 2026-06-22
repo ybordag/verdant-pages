@@ -149,7 +149,10 @@ describe('RhizomePage', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Look through more threads' }))
     expect(await screen.findByRole('heading', { name: 'Threads' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /New thread/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /New thread/i })).toHaveAttribute(
+      'href',
+      '/app/rhizome',
+    )
     expect(screen.getByRole('link', { name: /Rosemary container plan/i })).toHaveAttribute(
       'href',
       '/app/rhizome/thread-4',

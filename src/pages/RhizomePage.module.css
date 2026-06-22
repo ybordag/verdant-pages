@@ -165,6 +165,7 @@
   display: flex;
   flex: 1;
   flex-direction: column;
+  margin-inline: -14px;
   min-height: 0;
   overflow: auto;
 }
@@ -174,7 +175,7 @@
   border: 0;
   border-bottom: 1px solid var(--line-subtle);
   color: var(--text-secondary);
-  padding: 9px 2px;
+  padding: 9px 14px;
   text-decoration: none;
 }
 
@@ -184,6 +185,7 @@
 
 .activeThread {
   border-bottom-color: var(--nav-accent);
+  background: var(--nav-active-bg);
   color: var(--text-primary);
 }
 

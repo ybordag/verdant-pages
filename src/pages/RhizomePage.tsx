@@ -250,6 +250,17 @@ export default function RhizomePage() {
                 <div className={s.railState}>Threads are unavailable right now.</div>
               ) : hasThreads ? (
                 <nav className={s.threadList} aria-label="Recent threads">
+                  <Link
+                    className={[s.threadRow, isNewThread ? s.activeThread : '']
+                      .filter(Boolean)
+                      .join(' ')}
+                    to="/app/rhizome"
+                  >
+                    <span>
+                      <strong>New thread</strong>
+                      <small>Start with a blank composer</small>
+                    </span>
+                  </Link>
                   {threads.map((thread) => (
                     <Link
                       className={[s.threadRow, thread.thread_id === threadId ? s.activeThread : '']
