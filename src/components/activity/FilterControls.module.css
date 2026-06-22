@@ -37,6 +37,10 @@
   border-color: var(--nav-accent);
 }
 
+.trigger[data-invalid='true'] {
+  border-color: var(--clay);
+}
+
 .triggerText {
   min-width: 0;
   overflow: hidden;
@@ -239,6 +243,16 @@
   border-color: var(--nav-accent);
   color: var(--nav-accent);
   outline: none;
+}
+
+.error {
+  margin-top: 4px;
+  color: var(--clay);
+  font-family: var(--font-label);
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-transform: uppercase;
 }
 
 [data-theme='light'] .menu,

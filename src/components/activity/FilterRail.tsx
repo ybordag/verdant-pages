@@ -10,8 +10,14 @@ export interface ActivityFilters {
   before: string
 }
 
+export interface ActivityFilterErrors {
+  since?: string
+  before?: string
+}
+
 interface FilterRailProps {
   filters: ActivityFilters
+  errors?: ActivityFilterErrors
   categoryOptions: string[]
   eventTypeOptions: string[]
   subjectTypeOptions: string[]
@@ -29,6 +35,7 @@ function updateFilter(filters: ActivityFilters, key: keyof ActivityFilters, valu
 
 export default function FilterRail({
   filters,
+  errors = {},
   categoryOptions,
   eventTypeOptions,
   subjectTypeOptions,
@@ -83,6 +90,7 @@ export default function FilterRail({
           <FilterDatePicker
             label="Since"
             value={filters.since}
+            error={errors.since}
             onChange={(value) => onChange(updateFilter(filters, 'since', value))}
           />
         </div>
@@ -92,6 +100,7 @@ export default function FilterRail({
           <FilterDatePicker
             label="Before"
             value={filters.before}
+            error={errors.before}
             onChange={(value) => onChange(updateFilter(filters, 'before', value))}
           />
         </div>

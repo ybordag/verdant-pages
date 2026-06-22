@@ -18,6 +18,7 @@ interface FilterSelectProps {
 interface FilterDatePickerProps {
   label: string
   value: string
+  error?: string
   onChange: (value: string) => void
 }
 
@@ -130,12 +131,13 @@ export function FilterSelect({ label, value, placeholder, options, onChange }: F
   )
 }
 
-export function FilterDatePicker({ label, value, onChange }: FilterDatePickerProps) {
+export function FilterDatePicker({ label, value, error, onChange }: FilterDatePickerProps) {
   const [open, setOpen] = useState(false)
   const [viewMonth, setViewMonth] = useState(() => (value ? parseDate(value) : new Date()))
   const ref = useDismiss(open, () => setOpen(false))
   const selected = value ? parseDate(value) : null
   const days = useMemo(() => buildMonthDays(viewMonth), [viewMonth])
+  const errorId = error ? `${label.toLowerCase()}-date-error` : undefined
 
   return (
     <div className={s.control} ref={ref}>
@@ -146,6 +148,9 @@ export function FilterDatePicker({ label, value, onChange }: FilterDatePickerPro
         aria-label={label}
         aria-haspopup="dialog"
         aria-expanded={open}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={errorId}
+        data-invalid={error ? true : undefined}
         onClick={() => {
           if (!open && value) setViewMonth(parseDate(value))
           setOpen((current) => !current)
@@ -230,6 +235,11 @@ export function FilterDatePicker({ label, value, onChange }: FilterDatePickerPro
             </button>
           </div>
         </div>
+      )}
+      {error && (
+        <p className={s.error} id={errorId}>
+          {error}
+        </p>
       )}
     </div>
   )

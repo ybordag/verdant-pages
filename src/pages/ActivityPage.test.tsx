@@ -5,6 +5,7 @@ import { vi } from 'vitest'
 import { listActivity } from '@/lib/api/activity'
 import type { ActivityEventView, ActivityListParams } from '@/lib/types/rhizome'
 import ActivityPage from './ActivityPage'
+import { getFilterErrors } from './activityFilters'
 
 vi.mock('@/lib/api/activity', () => ({ listActivity: vi.fn() }))
 
@@ -149,6 +150,23 @@ describe('ActivityPage', () => {
     expect(screen.getByText('1 events')).toBeInTheDocument()
   })
 
+  it('shows date filter errors and does not request an invalid date range', async () => {
+    renderActivityPage()
+
+    await screen.findByText('Completed morning watering for container tomatoes.')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Since' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Since 06/20/2026' }))
+    await waitFor(() => expect(listActivity).toHaveBeenLastCalledWith({ since: '2026-06-20', limit: 20 }))
+    const callsBeforeInvalidRange = vi.mocked(listActivity).mock.calls.length
+
+    await userEvent.click(screen.getByRole('button', { name: 'Before' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Before 06/19/2026' }))
+
+    expect(await screen.findByText('Before must be after since.')).toBeInTheDocument()
+    expect(listActivity).toHaveBeenCalledTimes(callsBeforeInvalidRange)
+  })
+
   it('shows an error state with retry when activity loading fails', async () => {
     vi.mocked(listActivity).mockRejectedValueOnce(new Error('network down')).mockResolvedValueOnce(EVENTS)
 
@@ -167,5 +185,23 @@ describe('ActivityPage', () => {
     renderActivityPage()
 
     expect(await screen.findByText('No activity found')).toBeInTheDocument()
+  })
+})
+
+describe('getFilterErrors', () => {
+  it('rejects future since dates and since dates after before dates', () => {
+    expect(
+      getFilterErrors(
+        { category: '', eventType: '', subjectType: '', since: '2026-06-25', before: '' },
+        '2026-06-21',
+      ),
+    ).toEqual({ since: 'Since cannot be in the future.' })
+
+    expect(
+      getFilterErrors(
+        { category: '', eventType: '', subjectType: '', since: '2026-06-20', before: '2026-06-17' },
+        '2026-06-21',
+      ),
+    ).toEqual({ before: 'Before must be after since.' })
   })
 })

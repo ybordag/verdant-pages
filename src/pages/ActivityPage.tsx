@@ -4,6 +4,7 @@ import FilterRail, { type ActivityFilters } from '@/components/activity/FilterRa
 import ObjectActivityFeed from '@/components/activity/ObjectActivityFeed'
 import { listActivity } from '@/lib/api/activity'
 import type { ActivityEventView, ActivityListParams } from '@/lib/types/rhizome'
+import { getFilterErrors } from './activityFilters'
 import s from './ActivityPage.module.css'
 
 const PAGE_SIZE = 20
@@ -65,10 +66,13 @@ function buildActivityParams(filters: ActivityFilters): ActivityListParams {
 
 export default function ActivityPage() {
   const [filters, setFilters] = useState<ActivityFilters>(DEFAULT_FILTERS)
+  const filterErrors = useMemo(() => getFilterErrors(filters), [filters])
+  const hasFilterErrors = Boolean(filterErrors.since || filterErrors.before)
   const activityParams = useMemo(() => buildActivityParams(filters), [filters])
   const activityQuery = useQuery({
     queryKey: ['activity', 'list', activityParams],
     queryFn: () => listActivity(activityParams),
+    enabled: !hasFilterErrors,
   })
 
   const events = activityQuery.data ?? EMPTY_EVENTS
@@ -107,6 +111,7 @@ export default function ActivityPage() {
         <div className={s.rail}>
           <FilterRail
             filters={filters}
+            errors={filterErrors}
             categoryOptions={categoryOptions}
             eventTypeOptions={eventTypeOptions}
             subjectTypeOptions={subjectTypeOptions}
