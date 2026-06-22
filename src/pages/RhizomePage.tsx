@@ -56,6 +56,10 @@ function messageClass(message: ThreadMessageView): string {
   return message.role === 'user' ? s.userMessage : s.rhizomeMessage
 }
 
+function messageKey(message: ThreadMessageView): string {
+  return `${message.role}:${message.content}`
+}
+
 function dateLabel(value?: string): string | null {
   if (!value) return null
   const date = new Date(value)
@@ -106,7 +110,11 @@ export default function RhizomePage() {
 
   const activeThread = activeThreadFromList ?? activeThreadQuery.data
   const messages = messagesQuery.data?.messages ?? []
-  const visiblePendingMessages = threadId && threadId === streamThreadId ? pendingMessages : []
+  const persistedMessageKeys = new Set(messages.map(messageKey))
+  const visiblePendingMessages =
+    threadId && threadId === streamThreadId
+      ? pendingMessages.filter((message) => !persistedMessageKeys.has(messageKey(message)))
+      : []
   const visibleMessages = [...messages, ...visiblePendingMessages]
   const visibleStreamingText = threadId && threadId === streamThreadId ? streamingText : ''
   const hasThreads = threads.length > 0

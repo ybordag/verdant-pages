@@ -28,6 +28,33 @@ async function* readSSEEvents<T>(res: Response): AsyncGenerator<T> {
   }
 }
 
+function contentToText(content: unknown): string {
+  if (content === null || content === undefined) return ''
+  if (typeof content === 'string') return content
+  if (Array.isArray(content)) {
+    return content
+      .map((block) => {
+        if (typeof block === 'string') return block
+        if (block && typeof block === 'object' && 'text' in block) {
+          const text = (block as { text?: unknown }).text
+          return typeof text === 'string' ? text : ''
+        }
+        return ''
+      })
+      .join('')
+  }
+  if (typeof content === 'object' && 'text' in content) {
+    const text = (content as { text?: unknown }).text
+    return typeof text === 'string' ? text : ''
+  }
+  return String(content)
+}
+
+function normalizeSSEEvent(event: SSEEvent): SSEEvent {
+  if (event.type !== 'token') return event
+  return { ...event, content: contentToText((event as { content: unknown }).content) }
+}
+
 // Never use EventSource — it only supports GET and can't send a custom
 // Authorization header, and a token in a query param would leak into browser
 // history, server logs, and Referer headers. fetch + ReadableStream instead.
@@ -51,7 +78,9 @@ export async function* consumeSSEStream(
     body: JSON.stringify(body),
     signal,
   })
-  yield* readSSEEvents<SSEEvent>(res)
+  for await (const event of readSSEEvents<SSEEvent>(res)) {
+    yield normalizeSSEEvent(event)
+  }
 }
 
 export async function* consumeNotificationStream(signal?: AbortSignal): AsyncGenerator<NotificationEvent> {

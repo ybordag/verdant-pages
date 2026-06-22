@@ -86,6 +86,17 @@ describe('consumeSSEStream', () => {
     ])
   })
 
+  it('normalizes provider content block token events to text', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      sseResponse([
+        'data: {"type":"token","content":[{"type":"text","text":"I can","extras":{"signature":"opaque"}},"\\u0027t show metadata."]}\n\n',
+        'data: {"type":"done"}\n\n',
+      ]),
+    )
+    const events = await collect(consumeSSEStream('/api/v1/chat/stream?thread_id=t1', { message: 'hi' }))
+    expect(events).toEqual([{ type: 'token', content: "I can't show metadata." }, { type: 'done' }])
+  })
+
   it('yields an interaction event when the graph pauses', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       sseResponse([
