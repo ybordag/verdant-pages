@@ -718,8 +718,16 @@ export interface ThreadView {
   created_at: string
 }
 
+export interface ThreadMessageView {
+  role: 'user' | 'assistant' | string
+  content: string
+  type?: string
+  created_at?: string
+}
+
 export interface ThreadMessagesResponse {
-  messages: Record<string, unknown>[]
+  thread_id?: string
+  messages: ThreadMessageView[]
 }
 
 export interface ContextObject {

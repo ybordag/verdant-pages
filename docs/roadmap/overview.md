@@ -205,7 +205,7 @@ Startup intake is now structured end to end. Verdant has typed client wrappers f
 7. **Thread switcher and responsive polish:** Add the compact active-thread switcher, mobile/tablet layout states, keyboard focus behavior, overflow handling, and selected-thread navigation polish.
 8. **5b test and live smoke pass:** Add focused component/page coverage for route loads, fallback `getThread`, history rendering, composer state, stream races/cancel/error, plus an opt-in live Cambium/Rhizome smoke for real streaming with the available providers.
 
-**5b status:** Slices 1-2 are implemented and pushed on `red-maple`. `/app/rhizome` now has an API-backed workbench shell, recent-thread list, no-thread/new-thread state, active thread route shell, read-only model display, and placeholder SessionStrip values until the UI wires the dedicated session-context endpoint.
+**5b status:** Slices 1-3 are implemented and pushed on `red-maple`. `/app/rhizome` now has an API-backed workbench shell, recent-thread shortcuts in the blank state, open-on-demand thread navigator, selected-thread route shell, typed message history rendering, read-only model display, and placeholder SessionStrip values until the UI wires the dedicated session-context endpoint. Day separators render when message timestamps are present; Rhizome's current message endpoint only returns role/content/type, so existing history currently renders without date breaks.
 
 ### Today page
 

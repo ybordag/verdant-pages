@@ -8,12 +8,14 @@ import RhizomePage from './RhizomePage'
 
 const mocks = vi.hoisted(() => ({
   getThread: vi.fn(),
+  getThreadMessages: vi.fn(),
   listThreads: vi.fn(),
   useAuth: vi.fn(),
 }))
 
 vi.mock('@/lib/api/chat', () => ({
   getThread: mocks.getThread,
+  getThreadMessages: mocks.getThreadMessages,
   listThreads: mocks.listThreads,
 }))
 
@@ -75,6 +77,13 @@ describe('RhizomePage', () => {
   beforeEach(() => {
     mocks.listThreads.mockResolvedValue(THREADS)
     mocks.getThread.mockResolvedValue(THREADS[0])
+    mocks.getThreadMessages.mockResolvedValue({
+      thread_id: 'thread-1',
+      messages: [
+        { role: 'user', content: 'Can you help with the tomatoes?', type: 'human' },
+        { role: 'assistant', content: 'Check moisture before the afternoon heat.', type: 'ai' },
+      ],
+    })
     mocks.useAuth.mockReturnValue({
       user: { preferred_provider: 'openai', preferred_model: 'gpt-4.1' },
     })
@@ -134,8 +143,12 @@ describe('RhizomePage', () => {
 
     expect(await screen.findByRole('button', { name: 'Tomato care plan' })).toBeInTheDocument()
     expect(screen.getByText('openai · gpt-4.1')).toBeInTheDocument()
-    expect(screen.getByText('Conversation selected.')).toBeInTheDocument()
+    expect(await screen.findByText('Can you help with the tomatoes?')).toBeInTheDocument()
+    expect(screen.getByText('Check moisture before the afternoon heat.')).toBeInTheDocument()
+    expect(screen.getByText('You')).toBeInTheDocument()
+    expect(screen.getAllByText('Rhizome').length).toBeGreaterThan(0)
     expect(mocks.getThread).not.toHaveBeenCalled()
+    expect(mocks.getThreadMessages).toHaveBeenCalledWith('thread-1')
   })
 
   it('loads the active thread when it is not in the recent-thread list', async () => {
@@ -151,6 +164,29 @@ describe('RhizomePage', () => {
     expect(
       await screen.findByRole('button', { name: 'Loaded thread from route' }),
     ).toBeInTheDocument()
+  })
+
+  it('shows an empty message state for an empty thread', async () => {
+    mocks.getThreadMessages.mockResolvedValue({ thread_id: 'thread-1', messages: [] })
+
+    renderRhizome('/app/rhizome/thread-1')
+
+    expect(await screen.findByText('No messages in this thread yet.')).toBeInTheDocument()
+  })
+
+  it('shows a retry state when message history fails', async () => {
+    mocks.getThreadMessages
+      .mockRejectedValueOnce(new Error('history unavailable'))
+      .mockResolvedValueOnce({
+        thread_id: 'thread-1',
+        messages: [{ role: 'assistant', content: 'Recovered message history.', type: 'ai' }],
+      })
+
+    renderRhizome('/app/rhizome/thread-1')
+
+    expect(await screen.findByText('Message history could not load.')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Retry' }))
+    expect(await screen.findByText('Recovered message history.')).toBeInTheDocument()
   })
 
   it('falls back to a neutral model label when session has no preferred model', async () => {

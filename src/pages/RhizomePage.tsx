@@ -12,9 +12,9 @@ import {
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Button from '@/components/primitives/Button/Button'
 import Textarea from '@/components/primitives/Textarea/Textarea'
-import { getThread, listThreads } from '@/lib/api/chat'
+import { getThread, getThreadMessages, listThreads } from '@/lib/api/chat'
 import { useAuth } from '@/lib/auth/context'
-import type { ThreadView } from '@/lib/types/rhizome'
+import type { ThreadMessageView, ThreadView } from '@/lib/types/rhizome'
 import s from './RhizomePage.module.css'
 
 const THREAD_LIMIT = 20
@@ -48,6 +48,25 @@ function modelLabel(provider?: string | null, model?: string | null): string {
   return `${provider} · ${model}`
 }
 
+function messageLabel(message: ThreadMessageView): string {
+  return message.role === 'user' ? 'You' : 'Rhizome'
+}
+
+function messageClass(message: ThreadMessageView): string {
+  return message.role === 'user' ? s.userMessage : s.rhizomeMessage
+}
+
+function dateLabel(value?: string): string | null {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date)
+}
+
 export default function RhizomePage() {
   const { threadId } = useParams()
   const navigate = useNavigate()
@@ -71,8 +90,14 @@ export default function RhizomePage() {
     queryFn: () => getThread(threadId ?? ''),
     enabled: Boolean(threadId && !threadsQuery.isLoading && !activeThreadFromList),
   })
+  const messagesQuery = useQuery({
+    queryKey: ['threads', threadId, 'messages'],
+    queryFn: () => getThreadMessages(threadId ?? ''),
+    enabled: Boolean(threadId),
+  })
 
   const activeThread = activeThreadFromList ?? activeThreadQuery.data
+  const messages = messagesQuery.data?.messages ?? []
   const hasThreads = threads.length > 0
   const recentThreads = threads.slice(0, RECENT_THREAD_LIMIT)
   const isNewThread = !threadId
@@ -264,11 +289,43 @@ export default function RhizomePage() {
                 )}
               </div>
             ) : (
-              <div className={s.emptyChat}>
-                <MessageSquare size={26} />
-                <strong>Conversation selected.</strong>
-                <span>Messages will appear here as the thread loads.</span>
-              </div>
+              <>
+                {messagesQuery.isLoading ? (
+                  <div className={s.emptyChat}>Loading messages</div>
+                ) : messagesQuery.isError ? (
+                  <div className={s.emptyChat}>
+                    <MessageSquare size={26} />
+                    <strong>Message history could not load.</strong>
+                    <span>Try again or choose another thread.</span>
+                    <button type="button" onClick={() => void messagesQuery.refetch()}>
+                      Retry
+                    </button>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className={s.emptyChat}>
+                    <MessageSquare size={26} />
+                    <strong>No messages in this thread yet.</strong>
+                    <span>Use the composer below when sending is enabled.</span>
+                  </div>
+                ) : (
+                  <ol className={s.messageList} aria-label="Thread messages">
+                    {messages.map((message, index) => {
+                      const label = dateLabel(message.created_at)
+                      const previousLabel = dateLabel(messages[index - 1]?.created_at)
+                      const showDaySeparator = label && label !== previousLabel
+                      return (
+                        <li key={`${message.role}-${message.type ?? 'message'}-${index}`}>
+                          {showDaySeparator ? <div className={s.daySeparator}>{label}</div> : null}
+                          <article className={[s.messageBubble, messageClass(message)].join(' ')}>
+                            <div className={s.messageMeta}>{messageLabel(message)}</div>
+                            <p>{message.content}</p>
+                          </article>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                )}
+              </>
             )}
           </div>
 
