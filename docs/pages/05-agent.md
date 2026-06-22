@@ -119,7 +119,7 @@ SSE is the only transport for chat (`streamChat`/`streamResume` — see [sse-str
 - **Connection never opens / drops before any token arrives:** no auto-retry. Show "Connection failed — try again" in the composer area with a manual retry button. Resubmitting a half-sent message automatically would be worse than asking the user to re-trigger it.
 - **Connection drops mid-stream** (after some tokens, before a `{ type: "done" }` event): the consuming component must track a local `sawDone` flag. If the generator returns without it ever being set, treat the response as incomplete — append "⚠ response may be incomplete" rather than presenting partial tokens as the full answer.
 
-Neither case is built yet — there's no chat UI to attach it to until Phase 5 starts. This section exists so the contract is settled before the chat UI is built, not reverse-engineered after.
+Phase 5b now implements the first-pass composer path: the Send button enables when the draft has text, Enter submits and Shift+Enter inserts a newline, `/app/rhizome` creates a thread only when the first message is sent, and the assistant response streams into an in-progress Rhizome bubble. Stream failures render a composer-level retry control.
 
 ---
 

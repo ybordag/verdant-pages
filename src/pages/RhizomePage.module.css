@@ -461,6 +461,17 @@
   border-left: 3px solid var(--clay);
 }
 
+.streamingMessage p::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 1em;
+  margin-left: 3px;
+  border-bottom: 2px solid var(--pine-light);
+  animation: pIn 0.8s ease infinite alternate;
+  vertical-align: -0.1em;
+}
+
 .recentThreads {
   display: grid;
   gap: 7px;
@@ -538,6 +549,35 @@
 
 .composer textarea {
   min-height: 52px;
+}
+
+.streamError {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 9px 16px 0;
+}
+
+.streamError button {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 6px 10px;
+  text-transform: uppercase;
+}
+
+.streamError button:hover {
+  border-color: var(--nav-accent);
+  color: var(--text-primary);
 }
 
 @media (max-width: 1180px) {

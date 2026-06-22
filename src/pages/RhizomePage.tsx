@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   MessageSquare,
   PanelLeftClose,
@@ -12,7 +12,7 @@ import {
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Button from '@/components/primitives/Button/Button'
 import Textarea from '@/components/primitives/Textarea/Textarea'
-import { getThread, getThreadMessages, listThreads } from '@/lib/api/chat'
+import { createThread, getThread, getThreadMessages, listThreads, streamChat } from '@/lib/api/chat'
 import { useAuth } from '@/lib/auth/context'
 import type { ThreadMessageView, ThreadView } from '@/lib/types/rhizome'
 import s from './RhizomePage.module.css'
@@ -67,13 +67,26 @@ function dateLabel(value?: string): string | null {
   }).format(date)
 }
 
+function createLocalThreadId(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
+  return `thread-${Date.now()}-${Math.random().toString(16).slice(2)}`
+}
+
 export default function RhizomePage() {
   const { threadId } = useParams()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { user } = useAuth()
   const [draft, setDraft] = useState('')
   const [threadsPanelOpen, setThreadsPanelOpen] = useState(false)
   const [reviewsPanelOpen, setReviewsPanelOpen] = useState(false)
+  const [streamThreadId, setStreamThreadId] = useState<string | null>(null)
+  const [pendingMessages, setPendingMessages] = useState<ThreadMessageView[]>([])
+  const [streamingText, setStreamingText] = useState('')
+  const [streamError, setStreamError] = useState<string | null>(null)
+  const [retryMessage, setRetryMessage] = useState<string | null>(null)
+  const [isStreaming, setIsStreaming] = useState(false)
+  const streamControllerRef = useRef<AbortController | null>(null)
 
   const threadsQuery = useQuery({
     queryKey: ['threads', { limit: THREAD_LIMIT }],
@@ -98,11 +111,83 @@ export default function RhizomePage() {
 
   const activeThread = activeThreadFromList ?? activeThreadQuery.data
   const messages = messagesQuery.data?.messages ?? []
+  const visiblePendingMessages = threadId && threadId === streamThreadId ? pendingMessages : []
+  const visibleMessages = [...messages, ...visiblePendingMessages]
+  const visibleStreamingText = threadId && threadId === streamThreadId ? streamingText : ''
   const hasThreads = threads.length > 0
   const recentThreads = threads.slice(0, RECENT_THREAD_LIMIT)
   const isNewThread = !threadId
   const pendingReviewCount = 0
   const hasPendingReviews = pendingReviewCount > 0
+  const canSend = draft.trim().length > 0 && !isStreaming
+
+  useEffect(() => {
+    return () => streamControllerRef.current?.abort()
+  }, [])
+
+  async function submitMessage(messageOverride?: string) {
+    const message = (messageOverride ?? draft).trim()
+    if (!message || isStreaming) return
+
+    const targetThreadId = threadId ?? createLocalThreadId()
+    const controller = new AbortController()
+    streamControllerRef.current?.abort()
+    streamControllerRef.current = controller
+    setIsStreaming(true)
+    setStreamError(null)
+    setRetryMessage(message)
+    setStreamingText('')
+
+    try {
+      if (!threadId) {
+        await createThread({ thread_id: targetThreadId })
+        navigate(`/app/rhizome/${encodeURIComponent(targetThreadId)}`)
+      }
+
+      const userMessage: ThreadMessageView = { role: 'user', content: message, type: 'human' }
+      setDraft('')
+      setStreamThreadId(targetThreadId)
+      setPendingMessages((current) =>
+        targetThreadId === streamThreadId ? [...current, userMessage] : [userMessage],
+      )
+
+      let responseText = ''
+      let sawDone = false
+      for await (const event of streamChat(targetThreadId, message, controller.signal)) {
+        if (event.type === 'token') {
+          responseText += event.content
+          setStreamingText(responseText)
+        } else if (event.type === 'done') {
+          sawDone = true
+          break
+        }
+      }
+
+      if (!sawDone) {
+        const incompleteText = `${responseText}\n\nResponse may be incomplete.`
+        setStreamingText(incompleteText)
+        setStreamError('Connection dropped before Rhizome finished.')
+        return
+      }
+
+      const assistantMessage: ThreadMessageView = {
+        role: 'assistant',
+        content: responseText,
+        type: 'ai',
+      }
+      setPendingMessages((current) => [...current, assistantMessage])
+      setStreamingText('')
+      setStreamError(null)
+      setRetryMessage(null)
+      void queryClient.invalidateQueries({ queryKey: ['threads', { limit: THREAD_LIMIT }] })
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
+      setStreamError('Connection failed - try again.')
+    } finally {
+      if (streamControllerRef.current === controller) streamControllerRef.current = null
+      setIsStreaming(false)
+    }
+  }
 
   return (
     <main className={s.page}>
@@ -301,17 +386,17 @@ export default function RhizomePage() {
                       Retry
                     </button>
                   </div>
-                ) : messages.length === 0 ? (
+                ) : visibleMessages.length === 0 && !visibleStreamingText ? (
                   <div className={s.emptyChat}>
                     <MessageSquare size={26} />
                     <strong>No messages in this thread yet.</strong>
-                    <span>Use the composer below when sending is enabled.</span>
+                    <span>Use the composer below to send the first message.</span>
                   </div>
                 ) : (
                   <ol className={s.messageList} aria-label="Thread messages">
-                    {messages.map((message, index) => {
+                    {visibleMessages.map((message, index) => {
                       const label = dateLabel(message.created_at)
-                      const previousLabel = dateLabel(messages[index - 1]?.created_at)
+                      const previousLabel = dateLabel(visibleMessages[index - 1]?.created_at)
                       const showDaySeparator = label && label !== previousLabel
                       return (
                         <li key={`${message.role}-${message.type ?? 'message'}-${index}`}>
@@ -323,22 +408,53 @@ export default function RhizomePage() {
                         </li>
                       )
                     })}
+                    {visibleStreamingText || isStreaming ? (
+                      <li>
+                        <article className={[s.messageBubble, s.rhizomeMessage, s.streamingMessage].join(' ')}>
+                          <div className={s.messageMeta}>Rhizome</div>
+                          <p>{visibleStreamingText || 'Rhizome is thinking...'}</p>
+                        </article>
+                      </li>
+                    ) : null}
                   </ol>
                 )}
               </>
             )}
           </div>
 
-          <form className={s.composer} onSubmit={(event) => event.preventDefault()}>
+          {streamError ? (
+            <div className={s.streamError} role="alert">
+              <span>{streamError}</span>
+              {retryMessage ? (
+                <button type="button" onClick={() => void submitMessage(retryMessage)}>
+                  Retry
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
+          <form
+            className={s.composer}
+            onSubmit={(event) => {
+              event.preventDefault()
+              void submitMessage()
+            }}
+          >
             <Textarea
               aria-label="Message Rhizome"
               placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault()
+                  void submitMessage()
+                }
+              }}
             />
-            <Button type="submit" disabled>
+            <Button type="submit" disabled={!canSend}>
               <Send size={15} />
-              Send
+              {isStreaming ? 'Sending' : 'Send'}
             </Button>
           </form>
         </section>

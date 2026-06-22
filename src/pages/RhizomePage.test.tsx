@@ -7,16 +7,20 @@ import type { ThreadView } from '@/lib/types/rhizome'
 import RhizomePage from './RhizomePage'
 
 const mocks = vi.hoisted(() => ({
+  createThread: vi.fn(),
   getThread: vi.fn(),
   getThreadMessages: vi.fn(),
   listThreads: vi.fn(),
+  streamChat: vi.fn(),
   useAuth: vi.fn(),
 }))
 
 vi.mock('@/lib/api/chat', () => ({
+  createThread: mocks.createThread,
   getThread: mocks.getThread,
   getThreadMessages: mocks.getThreadMessages,
   listThreads: mocks.listThreads,
+  streamChat: mocks.streamChat,
 }))
 
 vi.mock('@/lib/auth/context', () => ({
@@ -73,8 +77,19 @@ function renderRhizome(path = '/app/rhizome') {
   )
 }
 
+async function* streamEvents(events: Array<{ type: string; content?: string }>) {
+  for (const event of events) yield event
+}
+
+async function* failedStream() {
+  throw new Error('stream unavailable')
+  yield { type: 'done' }
+}
+
 describe('RhizomePage', () => {
   beforeEach(() => {
+    vi.stubGlobal('crypto', { randomUUID: () => 'thread-new' })
+    mocks.createThread.mockResolvedValue({ thread_id: 'thread-new' })
     mocks.listThreads.mockResolvedValue(THREADS)
     mocks.getThread.mockResolvedValue(THREADS[0])
     mocks.getThreadMessages.mockResolvedValue({
@@ -87,10 +102,18 @@ describe('RhizomePage', () => {
     mocks.useAuth.mockReturnValue({
       user: { preferred_provider: 'openai', preferred_model: 'gpt-4.1' },
     })
+    mocks.streamChat.mockImplementation(() =>
+      streamEvents([
+        { type: 'token', content: 'Check ' },
+        { type: 'token', content: 'soil moisture.' },
+        { type: 'done' },
+      ]),
+    )
   })
 
   afterEach(() => {
     vi.clearAllMocks()
+    vi.unstubAllGlobals()
   })
 
   it('shows a blank new-thread state without creating a thread', async () => {
@@ -215,5 +238,63 @@ describe('RhizomePage', () => {
     expect(screen.queryByText('No pending approvals')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Collapse reviews panel' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Open pending reviews' })).not.toBeInTheDocument()
+  })
+
+  it('creates a thread on first send and renders the streamed response', async () => {
+    const user = userEvent.setup()
+    mocks.listThreads.mockResolvedValue([])
+    mocks.getThreadMessages.mockResolvedValue({ thread_id: 'thread-new', messages: [] })
+    renderRhizome()
+
+    await user.type(screen.getByLabelText('Message Rhizome'), 'What should I do today?')
+    await user.click(screen.getByRole('button', { name: 'Send' }))
+
+    expect(mocks.createThread).toHaveBeenCalledWith({ thread_id: 'thread-new' })
+    await waitFor(() =>
+      expect(mocks.streamChat).toHaveBeenCalledWith(
+        'thread-new',
+        'What should I do today?',
+        expect.any(AbortSignal),
+      ),
+    )
+    expect(await screen.findByText('What should I do today?')).toBeInTheDocument()
+    expect(await screen.findByText('Check soil moisture.')).toBeInTheDocument()
+  })
+
+  it('streams into an existing thread without creating a new thread', async () => {
+    const user = userEvent.setup()
+    renderRhizome('/app/rhizome/thread-1')
+
+    await user.type(await screen.findByLabelText('Message Rhizome'), 'How are the tomatoes?')
+    await user.keyboard('{Enter}')
+
+    expect(mocks.createThread).not.toHaveBeenCalled()
+    await waitFor(() =>
+      expect(mocks.streamChat).toHaveBeenCalledWith(
+        'thread-1',
+        'How are the tomatoes?',
+        expect.any(AbortSignal),
+      ),
+    )
+    expect(await screen.findByText('How are the tomatoes?')).toBeInTheDocument()
+    expect(await screen.findByText('Check soil moisture.')).toBeInTheDocument()
+  })
+
+  it('shows a retry control when streaming fails', async () => {
+    const user = userEvent.setup()
+    mocks.streamChat
+      .mockImplementationOnce(() => failedStream())
+      .mockImplementationOnce(() => streamEvents([{ type: 'token', content: 'Recovered.' }, { type: 'done' }]))
+
+    renderRhizome('/app/rhizome/thread-1')
+
+    await user.type(await screen.findByLabelText('Message Rhizome'), 'Try this')
+    await user.click(screen.getByRole('button', { name: 'Send' }))
+
+    expect(await screen.findByText('Connection failed - try again.')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Retry' }))
+
+    expect(await screen.findByText('Recovered.')).toBeInTheDocument()
+    expect(mocks.streamChat).toHaveBeenCalledTimes(2)
   })
 })
