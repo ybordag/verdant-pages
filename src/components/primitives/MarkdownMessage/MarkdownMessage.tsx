@@ -3,14 +3,23 @@ import s from './MarkdownMessage.module.css'
 
 type MarkdownBlock =
   | { type: 'paragraph'; text: string }
-  | { type: 'ul' | 'ol'; items: string[] }
+  | MarkdownListBlock
+
+type MarkdownListBlock = {
+  type: 'ul' | 'ol'
+  items: MarkdownListItem[]
+}
+
+type MarkdownListItem = {
+  text: string
+  children: MarkdownListBlock[]
+}
 
 type Props = {
   content: string
 }
 
-const unorderedItemPattern = /^\s*[-*+]\s+(.+)$/
-const orderedItemPattern = /^\s*\d+[.)]\s+(.+)$/
+const listItemPattern = /^(\s*)((?:\d+[.)])|[-*+])\s+(.+)$/
 
 function isSafeHref(value: string): boolean {
   try {
@@ -25,7 +34,7 @@ function parseBlocks(content: string): MarkdownBlock[] {
   const blocks: MarkdownBlock[] = []
   const lines = content.replace(/\r\n/g, '\n').split('\n')
   let paragraph: string[] = []
-  let list: { type: 'ul' | 'ol'; items: string[] } | null = null
+  let listStack: Array<{ indent: number; block: MarkdownListBlock }> = []
 
   function flushParagraph() {
     if (paragraph.length === 0) return
@@ -34,30 +43,97 @@ function parseBlocks(content: string): MarkdownBlock[] {
   }
 
   function flushList() {
-    if (!list) return
-    blocks.push(list)
-    list = null
+    listStack = []
+  }
+
+  function lastItem(block: MarkdownListBlock): MarkdownListItem | undefined {
+    return block.items[block.items.length - 1]
+  }
+
+  function appendItem(block: MarkdownListBlock, text: string) {
+    block.items.push({ text, children: [] })
+  }
+
+  function startRootList(type: 'ul' | 'ol', indent: number, text: string) {
+    const block: MarkdownListBlock = { type, items: [] }
+    blocks.push(block)
+    appendItem(block, text)
+    listStack = [{ indent, block }]
+  }
+
+  function startNestedList(parent: MarkdownListBlock, type: 'ul' | 'ol', indent: number, text: string) {
+    const parentItem = lastItem(parent)
+    if (!parentItem) return
+    const block: MarkdownListBlock = { type, items: [] }
+    parentItem.children.push(block)
+    appendItem(block, text)
+    listStack.push({ indent, block })
+  }
+
+  function appendListItem(type: 'ul' | 'ol', indent: number, text: string) {
+    flushParagraph()
+
+    if (listStack.length === 0) {
+      startRootList(type, indent, text)
+      return
+    }
+
+    while (listStack.length > 0 && listStack[listStack.length - 1].indent > indent) {
+      listStack.pop()
+    }
+
+    const current = listStack[listStack.length - 1]
+    if (!current) {
+      startRootList(type, indent, text)
+      return
+    }
+
+    if (indent > current.indent) {
+      startNestedList(current.block, type, indent, text)
+      return
+    }
+
+    if (current.indent === indent && current.block.type === type) {
+      appendItem(current.block, text)
+      return
+    }
+
+    const currentItem = lastItem(current.block)
+    if (current.indent === indent && currentItem?.text.trim().endsWith(':')) {
+      startNestedList(current.block, type, indent, text)
+      return
+    }
+
+    while (
+      listStack.length > 0 &&
+      !(
+        listStack[listStack.length - 1].indent === indent &&
+        listStack[listStack.length - 1].block.type === type
+      )
+    ) {
+      listStack.pop()
+    }
+
+    const matchingList = listStack[listStack.length - 1]
+    if (matchingList) {
+      appendItem(matchingList.block, text)
+      return
+    }
+
+    startRootList(type, indent, text)
   }
 
   for (const line of lines) {
-    const unordered = line.match(unorderedItemPattern)
-    const ordered = line.match(orderedItemPattern)
+    const listItem = line.match(listItemPattern)
 
-    if (unordered || ordered) {
-      flushParagraph()
-      const type = unordered ? 'ul' : 'ol'
-      const item = (unordered ?? ordered)?.[1] ?? ''
-      if (!list || list.type !== type) {
-        flushList()
-        list = { type, items: [] }
-      }
-      list.items.push(item)
+    if (listItem) {
+      const [, rawIndent, marker, item] = listItem
+      appendListItem(marker.match(/\d/) ? 'ol' : 'ul', rawIndent.length, item)
       continue
     }
 
     if (line.trim() === '') {
       flushParagraph()
-      flushList()
       continue
     }
 
@@ -156,6 +232,22 @@ function parseInline(text: string, keyPrefix: string): ReactNode[] {
 export default function MarkdownMessage({ content }: Props) {
   const blocks = parseBlocks(content)
 
+  function renderList(block: MarkdownListBlock, keyPrefix: string) {
+    const ListTag = block.type
+    return (
+      <ListTag key={keyPrefix}>
+        {block.items.map((item, itemIndex) => (
+          <li key={`${keyPrefix}-${itemIndex}`}>
+            {parseInline(item.text, `${keyPrefix}-${itemIndex}`)}
+            {item.children.map((child, childIndex) =>
+              renderList(child, `${keyPrefix}-${itemIndex}-${childIndex}`),
+            )}
+          </li>
+        ))}
+      </ListTag>
+    )
+  }
+
   return (
     <div className={s.root}>
       {blocks.map((block, index) => {
@@ -163,14 +255,7 @@ export default function MarkdownMessage({ content }: Props) {
           return <p key={index}>{parseInline(block.text, `p-${index}`)}</p>
         }
 
-        const ListTag = block.type
-        return (
-          <ListTag key={index}>
-            {block.items.map((item, itemIndex) => (
-              <li key={itemIndex}>{parseInline(item, `${block.type}-${index}-${itemIndex}`)}</li>
-            ))}
-          </ListTag>
-        )
+        return renderList(block, `${block.type}-${index}`)
       })}
     </div>
   )
