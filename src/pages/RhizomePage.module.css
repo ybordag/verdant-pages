@@ -559,7 +559,8 @@
   justify-content: space-between;
   gap: 10px;
   overflow: hidden;
-  border-block: 1px solid rgb(var(--clay-rgb) / 0.62);
+  border-bottom: 1px solid rgb(var(--clay-rgb) / 0.62);
+  border-top: 0;
   background: rgb(var(--clay-rgb) / 0.12);
   color: var(--text-primary);
   font-size: 12px;
@@ -587,7 +588,7 @@
   background-size: 200% 100%;
   content: '';
   pointer-events: none;
-  animation: streamErrorSweep 1.6s linear infinite;
+  animation: streamErrorSweep 2.1s linear infinite;
 }
 
 .streamError span,
