@@ -559,7 +559,7 @@
   justify-content: space-between;
   gap: 10px;
   overflow: hidden;
-  border-bottom: 1px solid rgb(var(--clay-rgb) / 0.62);
+  border-block: 1px solid rgb(var(--clay-rgb) / 0.62);
   background: rgb(var(--clay-rgb) / 0.12);
   color: var(--text-primary);
   font-size: 12px;
@@ -571,19 +571,23 @@
   position: absolute;
   inset: 0 auto auto 0;
   width: 100%;
-  height: 3px;
+  height: 1px;
   background: linear-gradient(
     90deg,
     var(--dark-clay),
     var(--clay),
     var(--buttercup),
     var(--clay),
+    var(--dark-clay),
+    var(--clay),
+    var(--buttercup),
+    var(--clay),
     var(--dark-clay)
   );
-  background-size: 300% 100%;
+  background-size: 200% 100%;
   content: '';
   pointer-events: none;
-  animation: streamErrorSweep 1.8s linear infinite;
+  animation: streamErrorSweep 1.6s linear infinite;
 }
 
 .streamError span,
@@ -593,10 +597,10 @@
 }
 
 .streamError button {
-  border: 1px solid rgb(var(--clay-rgb) / 0.46);
+  border: 1px solid var(--clay);
   border-radius: var(--radius-soft);
-  background: rgb(var(--clay-rgb) / 0.10);
-  color: var(--text-primary);
+  background: var(--clay);
+  color: var(--vellum-white);
   cursor: pointer;
   font-family: var(--font-label);
   font-size: 10px;
@@ -606,13 +610,13 @@
 }
 
 .streamError button:hover {
-  border-color: var(--clay);
-  background: rgb(var(--clay-rgb) / 0.16);
+  border-color: var(--dark-clay);
+  background: var(--dark-clay);
 }
 
 @keyframes streamErrorSweep {
   from {
-    background-position: 100% 50%;
+    background-position: 200% 50%;
   }
 
   to {
