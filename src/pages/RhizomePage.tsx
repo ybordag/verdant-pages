@@ -917,123 +917,121 @@ export default function RhizomePage() {
               void submitMessage()
             }}
           >
-            {contextTrayOpen ? (
-              <div className={s.composerContextTray} aria-label={threadId ? 'Pinned context' : 'Attached context'}>
-                <div className={s.composerContextHeader}>
-                  <div>
-                    <span>{threadId ? 'Pinned context' : 'Attached context'}</span>
-                    <small>
-                      {threadId
-                        ? 'Available to Rhizome on every turn in this thread.'
-                        : 'Sent with the first message when the thread is created.'}
-                    </small>
+            <div className={s.composerBox}>
+              {contextTrayOpen ? (
+                <div className={s.composerContextTray} aria-label={threadId ? 'Pinned context' : 'Attached context'}>
+                  <div className={s.composerContextHeader}>
+                    <div>
+                      <span>{threadId ? 'Pinned context' : 'Attached context'}</span>
+                      <small>
+                        {threadId
+                          ? 'Available to Rhizome on every turn in this thread.'
+                          : 'Sent with the first message when the thread is created.'}
+                      </small>
+                    </div>
+                    <button
+                      aria-label="Close context tray"
+                      type="button"
+                      onClick={() => setContextTrayOpen(false)}
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
-                  <button
-                    aria-label="Close context tray"
-                    type="button"
-                    onClick={() => setContextTrayOpen(false)}
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
 
-                <div className={s.composerContextChips}>
                   {composerContext.length > 0 ? (
-                    composerContext.map((context) => (
-                      <span
-                        className={s.contextChip}
-                        key={`${context.subject_type}-${context.subject_id}`}
-                      >
-                        <em>{context.subject_type}</em>
-                        <span>{contextLabel(context)}</span>
-                        <button
-                          type="button"
-                          aria-label={`Remove ${contextLabel(context)} context`}
-                          disabled={removeContextMutation.isPending}
-                          onClick={() => removeComposerContext(context)}
+                    <div className={s.composerContextChips}>
+                      {composerContext.map((context) => (
+                        <span
+                          className={s.contextChip}
+                          key={`${context.subject_type}-${context.subject_id}`}
                         >
-                          <X size={12} />
-                        </button>
-                      </span>
-                    ))
-                  ) : (
-                    <span className={s.contextEmpty}>
-                      Search below or type a prefix like plant:tomato.
-                    </span>
-                  )}
-                </div>
-
-                <label className={s.composerContextSearch}>
-                  <Search size={14} />
-                  <input
-                    aria-label="Search context"
-                    placeholder="Search context, or use plant:, task:, project:, incident:..."
-                    value={contextSearchTerm}
-                    onChange={(event) => setContextSearchTerm(event.target.value)}
-                  />
-                </label>
-
-                <div className={s.composerContextResults}>
-                  {contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2 ? (
-                    <div className={s.contextSearchState}>Type at least two characters after the prefix.</div>
-                  ) : contextSearchQuery.isLoading ? (
-                    <div className={s.contextSearchState}>Searching context</div>
-                  ) : contextSearchQuery.isError ? (
-                    <div className={s.contextSearchState}>Context search is unavailable.</div>
-                  ) : groupedContextResults.length > 0 ? (
-                    groupedContextResults.map(([type, results]) => (
-                      <section className={s.contextResultGroup} key={type}>
-                        <h3>{titleCase(type)}</h3>
-                        {results.map((result) => (
+                          <em>{context.subject_type}</em>
+                          <span>{contextLabel(context)}</span>
                           <button
-                            key={`${result.subject_type}-${result.subject_id}`}
                             type="button"
-                            className={s.contextResult}
-                            disabled={addContextMutation.isPending}
-                            onClick={() => addContextFromSearchResult(result)}
+                            aria-label={`Remove ${contextLabel(context)} context`}
+                            disabled={removeContextMutation.isPending}
+                            onClick={() => removeComposerContext(context)}
                           >
-                            <span>
-                              <strong>{result.label}</strong>
-                              <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
-                            </span>
-                            <em>{result.subject_type}</em>
+                            <X size={12} />
                           </button>
-                        ))}
-                      </section>
-                    ))
-                  ) : parsedContextSearch.q.length >= 2 ? (
-                    <div className={s.contextSearchState}>No context found.</div>
+                        </span>
+                      ))}
+                    </div>
                   ) : null}
-                </div>
-              </div>
-            ) : null}
 
-            <div className={s.composerInputRow}>
-              <button
-                aria-expanded={contextTrayOpen}
-                aria-label={contextTrayOpen ? 'Close context tray' : 'Add context'}
-                className={s.composerAddContext}
-                type="button"
-                onClick={() => setContextTrayOpen((open) => !open)}
-              >
-                <Plus size={16} />
-              </button>
-              <Textarea
-                aria-label="Message Rhizome"
-                placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault()
-                    void submitMessage()
-                  }
-                }}
-              />
-              <Button type="submit" disabled={!canSend}>
-                <Send size={15} />
-                {isStreaming ? 'Sending' : 'Send'}
-              </Button>
+                  <label className={s.composerContextSearch}>
+                    <Search size={14} />
+                    <input
+                      aria-label="Search context"
+                      placeholder="Search context, or use plant:, task:, project:, incident:..."
+                      value={contextSearchTerm}
+                      onChange={(event) => setContextSearchTerm(event.target.value)}
+                    />
+                  </label>
+
+                  <div className={s.composerContextResults}>
+                    {contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2 ? (
+                      <div className={s.contextSearchState}>Type at least two characters after the prefix.</div>
+                    ) : contextSearchQuery.isLoading ? (
+                      <div className={s.contextSearchState}>Searching context</div>
+                    ) : contextSearchQuery.isError ? (
+                      <div className={s.contextSearchState}>Context search is unavailable.</div>
+                    ) : groupedContextResults.length > 0 ? (
+                      groupedContextResults.map(([type, results]) => (
+                        <section className={s.contextResultGroup} key={type}>
+                          <h3>{titleCase(type)}</h3>
+                          {results.map((result) => (
+                            <button
+                              key={`${result.subject_type}-${result.subject_id}`}
+                              type="button"
+                              className={s.contextResult}
+                              disabled={addContextMutation.isPending}
+                              onClick={() => addContextFromSearchResult(result)}
+                            >
+                              <span>
+                                <strong>{result.label}</strong>
+                                <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
+                              </span>
+                              <em>{result.subject_type}</em>
+                            </button>
+                          ))}
+                        </section>
+                      ))
+                    ) : parsedContextSearch.q.length >= 2 ? (
+                      <div className={s.contextSearchState}>No context found.</div>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
+
+              <div className={s.composerInputRow}>
+                <button
+                  aria-expanded={contextTrayOpen}
+                  aria-label={contextTrayOpen ? 'Close context tray' : 'Add context'}
+                  className={s.composerAddContext}
+                  type="button"
+                  onClick={() => setContextTrayOpen((open) => !open)}
+                >
+                  <Plus size={14} />
+                </button>
+                <Textarea
+                  aria-label="Message Rhizome"
+                  placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
+                  value={draft}
+                  onChange={(event) => setDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault()
+                      void submitMessage()
+                    }
+                  }}
+                />
+                <Button type="submit" disabled={!canSend}>
+                  <Send size={15} />
+                  {isStreaming ? 'Sending' : 'Send'}
+                </Button>
+              </div>
             </div>
           </form>
         </section>

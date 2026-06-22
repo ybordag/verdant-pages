@@ -440,9 +440,7 @@ describe('RhizomePage', () => {
     renderRhizome('/app/rhizome/thread-1')
 
     await user.click(screen.getByRole('button', { name: 'Add context' }))
-    expect(await screen.findByLabelText('Pinned context')).toHaveTextContent(
-      'Search below or type a prefix like plant:tomato.',
-    )
+    expect(await screen.findByLabelText('Pinned context')).toBeInTheDocument()
 
     await user.type(screen.getByLabelText('Search context'), 'tom')
     expect(await screen.findByRole('button', { name: /Cherry Tomato/i })).toBeInTheDocument()
@@ -461,9 +459,7 @@ describe('RhizomePage', () => {
     await waitFor(() =>
       expect(mocks.removeThreadContext).toHaveBeenCalledWith('thread-1', 'plant', 'plant-1'),
     )
-    expect(screen.getByLabelText('Pinned context')).toHaveTextContent(
-      'Search below or type a prefix like plant:tomato.',
-    )
+    expect(screen.getByLabelText('Pinned context')).not.toHaveTextContent('Cherry Tomato')
   })
 
   it('attaches context before creating a first thread', async () => {
