@@ -1001,16 +1001,16 @@
 .contextAutocomplete {
   position: absolute;
   z-index: 20;
-  top: calc(100% + 6px);
-  right: 0;
+  top: calc(100% + 3px);
   left: 0;
   display: grid;
+  width: min(420px, calc(100vw - 48px));
   max-height: 220px;
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
-  background: var(--bg-nav);
-  padding: 6px 8px;
+  background: var(--bg);
+  padding: 3px 6px;
 }
 
 .contextResultGroup {
@@ -1019,7 +1019,7 @@
 }
 
 .contextResultGroup h3 {
-  margin: 10px 0 2px;
+  margin: 6px 0 1px;
   color: var(--text-muted);
   font-family: var(--font-label);
   font-size: 9px;
@@ -1096,13 +1096,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
+  min-width: 0;
   border: 0;
   border-bottom: 1px solid var(--line-subtle);
   background: transparent;
   color: var(--text-primary);
   cursor: pointer;
-  padding: 8px 2px;
+  padding: 6px 2px;
   text-align: left;
 }
 
@@ -1110,16 +1111,26 @@
   background: var(--surface-muted);
 }
 
+.contextResult span {
+  min-width: 0;
+}
+
 .contextResult strong {
   display: block;
+  overflow: hidden;
   font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .contextResult small {
   display: block;
+  overflow: hidden;
   margin-top: 2px;
   color: var(--text-muted);
   font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .contextResult em {
@@ -1135,7 +1146,7 @@
 .contextSearchState {
   color: var(--text-muted);
   font-size: 13px;
-  padding: 10px 2px;
+  padding: 7px 2px;
 }
 
 @keyframes streamErrorSweep {
