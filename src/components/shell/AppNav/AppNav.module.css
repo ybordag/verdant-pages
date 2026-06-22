@@ -166,10 +166,14 @@
 
 .item:hover { background: var(--surface-muted); color: var(--text-primary); }
 
-.item[data-active='true'] {
-  color: var(--nav-accent);
+.activeItem {
+  color: var(--chartreuse);
   box-shadow: inset 2px 0 0 0 var(--nav-accent);
   background: var(--nav-active-bg);
+}
+
+:global([data-theme='light']) .activeItem {
+  color: var(--chartreuse-deep);
 }
 
 .nav[data-collapsed='true'] .item {
@@ -183,6 +187,14 @@
 /* Pending items stay "lit" when collapsed, since the badge count itself is hidden */
 .nav[data-collapsed='true'] .item[data-has-badge='true'] .itemIcon {
   color: var(--text-primary);
+}
+
+.nav[data-collapsed='true'] .activeItem .itemIcon {
+  color: var(--chartreuse);
+}
+
+:global([data-theme='light']) .nav[data-collapsed='true'] .activeItem .itemIcon {
+  color: var(--chartreuse-deep);
 }
 
 .itemIcon {
@@ -209,13 +221,17 @@
 }
 
 .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--chartreuse);
   color: var(--dark-fern);
   border-radius: 999px;
   font-size: 9px;
   font-weight: 700;
-  padding: 1px 6px;
+  min-height: 14px;
   min-width: 18px;
+  padding: 0 6px;
   text-align: center;
   flex-shrink: 0;
   transition: opacity 0.15s;

@@ -318,6 +318,7 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   gap: 8px;
+  border-top: 1px solid rgb(var(--clay-rgb) / 0.55);
   border-bottom: 1px solid rgb(var(--clay-rgb) / 0.55);
   background:
     linear-gradient(112deg, rgb(var(--clay-rgb) / 0.16), transparent 48%),

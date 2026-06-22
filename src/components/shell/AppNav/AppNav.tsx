@@ -23,9 +23,8 @@ function NavItem({ to, icon, label, badge, end = false }: NavItemProps) {
     <NavLink
       to={to}
       end={end}
-      className={s.item}
+      className={({ isActive }) => [s.item, isActive ? s.activeItem : ''].filter(Boolean).join(' ')}
       data-has-badge={hasPending}
-      style={({ isActive }) => isActive ? { color: 'var(--nav-accent)', boxShadow: 'inset 2px 0 0 0 var(--nav-accent)', background: 'var(--nav-active-bg)' } : {}}
     >
       <span className={s.itemIcon}>{icon}</span>
       <span className={s.itemLabel}>{label}</span>
