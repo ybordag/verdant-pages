@@ -109,7 +109,7 @@ export default function RhizomePage() {
   })
 
   const activeThread = activeThreadFromList ?? activeThreadQuery.data
-  const messages = messagesQuery.data?.messages ?? []
+  const messages = (messagesQuery.data?.messages ?? []).filter((message) => message.content.trim())
   const persistedMessageKeys = new Set(messages.map(messageKey))
   const visiblePendingMessages =
     threadId && threadId === streamThreadId

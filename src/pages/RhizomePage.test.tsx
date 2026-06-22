@@ -195,6 +195,17 @@ describe('RhizomePage', () => {
     expect(await screen.findByText('No messages in this thread yet.')).toBeInTheDocument()
   })
 
+  it('ignores blank history messages', async () => {
+    mocks.getThreadMessages.mockResolvedValue({
+      thread_id: 'thread-1',
+      messages: [{ role: 'assistant', content: '   ', type: 'ai' }],
+    })
+
+    renderRhizome('/app/rhizome/thread-1')
+
+    expect(await screen.findByText('No messages in this thread yet.')).toBeInTheDocument()
+  })
+
   it('shows a retry state when message history fails', async () => {
     mocks.getThreadMessages
       .mockRejectedValueOnce(new Error('history unavailable'))
