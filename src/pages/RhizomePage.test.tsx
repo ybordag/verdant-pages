@@ -462,6 +462,18 @@ describe('RhizomePage', () => {
     expect(screen.getByLabelText('Pinned context for this thread')).not.toHaveTextContent('Cherry Tomato')
   })
 
+  it('normalizes plural and batch context prefixes before searching', async () => {
+    const user = userEvent.setup()
+    renderRhizome('/app/rhizome/thread-1')
+
+    await user.click(screen.getByRole('button', { name: 'Add pinned context' }))
+    await user.type(screen.getByLabelText('Search Pinned context for this thread'), 'batches:cos')
+
+    await waitFor(() =>
+      expect(mocks.search).toHaveBeenLastCalledWith({ q: 'cos', types: 'batch', limit: 8 }),
+    )
+  })
+
   it('adds local message context without sending it as thread context', async () => {
     const user = userEvent.setup()
     mocks.listThreads.mockResolvedValue([])

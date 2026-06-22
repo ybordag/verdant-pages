@@ -48,7 +48,22 @@ const RECENT_THREAD_LIMIT = 3
 const EMPTY_THREADS: ThreadView[] = []
 const EMPTY_CONTEXT: ContextObject[] = []
 const EMPTY_SEARCH_RESULTS: SearchResultItemView[] = []
-const CONTEXT_TYPES = new Set(['plant', 'bed', 'container', 'task', 'project', 'incident'])
+const CONTEXT_TYPE_ALIASES = new Map([
+  ['plant', 'plant'],
+  ['plants', 'plant'],
+  ['batch', 'batch'],
+  ['batches', 'batch'],
+  ['bed', 'bed'],
+  ['beds', 'bed'],
+  ['container', 'container'],
+  ['containers', 'container'],
+  ['task', 'task'],
+  ['tasks', 'task'],
+  ['project', 'project'],
+  ['projects', 'project'],
+  ['incident', 'incident'],
+  ['incidents', 'incident'],
+])
 
 type EnergyLevel = NonNullable<SessionContextView['energy_level']>
 type LocationType = NonNullable<SessionContextView['preferred_location_type']>
@@ -135,9 +150,9 @@ function parseContextSearchTerm(term: string): { q: string; types?: string } {
   const trimmed = term.trim()
   const typedMatch = trimmed.match(/^([a-z_]+):(.*)$/i)
   if (!typedMatch) return { q: trimmed }
-  const type = typedMatch[1].toLowerCase()
-  if (!CONTEXT_TYPES.has(type)) return { q: trimmed }
-  return { q: typedMatch[2].trim(), types: type }
+  const type = CONTEXT_TYPE_ALIASES.get(typedMatch[1].toLowerCase())
+  if (!type) return { q: trimmed }
+  return { q: typedMatch[2].trim() || type, types: type }
 }
 
 function interactionTypeLabel(type: string): string {
