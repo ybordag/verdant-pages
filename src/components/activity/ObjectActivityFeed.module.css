@@ -43,6 +43,10 @@
   padding: 22px 0 4px;
 }
 
+.state {
+  --empty-state-text: var(--vellum-grey);
+}
+
 [data-theme='light'] .state {
   --empty-state-text: var(--inkwell-light);
 }

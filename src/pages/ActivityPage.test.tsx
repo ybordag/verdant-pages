@@ -109,6 +109,7 @@ describe('ActivityPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Category' }))
     await userEvent.click(screen.getByRole('option', { name: 'incident' }))
 
+    expect(screen.queryByRole('listbox', { name: 'Category' })).not.toBeInTheDocument()
     await waitFor(() => expect(listActivity).toHaveBeenLastCalledWith({ category: 'incident', limit: 20 }))
     expect(await screen.findByText('Flagged aphid pressure on kale starts.')).toBeInTheDocument()
     expect(screen.queryByText('Completed morning watering for container tomatoes.')).not.toBeInTheDocument()
@@ -130,8 +131,10 @@ describe('ActivityPage', () => {
     await userEvent.click(screen.getByRole('option', { name: 'plant' }))
     await userEvent.click(screen.getByRole('button', { name: 'Since' }))
     await userEvent.click(screen.getByRole('button', { name: 'Since 06/20/2026' }))
+    expect(screen.queryByRole('dialog', { name: 'Since calendar' })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Before' }))
     await userEvent.click(screen.getByRole('button', { name: 'Before 06/21/2026' }))
+    expect(screen.queryByRole('dialog', { name: 'Before calendar' })).not.toBeInTheDocument()
 
     await waitFor(() =>
       expect(listActivity).toHaveBeenLastCalledWith({

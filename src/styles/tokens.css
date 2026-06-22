@@ -6,6 +6,7 @@
   --vellum-dark: #E9DEB7;
   --vellum: #F2E8C9;
   --vellum-page: #F4ECD5;
+  --vellum-grey: #8F8672;
   /* Same hue/chroma as --vellum, just lighter — unlike --vellum-light,
      which is both lighter and less saturated. */
   --vellum-bright: oklch(from var(--vellum) calc(l + 0.03) c h);

@@ -45,7 +45,7 @@ export default function FilterRail({
       </div>
 
       <div className={s.groups}>
-        <label className={s.group}>
+        <div className={s.group}>
           <span className={s.label}>Category</span>
           <FilterSelect
             label="Category"
@@ -54,9 +54,9 @@ export default function FilterRail({
             options={toOptions(categoryOptions)}
             onChange={(value) => onChange(updateFilter(filters, 'category', value))}
           />
-        </label>
+        </div>
 
-        <label className={s.group}>
+        <div className={s.group}>
           <span className={s.label}>Event type</span>
           <FilterSelect
             label="Event type"
@@ -65,9 +65,9 @@ export default function FilterRail({
             options={toOptions(eventTypeOptions)}
             onChange={(value) => onChange(updateFilter(filters, 'eventType', value))}
           />
-        </label>
+        </div>
 
-        <label className={s.group}>
+        <div className={s.group}>
           <span className={s.label}>Subject</span>
           <FilterSelect
             label="Subject"
@@ -76,25 +76,25 @@ export default function FilterRail({
             options={toOptions(subjectTypeOptions)}
             onChange={(value) => onChange(updateFilter(filters, 'subjectType', value))}
           />
-        </label>
+        </div>
 
-        <label className={s.group}>
+        <div className={s.group}>
           <span className={s.label}>Since</span>
           <FilterDatePicker
             label="Since"
             value={filters.since}
             onChange={(value) => onChange(updateFilter(filters, 'since', value))}
           />
-        </label>
+        </div>
 
-        <label className={s.group}>
+        <div className={s.group}>
           <span className={s.label}>Before</span>
           <FilterDatePicker
             label="Before"
             value={filters.before}
             onChange={(value) => onChange(updateFilter(filters, 'before', value))}
           />
-        </label>
+        </div>
       </div>
     </aside>
   )
