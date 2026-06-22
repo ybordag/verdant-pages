@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { vi } from 'vitest'
 import type { ThreadView } from '@/lib/types/rhizome'
@@ -71,6 +72,7 @@ describe('RhizomePage', () => {
     renderRhizome()
 
     expect(screen.getByRole('heading', { name: 'Ask Rhizome' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Threads' })).toBeInTheDocument()
     expect(await screen.findByText('No threads yet')).toBeInTheDocument()
     expect(screen.getByText('Start a thread when you are ready.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Send/i })).toBeDisabled()
@@ -120,5 +122,30 @@ describe('RhizomePage', () => {
     renderRhizome()
 
     expect(await screen.findByText('Model not set')).toBeInTheDocument()
+  })
+
+  it('collapses and expands the thread navigator', async () => {
+    renderRhizome()
+
+    expect(await screen.findByRole('heading', { name: 'Threads' })).toBeInTheDocument()
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Collapse threads panel' })[0])
+    expect(screen.queryByRole('heading', { name: 'Threads' })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Expand threads panel' })[0])
+    expect(await screen.findByRole('heading', { name: 'Threads' })).toBeInTheDocument()
+  })
+
+  it('collapses and expands the reviews panel', async () => {
+    renderRhizome()
+
+    expect(await screen.findByText('No pending approvals')).toBeInTheDocument()
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Collapse reviews panel' })[0])
+    expect(screen.queryByRole('button', { name: 'Collapse reviews panel' })).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getAllByRole('button', { name: 'Expand reviews panel' })[0])
+    expect(screen.getAllByRole('button', { name: 'Collapse reviews panel' }).length).toBeGreaterThan(0)
+    expect(await screen.findByText('No pending approvals')).toBeInTheDocument()
   })
 })
