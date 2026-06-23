@@ -430,6 +430,8 @@
 .workspaceHeaderRow {
   border-bottom: 1px solid var(--line);
   padding-bottom: 12px;
+  margin-inline: -26px;
+  padding-inline: 26px;
 }
 
 .workspaceIdentity {
@@ -448,9 +450,7 @@
 
 .threadHeaderRow {
   align-items: flex-end;
-  border-bottom: 1px solid var(--line);
   padding-top: 2px;
-  padding-bottom: 10px;
 }
 
 .topbarCollapsed {
