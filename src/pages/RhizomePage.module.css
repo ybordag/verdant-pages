@@ -820,6 +820,14 @@ button.sessionCard:disabled {
   gap: 4px;
 }
 
+.startContextCard label > span {
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .startContextCard span,
 .startContextCard .eyebrow,
 .weatherStartCard .eyebrow,
@@ -909,7 +917,7 @@ button.sessionCard:disabled {
 .weatherTemp {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   color: var(--text-primary);
   font-family: var(--font-display);
   line-height: 1;
@@ -965,11 +973,13 @@ button.sessionCard:disabled {
   gap: 8px;
 }
 
-.emptyChat > svg {
+.emptyChat > svg,
+.startThreadIntro > svg {
   color: var(--chartreuse);
 }
 
-:global([data-theme='light']) .emptyChat > svg {
+:global([data-theme='light']) .emptyChat > svg,
+:global([data-theme='light']) .startThreadIntro > svg {
   color: var(--chartreuse-deep);
 }
 

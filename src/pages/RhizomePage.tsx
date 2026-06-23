@@ -1313,7 +1313,7 @@ export default function RhizomePage() {
                               ? 'Loading'
                               : weatherTemperatureLabel(blankWeather?.conditions_summary)}
                           </strong>
-                          {!blankWeatherQuery.isLoading && <span>° F</span>}
+                          {!blankWeatherQuery.isLoading && <span>°F</span>}
                         </span>
                       </div>
                       <div className={s.weatherMetrics} aria-label="Weather details">
