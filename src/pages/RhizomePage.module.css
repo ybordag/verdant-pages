@@ -743,40 +743,33 @@ button.sessionCard:disabled {
 
 .startPanel {
   display: grid;
-  width: min(920px, 100%);
-  gap: 10px;
+  width: min(1160px, 100%);
   text-align: left;
 }
 
-.startPrompt,
+.startCardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .startContextCard,
-.startPreviewCard {
+.weatherStartCard,
+.startFocusCard {
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
   background: var(--bg-nav);
-}
-
-.startPrompt {
-  display: grid;
-  gap: 8px;
-  padding: 12px;
-}
-
-.startPrompt h3 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 16px;
+  min-height: 174px;
 }
 
 .startChips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  justify-content: center;
 }
 
 .startChips button,
-.startContextToggle,
-.startPreviewCard button,
 .startContextCard button {
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
@@ -784,9 +777,9 @@ button.sessionCard:disabled {
   color: var(--text-secondary);
   cursor: pointer;
   font-family: var(--font-label);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 800;
-  padding: 6px 9px;
+  padding: 4px 7px;
   text-transform: uppercase;
 }
 
@@ -802,25 +795,16 @@ button.sessionCard:disabled {
 }
 
 .startChips button:hover,
-.startContextToggle:hover,
-.startPreviewCard button:hover,
 .startContextCard button:hover:not(:disabled) {
   border-color: var(--nav-accent);
   color: var(--text-primary);
 }
 
-.startContextToggle {
-  justify-self: start;
-  border-color: var(--clay);
-  background: rgb(var(--clay-rgb) / 0.14);
-  color: var(--clay);
-}
-
 .startContextCard {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
-  gap: 8px;
-  padding: 10px;
+  align-content: start;
+  gap: 7px;
+  padding: 12px;
 }
 
 .startContextCard label {
@@ -829,12 +813,14 @@ button.sessionCard:disabled {
 }
 
 .startContextCard span,
-.startPreviewCard .eyebrow {
+.weatherStartCard .eyebrow,
+.startFocusCard .eyebrow {
   color: var(--clay);
 }
 
 [data-theme='light'] .startContextCard span,
-[data-theme='light'] .startPreviewCard .eyebrow {
+[data-theme='light'] .weatherStartCard .eyebrow,
+[data-theme='light'] .startFocusCard .eyebrow {
   color: var(--dark-clay);
 }
 
@@ -851,7 +837,8 @@ button.sessionCard:disabled {
 }
 
 .startContextCard button {
-  align-self: end;
+  justify-self: start;
+  margin-top: 2px;
   border-color: var(--clay);
   background: var(--clay);
   color: var(--vellum-white);
@@ -862,55 +849,83 @@ button.sessionCard:disabled {
   opacity: 0.45;
 }
 
-.startPreviewGrid {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  gap: 10px;
-}
-
-.startPreviewCard {
+.weatherStartCard,
+.startFocusCard {
   display: grid;
   align-content: start;
-  gap: 6px;
-  min-height: 112px;
-  padding: 11px;
+  gap: 8px;
+  padding: 12px;
 }
 
-.startPreviewCard strong {
+.weatherCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--text-muted);
+}
+
+.weatherCardTop span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.weatherCardTop svg {
+  color: var(--clay);
+}
+
+.weatherTemp {
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 0.95;
+}
+
+.weatherSummary {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.weatherMetrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.weatherMetrics span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-tight);
+  color: var(--text-muted);
+  font-family: var(--font-label);
+  font-size: 8px;
+  font-weight: 800;
+  padding: 3px 5px;
+  text-transform: uppercase;
+}
+
+.startFocusCard strong {
   color: var(--text-primary);
   font-size: 13px;
 }
 
-.startPreviewCard span,
-.startPreviewCard small {
+.startFocusCard span {
   color: var(--text-muted);
   font-size: 11px;
   line-height: 1.35;
-}
-
-.startPreviewCard ol {
-  display: grid;
-  gap: 5px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.startPreviewCard li {
-  display: grid;
-  gap: 1px;
-  min-width: 0;
-}
-
-.startPreviewCard li strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.startPreviewCard button {
-  justify-self: start;
-  margin-top: 2px;
 }
 
 .startThreadIntro {
@@ -1544,8 +1559,8 @@ button.sessionCard:disabled {
     grid-template-columns: 1fr;
   }
 
-  .startContextCard,
-  .startPreviewGrid {
+  .startCardGrid,
+  .startContextCard {
     grid-template-columns: 1fr;
   }
 

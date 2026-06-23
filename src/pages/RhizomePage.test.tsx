@@ -13,7 +13,6 @@ const mocks = vi.hoisted(() => ({
   getThreadMessages: vi.fn(),
   getThreadSessionContext: vi.fn(),
   getPendingInteraction: vi.fn(),
-  getLatestTriage: vi.fn(),
   getLatestWeather: vi.fn(),
   listThreads: vi.fn(),
   removeThreadContext: vi.fn(),
@@ -39,10 +38,6 @@ vi.mock('@/lib/api/chat', () => ({
 
 vi.mock('@/lib/api/interactions', () => ({
   getPendingInteraction: mocks.getPendingInteraction,
-}))
-
-vi.mock('@/lib/api/triage', () => ({
-  getLatestTriage: mocks.getLatestTriage,
 }))
 
 vi.mock('@/lib/api/weather', () => ({
@@ -147,30 +142,10 @@ describe('RhizomePage', () => {
       timezone: 'America/Los_Angeles',
       forecast_start_date: '2026-06-22',
       forecast_end_date: '2026-06-29',
-      conditions_summary: 'Warm and dry today.',
+      conditions_summary: '2026-06-22: high 78.0F-equivalent, low 58.0F-equivalent, rain 0.0mm, wind 10.0.',
       alerts_summary: 'No weather alerts.',
       derived_impacts: [],
       recommended_actions: [],
-    })
-    mocks.getLatestTriage.mockResolvedValue({
-      id: 'triage-1',
-      created_at: '2026-06-22T12:00:00Z',
-      reasoning_summary: 'Water containers first.',
-      urgent_tasks: [
-        {
-          id: 'task-1',
-          project_id: 'project-1',
-          title: 'Water porch tomatoes',
-          type: 'watering',
-          status: 'pending',
-          priority: 'high',
-          estimated_minutes: 12,
-          is_user_modified: false,
-          created_at: '2026-06-22T12:00:00Z',
-        },
-      ],
-      routine_tasks: [],
-      project_tasks: [],
     })
     mocks.getThreadMessages.mockResolvedValue({
       thread_id: 'thread-1',
@@ -241,11 +216,11 @@ describe('RhizomePage', () => {
 
     expect(screen.getByRole('heading', { name: 'Ask Rhizome' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Threads' })).not.toBeInTheDocument()
-    expect(await screen.findByText('What are you trying to do today?')).toBeInTheDocument()
+    expect(await screen.findByText('Before we start')).toBeInTheDocument()
     expect(screen.getByText('Start a thread when you are ready.')).toBeInTheDocument()
     expect(screen.queryByLabelText('Session context')).not.toBeInTheDocument()
-    expect(await screen.findByText('Warm and dry today.')).toBeInTheDocument()
-    expect(await screen.findByText('Water porch tomatoes')).toBeInTheDocument()
+    expect(await screen.findByText('78° / 58°')).toBeInTheDocument()
+    expect(await screen.findByText('No weather alerts.')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Browse threads' }))
     expect(await screen.findByRole('heading', { name: 'Threads' })).toBeInTheDocument()
     expect(screen.getByText('No threads yet')).toBeInTheDocument()
@@ -300,7 +275,6 @@ describe('RhizomePage', () => {
       'Help me plan the next useful step for my garden today.',
     )
 
-    await user.click(screen.getByRole('button', { name: 'Set session context' }))
     await user.clear(screen.getByLabelText('Start time today'))
     await user.type(screen.getByLabelText('Start time today'), '20')
     await user.selectOptions(screen.getByLabelText('Start energy'), 'low')

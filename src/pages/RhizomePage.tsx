@@ -1,6 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  AlertTriangle,
+  CalendarDays,
+  CloudRain,
+  CloudSun,
+  Droplets,
   MessageSquare,
   PanelLeftClose,
   PanelRightClose,
@@ -9,6 +14,8 @@ import {
   Search,
   Send,
   Sprout,
+  Thermometer,
+  Wind,
   X,
 } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
@@ -30,7 +37,6 @@ import {
 } from '@/lib/api/chat'
 import { getPendingInteraction } from '@/lib/api/interactions'
 import { search } from '@/lib/api/search'
-import { getLatestTriage } from '@/lib/api/triage'
 import { getLatestWeather } from '@/lib/api/weather'
 import { useAuth } from '@/lib/auth/context'
 import type {
@@ -39,7 +45,6 @@ import type {
   InteractionEnvelopeView,
   SearchResultItemView,
   SessionContextView,
-  TaskSummaryView,
   ThreadMessageView,
   ThreadView,
   UpdateSessionContextRequest,
@@ -156,9 +161,36 @@ function sessionFocusLabel(context?: SessionContextView): string {
   return context?.focus_label?.trim() || 'Not set'
 }
 
-function taskMeta(task: TaskSummaryView): string {
-  const bits = [task.priority, task.urgency, task.estimated_minutes ? `${task.estimated_minutes} min` : null]
-  return bits.filter(Boolean).join(' · ') || titleCase(task.type)
+function weatherObservedLabel(value?: string): string {
+  if (!value) return 'Latest weather'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Latest weather'
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date)
+}
+
+function firstWeatherMetric(summary: string | undefined, pattern: RegExp): string | null {
+  const match = summary?.match(pattern)
+  return match?.[1] ?? null
+}
+
+function weatherTemperatureLabel(summary?: string): string {
+  const high = firstWeatherMetric(summary, /high\s+([0-9.]+)F-equivalent/i)
+  const low = firstWeatherMetric(summary, /low\s+([0-9.]+)F-equivalent/i)
+  if (high && low) return `${Math.round(Number(high))}° / ${Math.round(Number(low))}°`
+  if (high) return `${Math.round(Number(high))}°`
+  return 'Weather'
+}
+
+function weatherIconKind(summary?: string, alerts?: string): 'rain' | 'alert' | 'clear' {
+  const text = `${summary ?? ''} ${alerts ?? ''}`.toLowerCase()
+  if (text.includes('rain')) return 'rain'
+  if (text.includes('storm') || text.includes('wind') || text.includes('alert')) return 'alert'
+  return 'clear'
 }
 
 function contextLabel(context: ContextObject): string {
@@ -329,7 +361,6 @@ export default function RhizomePage() {
   const [contextSearchTerm, setContextSearchTerm] = useState('')
   const [messageContext, setMessageContext] = useState<ContextObject[]>([])
   const [composerCursor, setComposerCursor] = useState(0)
-  const [startContextOpen, setStartContextOpen] = useState(false)
   const [startSessionDraft, setStartSessionDraft] = useState<SessionDraft>(EMPTY_SESSION_DRAFT)
   const [composerAutocompletePosition, setComposerAutocompletePosition] =
     useState<ComposerAutocompletePosition | null>(null)
@@ -368,11 +399,6 @@ export default function RhizomePage() {
   const blankWeatherQuery = useQuery({
     queryKey: ['weather', 'latest', 'rhizome-start'],
     queryFn: getLatestWeather,
-    enabled: isNewThread,
-  })
-  const blankTriageQuery = useQuery({
-    queryKey: ['triage', 'latest', 'rhizome-start'],
-    queryFn: getLatestTriage,
     enabled: isNewThread,
   })
   const parsedContextSearch = parseContextSearchTerm(contextSearchTerm)
@@ -452,12 +478,9 @@ export default function RhizomePage() {
   const currentModelOptions =
     currentModelValue === 'current' ? [{ value: currentModelValue, label: currentModelLabel }] : []
   const blankWeather = blankWeatherQuery.data
-  const blankTriage = blankTriageQuery.data
-  const priorityPreviewTasks = [
-    ...(blankTriage?.urgent_tasks ?? []),
-    ...(blankTriage?.routine_tasks ?? []),
-    ...(blankTriage?.project_tasks ?? []),
-  ].slice(0, 3)
+  const weatherKind = weatherIconKind(blankWeather?.conditions_summary, blankWeather?.alerts_summary)
+  const weatherRain = firstWeatherMetric(blankWeather?.conditions_summary, /rain\s+([0-9.]+mm)/i)
+  const weatherWind = firstWeatherMetric(blankWeather?.conditions_summary, /wind\s+([0-9.]+)/i)
   const canUseStartSessionContext =
     Boolean(startSessionDraft.available_minutes.trim()) ||
     Boolean(startSessionDraft.energy_level) ||
@@ -1206,32 +1229,9 @@ export default function RhizomePage() {
             ) : isNewThread ? (
               <div className={[s.emptyChat, s.startThreadState].join(' ')}>
                 <section className={s.startPanel} aria-label="Start a Rhizome thread">
-                  <div className={s.startPrompt}>
-                    <p className={s.eyebrow}>Before we start</p>
-                    <h3>What are you trying to do today?</h3>
-                    <div className={s.startChips}>
-                      <button type="button" onClick={() => setStarterDraft('plan')}>
-                        Plan
-                      </button>
-                      <button type="button" onClick={() => setStarterDraft('diagnose')}>
-                        Diagnose
-                      </button>
-                      <button type="button" onClick={() => setStarterDraft('prioritize')}>
-                        Prioritize
-                      </button>
-                    </div>
-                    <button
-                      aria-expanded={startContextOpen}
-                      className={s.startContextToggle}
-                      type="button"
-                      onClick={() => setStartContextOpen((current) => !current)}
-                    >
-                      {startContextOpen ? 'Hide session context' : 'Set session context'}
-                    </button>
-                  </div>
-
-                  {startContextOpen ? (
-                    <div className={s.startContextCard}>
+                  <div className={s.startCardGrid}>
+                    <article className={s.startContextCard}>
+                      <p className={s.eyebrow}>Before we start</p>
                       <label>
                         <span>Time today</span>
                         <input
@@ -1290,42 +1290,55 @@ export default function RhizomePage() {
                       >
                         Use this for this thread
                       </button>
-                    </div>
-                  ) : null}
+                    </article>
 
-                  <div className={s.startPreviewGrid}>
-                    <article className={s.startPreviewCard}>
-                      <p className={s.eyebrow}>Weather</p>
-                      <strong>
+                    <article className={s.weatherStartCard}>
+                      <div className={s.weatherCardTop}>
+                        <span>
+                          <CalendarDays size={13} />
+                          {weatherObservedLabel(blankWeather?.created_at)}
+                        </span>
+                        {weatherKind === 'rain' ? (
+                          <CloudRain size={24} />
+                        ) : weatherKind === 'alert' ? (
+                          <AlertTriangle size={24} />
+                        ) : (
+                          <CloudSun size={24} />
+                        )}
+                      </div>
+                      <strong className={s.weatherTemp}>
                         {blankWeatherQuery.isLoading
-                          ? 'Loading today'
-                          : blankWeather?.conditions_summary || 'Weather context unavailable'}
+                          ? 'Loading'
+                          : weatherTemperatureLabel(blankWeather?.conditions_summary)}
                       </strong>
-                      <span>
+                      <span className={s.weatherSummary}>
                         {blankWeather?.alerts_summary ||
                           blankWeather?.derived_impacts?.[0]?.summary ||
-                          'Rhizome can use weather once a garden profile has location context.'}
+                          blankWeather?.location_label ||
+                          'Add a garden profile location to unlock weather context.'}
                       </span>
+                      <div className={s.weatherMetrics} aria-label="Weather details">
+                        <span>
+                          <Thermometer size={12} />
+                          {blankWeather?.forecast_start_date ?? 'No date'}
+                        </span>
+                        <span>
+                          <Droplets size={12} />
+                          {weatherRain ?? 'Rain n/a'}
+                        </span>
+                        <span>
+                          <Wind size={12} />
+                          {weatherWind ? `${weatherWind} wind` : 'Wind n/a'}
+                        </span>
+                      </div>
                     </article>
-                    <article className={s.startPreviewCard}>
-                      <p className={s.eyebrow}>Priority Preview</p>
-                      {blankTriageQuery.isLoading ? (
-                        <span>Loading priorities</span>
-                      ) : priorityPreviewTasks.length > 0 ? (
-                        <ol>
-                          {priorityPreviewTasks.map((task) => (
-                            <li key={task.id}>
-                              <strong>{task.title}</strong>
-                              <small>{taskMeta(task)}</small>
-                            </li>
-                          ))}
-                        </ol>
-                      ) : (
-                        <span>Run triage or add tasks to give Rhizome a priority list.</span>
-                      )}
-                      <button type="button" onClick={() => setStarterDraft('prioritize')}>
-                        Ask Rhizome about today
-                      </button>
+
+                    <article className={s.startFocusCard}>
+                      <p className={s.eyebrow}>Focus</p>
+                      <strong>Open question</strong>
+                      <span>
+                        We still need to decide how durable focus should relate to pinned context.
+                      </span>
                     </article>
                   </div>
                 </section>
@@ -1334,6 +1347,17 @@ export default function RhizomePage() {
                   <Sprout size={26} />
                   <strong>Start a thread when you are ready.</strong>
                   <span>Rhizome will wait until you send the first message.</span>
+                  <div className={s.startChips}>
+                    <button type="button" onClick={() => setStarterDraft('plan')}>
+                      Plan
+                    </button>
+                    <button type="button" onClick={() => setStarterDraft('diagnose')}>
+                      Diagnose
+                    </button>
+                    <button type="button" onClick={() => setStarterDraft('prioritize')}>
+                      Prioritize
+                    </button>
+                  </div>
                 </div>
                 {recentThreads.length > 0 ? (
                   <div className={s.recentThreads} aria-label="Recent thread shortcuts">
