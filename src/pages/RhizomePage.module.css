@@ -1302,6 +1302,10 @@ button.sessionCard:disabled {
   text-align: left;
 }
 
+[data-theme='light'] .messageBubble {
+  background: var(--vellum-page);
+}
+
 .messageMeta {
   color: var(--text-muted);
   font-family: var(--font-label);
