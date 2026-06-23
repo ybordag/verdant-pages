@@ -146,6 +146,27 @@ function contextLabel(context: ContextObject): string {
   return `${titleCase(context.subject_type)} ${context.subject_id}`
 }
 
+function contextTypeClass(type: string): string {
+  switch (type) {
+    case 'plant':
+      return s.contextTypePlant
+    case 'batch':
+      return s.contextTypeBatch
+    case 'bed':
+      return s.contextTypeBed
+    case 'container':
+      return s.contextTypeContainer
+    case 'task':
+      return s.contextTypeTask
+    case 'project':
+      return s.contextTypeProject
+    case 'incident':
+      return s.contextTypeIncident
+    default:
+      return ''
+  }
+}
+
 function parseContextSearchTerm(term: string): { q: string; types?: string } {
   const trimmed = term.trim()
   const typedMatch = trimmed.match(/^([a-z_]+):(.*)$/i)
@@ -454,12 +475,12 @@ export default function RhizomePage() {
             <X size={13} />
           </button>
         </div>
-        <label className={s.contextInlineInput}>
+        <div className={s.contextInlineInput}>
           <Search size={14} />
           <span className={s.contextInlineChips}>
             {contexts.map((context) => (
               <span
-                className={s.contextChip}
+                className={`${s.contextChip} ${contextTypeClass(context.subject_type)}`}
                 key={`${target}-${context.subject_type}-${context.subject_id}`}
               >
                 <em>{context.subject_type}</em>
@@ -468,63 +489,68 @@ export default function RhizomePage() {
                   type="button"
                   aria-label={`Remove ${contextLabel(context)} context`}
                   disabled={target === 'thread' && removeContextMutation.isPending}
-                  onClick={() => onRemove(context)}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onRemove(context)
+                  }}
                 >
                   <X size={12} />
                 </button>
               </span>
             ))}
-            <input
-              aria-label={`Search ${label}`}
-              placeholder={contexts.length > 0 ? 'Add another...' : 'Search context...'}
-              value={isActive ? contextSearchTerm : ''}
-              onFocus={() => {
-                if (!isActive) {
-                  setActiveContextTarget(target)
-                  setContextSearchTerm('')
-                }
-              }}
-              onChange={(event) => {
-                if (!isActive) setActiveContextTarget(target)
-                setContextSearchTerm(event.target.value)
-              }}
-            />
+            <span className={s.contextSearchAnchor}>
+              <input
+                aria-label={`Search ${label}`}
+                placeholder={contexts.length > 0 ? 'Add another...' : 'Search context...'}
+                value={isActive ? contextSearchTerm : ''}
+                onFocus={() => {
+                  if (!isActive) {
+                    setActiveContextTarget(target)
+                    setContextSearchTerm('')
+                  }
+                }}
+                onChange={(event) => {
+                  if (!isActive) setActiveContextTarget(target)
+                  setContextSearchTerm(event.target.value)
+                }}
+              />
+              {shouldShowAutocomplete ? (
+                <div className={s.contextAutocomplete}>
+                  {contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2 ? (
+                    <div className={s.contextSearchState}>Type at least two characters after the prefix.</div>
+                  ) : contextSearchQuery.isLoading ? (
+                    <div className={s.contextSearchState}>Searching context</div>
+                  ) : contextSearchQuery.isError ? (
+                    <div className={s.contextSearchState}>Context search is unavailable.</div>
+                  ) : groupedContextResults.length > 0 ? (
+                    groupedContextResults.map(([type, results]) => (
+                      <section className={s.contextResultGroup} key={type}>
+                        <h3>{titleCase(type)}</h3>
+                        {results.map((result) => (
+                          <button
+                            key={`${result.subject_type}-${result.subject_id}`}
+                            type="button"
+                            className={`${s.contextResult} ${contextTypeClass(result.subject_type)}`}
+                            disabled={target === 'thread' && addContextMutation.isPending}
+                            onClick={() => addContextFromSearchResult(result)}
+                          >
+                            <span>
+                              <strong>{result.label}</strong>
+                              <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
+                            </span>
+                            <em>{result.subject_type}</em>
+                          </button>
+                        ))}
+                      </section>
+                    ))
+                  ) : parsedContextSearch.q.length >= 2 ? (
+                    <div className={s.contextSearchState}>No context found.</div>
+                  ) : null}
+                </div>
+              ) : null}
+            </span>
           </span>
-        </label>
-        {shouldShowAutocomplete ? (
-          <div className={s.contextAutocomplete}>
-            {contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2 ? (
-              <div className={s.contextSearchState}>Type at least two characters after the prefix.</div>
-            ) : contextSearchQuery.isLoading ? (
-              <div className={s.contextSearchState}>Searching context</div>
-            ) : contextSearchQuery.isError ? (
-              <div className={s.contextSearchState}>Context search is unavailable.</div>
-            ) : groupedContextResults.length > 0 ? (
-              groupedContextResults.map(([type, results]) => (
-                <section className={s.contextResultGroup} key={type}>
-                  <h3>{titleCase(type)}</h3>
-                  {results.map((result) => (
-                    <button
-                      key={`${result.subject_type}-${result.subject_id}`}
-                      type="button"
-                      className={s.contextResult}
-                      disabled={target === 'thread' && addContextMutation.isPending}
-                      onClick={() => addContextFromSearchResult(result)}
-                    >
-                      <span>
-                        <strong>{result.label}</strong>
-                        <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
-                      </span>
-                      <em>{result.subject_type}</em>
-                    </button>
-                  ))}
-                </section>
-              ))
-            ) : parsedContextSearch.q.length >= 2 ? (
-              <div className={s.contextSearchState}>No context found.</div>
-            ) : null}
-          </div>
-        ) : null}
+        </div>
       </div>
     )
   }

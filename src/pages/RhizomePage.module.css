@@ -441,13 +441,15 @@
 }
 
 .contextChip {
+  --context-color: var(--pine-light);
+
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
   gap: 6px;
-  border: 1px solid var(--pine-light);
+  border: 1px solid var(--context-color);
   border-radius: var(--radius-soft);
-  background: rgb(var(--pine-rgb) / 0.1);
+  background: color-mix(in srgb, var(--context-color) 12%, transparent);
   color: var(--text-secondary);
   font-size: 11px;
   font-weight: 800;
@@ -455,7 +457,7 @@
 }
 
 .contextChip em {
-  color: var(--pine-light);
+  color: var(--context-color);
   font-family: var(--font-label);
   font-size: 8px;
   font-style: normal;
@@ -482,7 +484,40 @@
 }
 
 .contextChip button:hover {
-  color: var(--nav-accent);
+  color: var(--context-color);
+}
+
+.contextTypePlant {
+  --context-color: var(--pine-light);
+}
+
+.contextTypeBatch {
+  --context-color: var(--buttercup);
+}
+
+.contextTypeBed {
+  --context-color: var(--chartreuse);
+}
+
+.contextTypeContainer {
+  --context-color: var(--pine-light);
+}
+
+.contextTypeTask {
+  --context-color: var(--clay);
+}
+
+.contextTypeProject {
+  --context-color: var(--chartreuse);
+}
+
+.contextTypeIncident {
+  --context-color: var(--dark-clay);
+}
+
+[data-theme='light'] .contextTypeBed,
+[data-theme='light'] .contextTypeProject {
+  --context-color: var(--chartreuse-deep);
 }
 
 .contextEmpty {
@@ -986,9 +1021,16 @@
   gap: 6px;
 }
 
-.contextInlineChips input {
+.contextSearchAnchor {
+  position: relative;
+  display: inline-flex;
   min-width: 160px;
   flex: 1 1 180px;
+}
+
+.contextSearchAnchor input {
+  min-width: 160px;
+  width: 100%;
   border: 0;
   background: transparent;
   color: var(--text-primary);
@@ -1004,7 +1046,7 @@
   top: calc(100% + 3px);
   left: 0;
   display: grid;
-  width: min(420px, calc(100vw - 48px));
+  width: min(360px, calc(100vw - 48px));
   max-height: 220px;
   overflow: auto;
   border: 1px solid var(--line);
@@ -1093,22 +1135,25 @@
 }
 
 .contextResult {
+  --context-color: var(--pine-light);
+
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   min-width: 0;
   border: 0;
+  border-left: 2px solid var(--context-color);
   border-bottom: 1px solid var(--line-subtle);
   background: transparent;
   color: var(--text-primary);
   cursor: pointer;
-  padding: 6px 2px;
+  padding: 6px 2px 6px 7px;
   text-align: left;
 }
 
 .contextResult:hover {
-  background: var(--surface-muted);
+  background: color-mix(in srgb, var(--context-color) 10%, transparent);
 }
 
 .contextResult span {
@@ -1135,7 +1180,7 @@
 
 .contextResult em {
   flex: 0 0 auto;
-  color: var(--text-muted);
+  color: var(--context-color);
   font-family: var(--font-label);
   font-size: 9px;
   font-style: normal;

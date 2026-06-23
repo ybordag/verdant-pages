@@ -474,6 +474,29 @@ describe('RhizomePage', () => {
     )
   })
 
+  it('only removes context when the chip remove button is clicked', async () => {
+    const user = userEvent.setup()
+    const threadWithContext = {
+      ...THREADS[0],
+      pinned_context: [
+        { subject_type: 'plant', subject_id: 'plant-1', label: 'Cherry Tomato' },
+        { subject_type: 'task', subject_id: 'task-1', label: 'Stake tomatoes' },
+      ],
+    }
+    mocks.listThreads.mockResolvedValue([threadWithContext])
+    mocks.getThread.mockResolvedValue(threadWithContext)
+    renderRhizome('/app/rhizome/thread-1')
+
+    const contextSection = await screen.findByLabelText('Pinned context for this thread')
+    await user.click(within(contextSection).getByText('Stake tomatoes'))
+    expect(mocks.removeThreadContext).not.toHaveBeenCalled()
+
+    await user.click(within(contextSection).getByRole('button', { name: 'Remove Stake tomatoes context' }))
+    await waitFor(() =>
+      expect(mocks.removeThreadContext).toHaveBeenCalledWith('thread-1', 'task', 'task-1'),
+    )
+  })
+
   it('adds local message context without sending it as thread context', async () => {
     const user = userEvent.setup()
     mocks.listThreads.mockResolvedValue([])
