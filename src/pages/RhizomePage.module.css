@@ -777,9 +777,24 @@
   border-left: 3px solid var(--pine-light);
 }
 
+.rhizomeMessage .messageMeta {
+  color: var(--chartreuse);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+[data-theme='light'] .rhizomeMessage .messageMeta {
+  color: var(--chartreuse-deep);
+}
+
 .userMessage {
   align-self: flex-end;
   border-left: 3px solid var(--clay);
+}
+
+.userMessage .messageMeta {
+  color: var(--clay);
 }
 
 .streamingMessage > div:last-child::after {
@@ -981,9 +996,14 @@
   min-height: 50px;
   border: 0;
   background: transparent;
+  caret-color: var(--chartreuse);
   padding: 10px 14px 6px;
   outline: 0;
   resize: none;
+}
+
+[data-theme='light'] .composer textarea {
+  caret-color: var(--chartreuse-deep);
 }
 
 .pinnedContextSection {

@@ -1256,7 +1256,7 @@ export default function RhizomePage() {
                     style={
                       composerAutocompletePosition
                         ? {
-                            left: `${Math.max(0, composerAutocompletePosition.left)}px`,
+                            left: `${Math.max(0, composerAutocompletePosition.left - 4)}px`,
                             top: `${composerAutocompletePosition.top}px`,
                           }
                         : undefined
