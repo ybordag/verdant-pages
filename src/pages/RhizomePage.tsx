@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   MessageSquare,
@@ -81,6 +81,11 @@ interface ComposerContextTrigger {
   end: number
   q: string
   types: string
+}
+
+interface ComposerAutocompletePosition {
+  left: number
+  top: number
 }
 
 const EMPTY_SESSION_DRAFT: SessionDraft = {
@@ -202,6 +207,57 @@ function parseComposerContextTrigger(text: string, cursor: number): ComposerCont
   }
 }
 
+function measureTextareaIndex(textarea: HTMLTextAreaElement, index: number): ComposerAutocompletePosition {
+  const style = window.getComputedStyle(textarea)
+  const mirror = document.createElement('div')
+  const marker = document.createElement('span')
+  const properties = [
+    'borderBottomWidth',
+    'borderLeftWidth',
+    'borderRightWidth',
+    'borderTopWidth',
+    'boxSizing',
+    'fontFamily',
+    'fontSize',
+    'fontStyle',
+    'fontWeight',
+    'letterSpacing',
+    'lineHeight',
+    'paddingBottom',
+    'paddingLeft',
+    'paddingRight',
+    'paddingTop',
+    'textIndent',
+    'textTransform',
+    'width',
+  ] as const
+
+  mirror.style.position = 'absolute'
+  mirror.style.visibility = 'hidden'
+  mirror.style.whiteSpace = 'pre-wrap'
+  mirror.style.overflowWrap = 'break-word'
+  mirror.style.top = '0'
+  mirror.style.left = '-9999px'
+  for (const property of properties) {
+    mirror.style[property] = style[property]
+  }
+
+  marker.textContent = '\u200b'
+  mirror.textContent = textarea.value.slice(0, index) || '\u200b'
+  mirror.append(marker)
+  document.body.append(mirror)
+
+  const mirrorRect = mirror.getBoundingClientRect()
+  const markerRect = marker.getBoundingClientRect()
+  const position = {
+    left: markerRect.left - mirrorRect.left + textarea.offsetLeft - textarea.scrollLeft,
+    top: markerRect.top - mirrorRect.top + textarea.offsetTop - textarea.scrollTop,
+  }
+
+  mirror.remove()
+  return position
+}
+
 function interactionTypeLabel(type: string): string {
   return type.replaceAll('_', ' ')
 }
@@ -264,7 +320,10 @@ export default function RhizomePage() {
   const [contextSearchTerm, setContextSearchTerm] = useState('')
   const [messageContext, setMessageContext] = useState<ContextObject[]>([])
   const [composerCursor, setComposerCursor] = useState(0)
+  const [composerAutocompletePosition, setComposerAutocompletePosition] =
+    useState<ComposerAutocompletePosition | null>(null)
   const streamControllerRef = useRef<AbortController | null>(null)
+  const composerTextAreaWrapRef = useRef<HTMLDivElement | null>(null)
 
   const threadsQuery = useQuery({
     queryKey: ['threads', { limit: THREAD_LIMIT }],
@@ -399,6 +458,16 @@ export default function RhizomePage() {
   useEffect(() => {
     return () => streamControllerRef.current?.abort()
   }, [])
+
+  useLayoutEffect(() => {
+    if (!composerContextTrigger) {
+      setComposerAutocompletePosition(null)
+      return
+    }
+    const textarea = composerTextAreaWrapRef.current?.querySelector('textarea')
+    if (!textarea) return
+    setComposerAutocompletePosition(measureTextareaIndex(textarea, composerContextTrigger.start))
+  }, [composerContextTrigger, draft])
 
   function startSessionEdit() {
     setSessionDraft(sessionDraftFromContext(sessionContext))
@@ -1162,7 +1231,7 @@ export default function RhizomePage() {
                 </div>
               ) : null}
 
-              <div className={s.composerTextAreaWrap}>
+              <div className={s.composerTextAreaWrap} ref={composerTextAreaWrapRef}>
                 <Textarea
                   aria-label="Message Rhizome"
                   placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
@@ -1182,7 +1251,17 @@ export default function RhizomePage() {
                   }}
                 />
                 {composerContextTrigger ? (
-                  <div className={s.composerKeywordAutocomplete}>
+                  <div
+                    className={s.composerKeywordAutocomplete}
+                    style={
+                      composerAutocompletePosition
+                        ? {
+                            left: `${Math.max(0, composerAutocompletePosition.left)}px`,
+                            top: `${composerAutocompletePosition.top}px`,
+                          }
+                        : undefined
+                    }
+                  >
                     {composerContextQuery.isLoading ? (
                       <div className={s.contextSearchState}>Searching context</div>
                     ) : composerContextQuery.isError ? (
