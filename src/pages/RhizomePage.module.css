@@ -945,7 +945,7 @@
 }
 
 .composerModelSelector {
-  width: 118px;
+  width: 112px;
 }
 
 .composerModelSelector button {
@@ -953,7 +953,12 @@
   border-color: transparent;
   background: transparent;
   font-size: 10px;
-  padding: 0 3px 0 6px;
+  padding: 0 2px 0 5px;
+  text-align: right;
+}
+
+.composerModelSelector button span {
+  text-align: right;
 }
 
 .composerModelSelector button:hover,
@@ -1092,7 +1097,7 @@
 .composerKeywordAutocomplete {
   position: absolute;
   z-index: 25;
-  top: calc(100% - 3px);
+  bottom: calc(100% + 2px);
   left: 13px;
   display: grid;
   width: min(360px, calc(100vw - 48px));

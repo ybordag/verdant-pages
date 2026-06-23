@@ -1227,10 +1227,6 @@ export default function RhizomePage() {
                   </button>
                 </div>
                 <div className={s.composerRightControls}>
-                  <Button className={s.composerSend} size="sm" type="submit" disabled={!canSend}>
-                    <Send size={15} />
-                    {isStreaming ? 'Sending' : 'Send'}
-                  </Button>
                   <div
                     className={s.composerModelSelector}
                     title="Model switching will be editable after Cambium supports profile updates."
@@ -1244,6 +1240,10 @@ export default function RhizomePage() {
                       onChange={() => {}}
                     />
                   </div>
+                  <Button className={s.composerSend} size="sm" type="submit" disabled={!canSend}>
+                    <Send size={15} />
+                    {isStreaming ? 'Sending' : 'Send'}
+                  </Button>
                 </div>
               </div>
             </div>
