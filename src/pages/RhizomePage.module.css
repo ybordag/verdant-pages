@@ -528,12 +528,12 @@
 
 .sessionStrip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   gap: 8px;
-  border-top: 1px solid rgb(var(--clay-rgb) / 0.55);
-  border-bottom: 1px solid rgb(var(--clay-rgb) / 0.55);
+  border-top: 1px solid rgb(var(--clay-rgb) / 0.7);
+  border-bottom: 1px solid rgb(var(--clay-rgb) / 0.7);
   background:
-    linear-gradient(112deg, rgb(var(--clay-rgb) / 0.16), transparent 48%),
+    linear-gradient(112deg, rgb(var(--clay-rgb) / 0.12), transparent 48%),
     linear-gradient(252deg, rgb(var(--chartreuse-rgb) / 0.08), transparent 58%),
     var(--bg);
   padding: 10px 16px;
@@ -553,31 +553,46 @@
 
 .sessionCard {
   min-width: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+button.sessionCard:hover:not(:disabled),
+button.sessionCard:focus-visible {
+  border-color: var(--clay);
+  outline: none;
+}
+
+button.sessionCard:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
 .reviewButton {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 42px;
+  min-width: 58px;
   min-height: 100%;
-  background: transparent;
-  color: var(--nav-accent);
+  border-color: var(--clay);
+  background: rgb(var(--clay-rgb) / 0.16);
+  color: var(--clay);
   cursor: pointer;
   font-family: var(--font-label);
-  font-size: 12px;
   font-weight: 800;
+  gap: 2px;
 }
 
 .reviewButton:hover {
-  border-color: var(--nav-accent);
-  background: var(--nav-active-bg);
+  background: var(--clay);
+  color: var(--vellum-white);
 }
 
 .sessionStrip span,
 .sessionCard span {
   display: block;
-  color: var(--dark-clay);
+  color: var(--clay);
   font-family: var(--font-label);
   font-size: 9px;
   font-weight: 800;
@@ -585,11 +600,27 @@
   text-transform: uppercase;
 }
 
+[data-theme='light'] .sessionStrip span,
+[data-theme='light'] .sessionCard span {
+  color: var(--dark-clay);
+}
+
 .sessionStrip strong,
 .sessionCard strong {
   display: block;
   margin-top: 2px;
   color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.reviewButton span {
+  color: currentColor;
+  font-size: 8px;
+}
+
+.reviewButton strong {
+  margin: 0;
+  color: currentColor;
   font-size: 13px;
 }
 
@@ -645,7 +676,7 @@
 }
 
 .sessionActions span {
-  color: var(--dark-clay);
+  color: var(--clay);
   font-size: 11px;
   font-weight: 800;
   text-transform: none;
@@ -702,6 +733,190 @@
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius-journal);
   text-align: center;
+}
+
+.startThreadState {
+  justify-content: flex-start;
+  gap: 18px;
+  padding: 18px;
+}
+
+.startPanel {
+  display: grid;
+  width: min(920px, 100%);
+  gap: 10px;
+  text-align: left;
+}
+
+.startPrompt,
+.startContextCard,
+.startPreviewCard {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--bg-nav);
+}
+
+.startPrompt {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.startPrompt h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.startChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.startChips button,
+.startContextToggle,
+.startPreviewCard button,
+.startContextCard button {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 6px 9px;
+  text-transform: uppercase;
+}
+
+.startChips button {
+  border-color: var(--chartreuse);
+  background: rgb(var(--chartreuse-rgb) / 0.18);
+  color: var(--chartreuse);
+}
+
+[data-theme='light'] .startChips button {
+  border-color: var(--chartreuse-deep);
+  color: var(--chartreuse-deep);
+}
+
+.startChips button:hover,
+.startContextToggle:hover,
+.startPreviewCard button:hover,
+.startContextCard button:hover:not(:disabled) {
+  border-color: var(--nav-accent);
+  color: var(--text-primary);
+}
+
+.startContextToggle {
+  justify-self: start;
+  border-color: var(--clay);
+  background: rgb(var(--clay-rgb) / 0.14);
+  color: var(--clay);
+}
+
+.startContextCard {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 8px;
+  padding: 10px;
+}
+
+.startContextCard label {
+  display: grid;
+  gap: 4px;
+}
+
+.startContextCard span,
+.startPreviewCard .eyebrow {
+  color: var(--clay);
+}
+
+[data-theme='light'] .startContextCard span,
+[data-theme='light'] .startPreviewCard .eyebrow {
+  color: var(--dark-clay);
+}
+
+.startContextCard input,
+.startContextCard select {
+  min-height: 30px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 7px;
+}
+
+.startContextCard button {
+  align-self: end;
+  border-color: var(--clay);
+  background: var(--clay);
+  color: var(--vellum-white);
+}
+
+.startContextCard button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.startPreviewGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 10px;
+}
+
+.startPreviewCard {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-height: 112px;
+  padding: 11px;
+}
+
+.startPreviewCard strong {
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.startPreviewCard span,
+.startPreviewCard small {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.startPreviewCard ol {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.startPreviewCard li {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.startPreviewCard li strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.startPreviewCard button {
+  justify-self: start;
+  margin-top: 2px;
+}
+
+.startThreadIntro {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
 }
 
 .emptyChat > svg {
@@ -1326,6 +1541,11 @@
   }
 
   .sessionStrip {
+    grid-template-columns: 1fr;
+  }
+
+  .startContextCard,
+  .startPreviewGrid {
     grid-template-columns: 1fr;
   }
 

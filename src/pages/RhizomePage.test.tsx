@@ -13,6 +13,8 @@ const mocks = vi.hoisted(() => ({
   getThreadMessages: vi.fn(),
   getThreadSessionContext: vi.fn(),
   getPendingInteraction: vi.fn(),
+  getLatestTriage: vi.fn(),
+  getLatestWeather: vi.fn(),
   listThreads: vi.fn(),
   removeThreadContext: vi.fn(),
   search: vi.fn(),
@@ -37,6 +39,14 @@ vi.mock('@/lib/api/chat', () => ({
 
 vi.mock('@/lib/api/interactions', () => ({
   getPendingInteraction: mocks.getPendingInteraction,
+}))
+
+vi.mock('@/lib/api/triage', () => ({
+  getLatestTriage: mocks.getLatestTriage,
+}))
+
+vi.mock('@/lib/api/weather', () => ({
+  getLatestWeather: mocks.getLatestWeather,
 }))
 
 vi.mock('@/lib/api/search', () => ({
@@ -130,6 +140,38 @@ describe('RhizomePage', () => {
     mocks.listThreads.mockResolvedValue(THREADS)
     mocks.getThread.mockResolvedValue(THREADS[0])
     mocks.getPendingInteraction.mockResolvedValue(null)
+    mocks.getLatestWeather.mockResolvedValue({
+      id: 'weather-1',
+      created_at: '2026-06-22T12:00:00Z',
+      location_label: 'Test garden',
+      timezone: 'America/Los_Angeles',
+      forecast_start_date: '2026-06-22',
+      forecast_end_date: '2026-06-29',
+      conditions_summary: 'Warm and dry today.',
+      alerts_summary: 'No weather alerts.',
+      derived_impacts: [],
+      recommended_actions: [],
+    })
+    mocks.getLatestTriage.mockResolvedValue({
+      id: 'triage-1',
+      created_at: '2026-06-22T12:00:00Z',
+      reasoning_summary: 'Water containers first.',
+      urgent_tasks: [
+        {
+          id: 'task-1',
+          project_id: 'project-1',
+          title: 'Water porch tomatoes',
+          type: 'watering',
+          status: 'pending',
+          priority: 'high',
+          estimated_minutes: 12,
+          is_user_modified: false,
+          created_at: '2026-06-22T12:00:00Z',
+        },
+      ],
+      routine_tasks: [],
+      project_tasks: [],
+    })
     mocks.getThreadMessages.mockResolvedValue({
       thread_id: 'thread-1',
       messages: [
@@ -199,7 +241,11 @@ describe('RhizomePage', () => {
 
     expect(screen.getByRole('heading', { name: 'Ask Rhizome' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Threads' })).not.toBeInTheDocument()
+    expect(await screen.findByText('What are you trying to do today?')).toBeInTheDocument()
     expect(screen.getByText('Start a thread when you are ready.')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Session context')).not.toBeInTheDocument()
+    expect(await screen.findByText('Warm and dry today.')).toBeInTheDocument()
+    expect(await screen.findByText('Water porch tomatoes')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Browse threads' }))
     expect(await screen.findByRole('heading', { name: 'Threads' })).toBeInTheDocument()
     expect(screen.getByText('No threads yet')).toBeInTheDocument()
@@ -245,6 +291,27 @@ describe('RhizomePage', () => {
     expect(await screen.findByText('Start a thread when you are ready.')).toBeInTheDocument()
   })
 
+  it('uses blank-thread starter controls to prepare the composer', async () => {
+    const user = userEvent.setup()
+    renderRhizome()
+
+    await user.click(await screen.findByRole('button', { name: 'Plan' }))
+    expect(screen.getByLabelText('Message Rhizome')).toHaveValue(
+      'Help me plan the next useful step for my garden today.',
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Set session context' }))
+    await user.clear(screen.getByLabelText('Start time today'))
+    await user.type(screen.getByLabelText('Start time today'), '20')
+    await user.selectOptions(screen.getByLabelText('Start energy'), 'low')
+    await user.selectOptions(screen.getByLabelText('Start focus'), 'container')
+    await user.click(screen.getByRole('button', { name: 'Use this for this thread' }))
+
+    expect(screen.getByLabelText('Message Rhizome')).toHaveValue(
+      'For this thread, I have 20 minutes, my energy is low, I want to focus on containers.\n\nHelp me plan the next useful step for my garden today.',
+    )
+  })
+
   it('uses the selected thread from the recent-thread list', async () => {
     renderRhizome('/app/rhizome/thread-1')
 
@@ -274,7 +341,7 @@ describe('RhizomePage', () => {
     const user = userEvent.setup()
     renderRhizome('/app/rhizome/thread-1')
 
-    await user.click(await screen.findByRole('button', { name: 'Edit' }))
+    await user.click(await screen.findByRole('button', { name: 'Edit time today' }))
     await user.clear(screen.getByLabelText('Time today'))
     await user.type(screen.getByLabelText('Time today'), '30')
     await user.selectOptions(screen.getByLabelText('Energy'), 'high')

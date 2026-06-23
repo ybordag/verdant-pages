@@ -30,6 +30,8 @@ import {
 } from '@/lib/api/chat'
 import { getPendingInteraction } from '@/lib/api/interactions'
 import { search } from '@/lib/api/search'
+import { getLatestTriage } from '@/lib/api/triage'
+import { getLatestWeather } from '@/lib/api/weather'
 import { useAuth } from '@/lib/auth/context'
 import type {
   ContextObject,
@@ -37,6 +39,7 @@ import type {
   InteractionEnvelopeView,
   SearchResultItemView,
   SessionContextView,
+  TaskSummaryView,
   ThreadMessageView,
   ThreadView,
   UpdateSessionContextRequest,
@@ -151,6 +154,11 @@ function sessionTimeLabel(context?: SessionContextView): string {
 
 function sessionFocusLabel(context?: SessionContextView): string {
   return context?.focus_label?.trim() || 'Not set'
+}
+
+function taskMeta(task: TaskSummaryView): string {
+  const bits = [task.priority, task.urgency, task.estimated_minutes ? `${task.estimated_minutes} min` : null]
+  return bits.filter(Boolean).join(' · ') || titleCase(task.type)
 }
 
 function contextLabel(context: ContextObject): string {
@@ -300,6 +308,7 @@ export default function RhizomePage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useAuth()
+  const isNewThread = !threadId
   const [draft, setDraft] = useState('')
   const [threadsPanelOpen, setThreadsPanelOpen] = useState(false)
   const [reviewsPanelOpen, setReviewsPanelOpen] = useState(false)
@@ -320,6 +329,8 @@ export default function RhizomePage() {
   const [contextSearchTerm, setContextSearchTerm] = useState('')
   const [messageContext, setMessageContext] = useState<ContextObject[]>([])
   const [composerCursor, setComposerCursor] = useState(0)
+  const [startContextOpen, setStartContextOpen] = useState(false)
+  const [startSessionDraft, setStartSessionDraft] = useState<SessionDraft>(EMPTY_SESSION_DRAFT)
   const [composerAutocompletePosition, setComposerAutocompletePosition] =
     useState<ComposerAutocompletePosition | null>(null)
   const streamControllerRef = useRef<AbortController | null>(null)
@@ -353,6 +364,16 @@ export default function RhizomePage() {
   const pendingInteractionQuery = useQuery({
     queryKey: ['interactions', 'pending'],
     queryFn: getPendingInteraction,
+  })
+  const blankWeatherQuery = useQuery({
+    queryKey: ['weather', 'latest', 'rhizome-start'],
+    queryFn: getLatestWeather,
+    enabled: isNewThread,
+  })
+  const blankTriageQuery = useQuery({
+    queryKey: ['triage', 'latest', 'rhizome-start'],
+    queryFn: getLatestTriage,
+    enabled: isNewThread,
   })
   const parsedContextSearch = parseContextSearchTerm(contextSearchTerm)
   const contextSearchQuery = useQuery({
@@ -423,7 +444,6 @@ export default function RhizomePage() {
   const visibleStreamingText = threadId && threadId === streamThreadId ? streamingText : ''
   const hasThreads = threads.length > 0
   const recentThreads = threads.slice(0, RECENT_THREAD_LIMIT)
-  const isNewThread = !threadId
   const pendingReviewCount = pendingInteraction ? 1 : 0
   const hasPendingReviews = pendingReviewCount > 0
   const canSend = draft.trim().length > 0 && !isStreaming
@@ -431,6 +451,19 @@ export default function RhizomePage() {
   const currentModelValue = currentModelLabel === 'Model not set' ? '' : 'current'
   const currentModelOptions =
     currentModelValue === 'current' ? [{ value: currentModelValue, label: currentModelLabel }] : []
+  const blankWeather = blankWeatherQuery.data
+  const blankTriage = blankTriageQuery.data
+  const priorityPreviewTasks = [
+    ...(blankTriage?.urgent_tasks ?? []),
+    ...(blankTriage?.routine_tasks ?? []),
+    ...(blankTriage?.project_tasks ?? []),
+  ].slice(0, 3)
+  const canUseStartSessionContext =
+    Boolean(startSessionDraft.available_minutes.trim()) ||
+    Boolean(startSessionDraft.energy_level) ||
+    Boolean(startSessionDraft.preferred_location_type) ||
+    startSessionDraft.open_to_outdoor_work ||
+    startSessionDraft.wants_quick_wins
   const activeContextSearchItems = activeContextTarget === 'thread' ? pinnedContext : messageContext
   const groupedContextResults = useMemo(() => {
     const existingContext = new Set(activeContextSearchItems.map(contextKey))
@@ -499,6 +532,34 @@ export default function RhizomePage() {
     }
     if (sessionContext?.focus_project_id) payload.focus_project_id = sessionContext.focus_project_id
     updateSessionMutation.mutate(payload)
+  }
+
+  function setStarterDraft(kind: 'plan' | 'diagnose' | 'prioritize') {
+    const prompts = {
+      plan: 'Help me plan the next useful step for my garden today.',
+      diagnose: 'Help me diagnose an issue in my garden. Ask me what you need to know first.',
+      prioritize: 'Look at my garden context and help me prioritize what to do next.',
+    }
+    setDraft(prompts[kind])
+    setComposerCursor(prompts[kind].length)
+  }
+
+  function useStartSessionContext() {
+    const details = [
+      startSessionDraft.available_minutes
+        ? `I have ${startSessionDraft.available_minutes} minutes`
+        : null,
+      startSessionDraft.energy_level ? `my energy is ${startSessionDraft.energy_level}` : null,
+      startSessionDraft.preferred_location_type
+        ? `I want to focus on ${startSessionDraft.preferred_location_type}s`
+        : null,
+      startSessionDraft.open_to_outdoor_work ? 'I am open to outdoor work' : null,
+      startSessionDraft.wants_quick_wins ? 'I want quick wins' : null,
+    ].filter(Boolean)
+    if (details.length === 0) return
+    const sentence = `For this thread, ${details.join(', ')}.`
+    setDraft((current) => (current.trim() ? `${sentence}\n\n${current}` : `${sentence}\n\n`))
+    setComposerCursor(sentence.length + 2)
   }
 
   function updateThreadContextCache(context: ContextObject, mode: 'add' | 'remove') {
@@ -968,7 +1029,7 @@ export default function RhizomePage() {
             </div>
           ) : null}
 
-          {sessionEditing ? (
+          {!isNewThread && sessionEditing ? (
             <form
               className={[s.sessionStrip, s.sessionEditing].join(' ')}
               aria-label="Session context"
@@ -1073,37 +1134,45 @@ export default function RhizomePage() {
                 </button>
               </div>
             </form>
-          ) : (
+          ) : !isNewThread ? (
             <div className={s.sessionStrip} aria-label="Session context">
-              <div className={s.sessionCard}>
+              <button
+                aria-label="Edit time today"
+                className={s.sessionCard}
+                type="button"
+                disabled={sessionContextQuery.isLoading || sessionContextQuery.isError}
+                onClick={startSessionEdit}
+              >
                 <span>Time</span>
                 <strong>
                   {sessionContextQuery.isLoading ? 'Loading' : sessionTimeLabel(sessionContext)}
                 </strong>
                 {sessionSourceLabel(sessionContext) ? <small>{sessionSourceLabel(sessionContext)}</small> : null}
-              </div>
-              <div className={s.sessionCard}>
+              </button>
+              <button
+                aria-label="Edit energy"
+                className={s.sessionCard}
+                type="button"
+                disabled={sessionContextQuery.isLoading || sessionContextQuery.isError}
+                onClick={startSessionEdit}
+              >
                 <span>Energy</span>
                 <strong>
                   {sessionContextQuery.isLoading ? 'Loading' : titleCase(sessionContext?.energy_level)}
                 </strong>
-              </div>
-              <div className={s.sessionCard}>
+              </button>
+              <button
+                aria-label="Edit focus"
+                className={s.sessionCard}
+                type="button"
+                disabled={sessionContextQuery.isLoading || sessionContextQuery.isError}
+                onClick={startSessionEdit}
+              >
                 <span>Focus</span>
                 <strong>
                   {sessionContextQuery.isLoading ? 'Loading' : sessionFocusLabel(sessionContext)}
                 </strong>
-              </div>
-              <div className={s.sessionActions}>
-                {sessionContextQuery.isError ? <span role="alert">Session context unavailable.</span> : null}
-                <button
-                  type="button"
-                  disabled={!threadId || sessionContextQuery.isLoading || sessionContextQuery.isError}
-                  onClick={startSessionEdit}
-                >
-                  Edit
-                </button>
-              </div>
+              </button>
               {hasPendingReviews ? (
                 <button
                   aria-label="Open pending reviews"
@@ -1111,11 +1180,12 @@ export default function RhizomePage() {
                   type="button"
                   onClick={() => setReviewsPanelOpen(true)}
                 >
-                  {pendingReviewCount}
+                  <span>Review</span>
+                  <strong>{pendingReviewCount}</strong>
                 </button>
               ) : null}
             </div>
-          )}
+          ) : null}
 
           {threadId && (pinnedContextOpen || pinnedContext.length > 0) ? (
             <div className={s.pinnedContextSection}>
@@ -1134,10 +1204,137 @@ export default function RhizomePage() {
             ) : threadId && activeThreadQuery.isError ? (
               <div className={s.emptyChat}>This thread could not load.</div>
             ) : isNewThread ? (
-              <div className={s.emptyChat}>
-                <Sprout size={26} />
-                <strong>Start a thread when you are ready.</strong>
-                <span>Rhizome will wait until you send the first message.</span>
+              <div className={[s.emptyChat, s.startThreadState].join(' ')}>
+                <section className={s.startPanel} aria-label="Start a Rhizome thread">
+                  <div className={s.startPrompt}>
+                    <p className={s.eyebrow}>Before we start</p>
+                    <h3>What are you trying to do today?</h3>
+                    <div className={s.startChips}>
+                      <button type="button" onClick={() => setStarterDraft('plan')}>
+                        Plan
+                      </button>
+                      <button type="button" onClick={() => setStarterDraft('diagnose')}>
+                        Diagnose
+                      </button>
+                      <button type="button" onClick={() => setStarterDraft('prioritize')}>
+                        Prioritize
+                      </button>
+                    </div>
+                    <button
+                      aria-expanded={startContextOpen}
+                      className={s.startContextToggle}
+                      type="button"
+                      onClick={() => setStartContextOpen((current) => !current)}
+                    >
+                      {startContextOpen ? 'Hide session context' : 'Set session context'}
+                    </button>
+                  </div>
+
+                  {startContextOpen ? (
+                    <div className={s.startContextCard}>
+                      <label>
+                        <span>Time today</span>
+                        <input
+                          aria-label="Start time today"
+                          inputMode="numeric"
+                          min="0"
+                          type="number"
+                          value={startSessionDraft.available_minutes}
+                          onChange={(event) =>
+                            setStartSessionDraft((current) => ({
+                              ...current,
+                              available_minutes: event.target.value,
+                            }))
+                          }
+                        />
+                      </label>
+                      <label>
+                        <span>Energy</span>
+                        <select
+                          aria-label="Start energy"
+                          value={startSessionDraft.energy_level}
+                          onChange={(event) =>
+                            setStartSessionDraft((current) => ({
+                              ...current,
+                              energy_level: event.target.value as SessionDraft['energy_level'],
+                            }))
+                          }
+                        >
+                          <option value="">Not set</option>
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span>Focus</span>
+                        <select
+                          aria-label="Start focus"
+                          value={startSessionDraft.preferred_location_type}
+                          onChange={(event) =>
+                            setStartSessionDraft((current) => ({
+                              ...current,
+                              preferred_location_type: event.target.value as SessionDraft['preferred_location_type'],
+                            }))
+                          }
+                        >
+                          <option value="">Not set</option>
+                          <option value="bed">Beds</option>
+                          <option value="container">Containers</option>
+                        </select>
+                      </label>
+                      <button
+                        type="button"
+                        disabled={!canUseStartSessionContext}
+                        onClick={useStartSessionContext}
+                      >
+                        Use this for this thread
+                      </button>
+                    </div>
+                  ) : null}
+
+                  <div className={s.startPreviewGrid}>
+                    <article className={s.startPreviewCard}>
+                      <p className={s.eyebrow}>Weather</p>
+                      <strong>
+                        {blankWeatherQuery.isLoading
+                          ? 'Loading today'
+                          : blankWeather?.conditions_summary || 'Weather context unavailable'}
+                      </strong>
+                      <span>
+                        {blankWeather?.alerts_summary ||
+                          blankWeather?.derived_impacts?.[0]?.summary ||
+                          'Rhizome can use weather once a garden profile has location context.'}
+                      </span>
+                    </article>
+                    <article className={s.startPreviewCard}>
+                      <p className={s.eyebrow}>Priority Preview</p>
+                      {blankTriageQuery.isLoading ? (
+                        <span>Loading priorities</span>
+                      ) : priorityPreviewTasks.length > 0 ? (
+                        <ol>
+                          {priorityPreviewTasks.map((task) => (
+                            <li key={task.id}>
+                              <strong>{task.title}</strong>
+                              <small>{taskMeta(task)}</small>
+                            </li>
+                          ))}
+                        </ol>
+                      ) : (
+                        <span>Run triage or add tasks to give Rhizome a priority list.</span>
+                      )}
+                      <button type="button" onClick={() => setStarterDraft('prioritize')}>
+                        Ask Rhizome about today
+                      </button>
+                    </article>
+                  </div>
+                </section>
+
+                <div className={s.startThreadIntro}>
+                  <Sprout size={26} />
+                  <strong>Start a thread when you are ready.</strong>
+                  <span>Rhizome will wait until you send the first message.</span>
+                </div>
                 {recentThreads.length > 0 ? (
                   <div className={s.recentThreads} aria-label="Recent thread shortcuts">
                     {recentThreads.map((thread) => (
