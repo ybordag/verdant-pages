@@ -76,6 +76,13 @@ interface SessionDraft {
   wants_quick_wins: boolean
 }
 
+interface ComposerContextTrigger {
+  start: number
+  end: number
+  q: string
+  types: string
+}
+
 const EMPTY_SESSION_DRAFT: SessionDraft = {
   available_minutes: '',
   energy_level: '',
@@ -176,6 +183,21 @@ function parseContextSearchTerm(term: string): { q: string; types?: string } {
   return { q: typedMatch[2].trim() || type, types: type }
 }
 
+function parseComposerContextTrigger(text: string, cursor: number): ComposerContextTrigger | null {
+  const beforeCursor = text.slice(0, cursor)
+  const match = beforeCursor.match(/(?:^|\s)([a-z_]+):([^\s:]*)$/i)
+  if (!match) return null
+  const type = CONTEXT_TYPE_ALIASES.get(match[1].toLowerCase())
+  if (!type) return null
+  const token = `${match[1]}:${match[2]}`
+  return {
+    start: beforeCursor.length - token.length,
+    end: cursor,
+    q: match[2].trim() || type,
+    types: type,
+  }
+}
+
 function interactionTypeLabel(type: string): string {
   return type.replaceAll('_', ' ')
 }
@@ -237,6 +259,7 @@ export default function RhizomePage() {
   const [activeContextTarget, setActiveContextTarget] = useState<'message' | 'thread' | null>(null)
   const [contextSearchTerm, setContextSearchTerm] = useState('')
   const [messageContext, setMessageContext] = useState<ContextObject[]>([])
+  const [composerCursor, setComposerCursor] = useState(0)
   const streamControllerRef = useRef<AbortController | null>(null)
 
   const threadsQuery = useQuery({
@@ -273,6 +296,25 @@ export default function RhizomePage() {
     queryKey: ['search', 'context', parsedContextSearch.types ?? 'all', parsedContextSearch.q],
     queryFn: () => search({ ...parsedContextSearch, limit: 8 }),
     enabled: Boolean(activeContextTarget) && parsedContextSearch.q.length >= 2,
+  })
+  const composerContextTrigger = useMemo(
+    () => parseComposerContextTrigger(draft, composerCursor),
+    [composerCursor, draft],
+  )
+  const composerContextQuery = useQuery({
+    queryKey: [
+      'search',
+      'composer-context',
+      composerContextTrigger?.types ?? '',
+      composerContextTrigger?.q ?? '',
+    ],
+    queryFn: () =>
+      search({
+        q: composerContextTrigger?.q ?? '',
+        types: composerContextTrigger?.types,
+        limit: 8,
+      }),
+    enabled: Boolean(composerContextTrigger),
   })
   const updateSessionMutation = useMutation({
     mutationFn: (data: UpdateSessionContextRequest) =>
@@ -335,6 +377,15 @@ export default function RhizomePage() {
     }
     return Array.from(groups.entries())
   }, [contextSearchQuery.data?.results])
+  const groupedComposerContextResults = useMemo(() => {
+    const groups = new Map<string, SearchResultItemView[]>()
+    for (const result of composerContextQuery.data?.results ?? EMPTY_SEARCH_RESULTS) {
+      const items = groups.get(result.subject_type) ?? []
+      items.push(result)
+      groups.set(result.subject_type, items)
+    }
+    return Array.from(groups.entries())
+  }, [composerContextQuery.data?.results])
 
   useEffect(() => {
     return () => streamControllerRef.current?.abort()
@@ -402,21 +453,38 @@ export default function RhizomePage() {
     }
   }
 
+  function addMessageContext(context: ContextObject) {
+    setMessageContext((current) => {
+      const exists = current.some(
+        (item) => item.subject_type === context.subject_type && item.subject_id === context.subject_id,
+      )
+      return exists ? current : [...current, context]
+    })
+    setMessageContextOpen(true)
+  }
+
   function addContextFromSearchResult(result: SearchResultItemView) {
     const context = contextFromSearchResult(result)
     if (activeContextTarget === 'message') {
-      setMessageContext((current) => {
-        const exists = current.some(
-          (item) => item.subject_type === context.subject_type && item.subject_id === context.subject_id,
-        )
-        return exists ? current : [...current, context]
-      })
+      addMessageContext(context)
       setContextSearchTerm('')
       return
     }
     if (!threadId) return
     addContextMutation.mutate(context, {
       onSuccess: () => setContextSearchTerm(''),
+    })
+  }
+
+  function addComposerContextFromSearchResult(result: SearchResultItemView) {
+    if (!composerContextTrigger) return
+    addMessageContext(contextFromSearchResult(result))
+    setDraft((current) => {
+      const before = current.slice(0, composerContextTrigger.start).trimEnd()
+      const after = current.slice(composerContextTrigger.end).replace(/^\s+/, '')
+      const next = [before, after].filter(Boolean).join(before && after ? ' ' : '')
+      setComposerCursor(before.length)
+      return next
     })
   }
 
@@ -809,20 +877,6 @@ export default function RhizomePage() {
                 </button>
               )}
             </div>
-            <div
-              className={s.modelSelector}
-              title="Model switching will be editable after Cambium supports profile updates."
-            >
-              <span>Model</span>
-              <FilterSelect
-                label="Model"
-                value={currentModelValue}
-                placeholder="Model not set"
-                options={currentModelOptions}
-                disabled
-                onChange={() => {}}
-              />
-            </div>
           </header>
 
           {streamError ? (
@@ -1099,18 +1153,57 @@ export default function RhizomePage() {
                 </div>
               ) : null}
 
-              <Textarea
-                aria-label="Message Rhizome"
-                placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault()
-                    void submitMessage()
-                  }
-                }}
-              />
+              <div className={s.composerTextAreaWrap}>
+                <Textarea
+                  aria-label="Message Rhizome"
+                  placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
+                  value={draft}
+                  onChange={(event) => {
+                    setDraft(event.target.value)
+                    setComposerCursor(event.target.selectionStart ?? event.target.value.length)
+                  }}
+                  onClick={(event) => setComposerCursor(event.currentTarget.selectionStart ?? draft.length)}
+                  onKeyUp={(event) => setComposerCursor(event.currentTarget.selectionStart ?? draft.length)}
+                  onSelect={(event) => setComposerCursor(event.currentTarget.selectionStart ?? draft.length)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault()
+                      void submitMessage()
+                    }
+                  }}
+                />
+                {composerContextTrigger ? (
+                  <div className={s.composerKeywordAutocomplete}>
+                    {composerContextQuery.isLoading ? (
+                      <div className={s.contextSearchState}>Searching context</div>
+                    ) : composerContextQuery.isError ? (
+                      <div className={s.contextSearchState}>Context search is unavailable.</div>
+                    ) : groupedComposerContextResults.length > 0 ? (
+                      groupedComposerContextResults.map(([type, results]) => (
+                        <section className={s.contextResultGroup} key={type}>
+                          <h3>{titleCase(type)}</h3>
+                          {results.map((result) => (
+                            <button
+                              key={`${result.subject_type}-${result.subject_id}`}
+                              type="button"
+                              className={`${s.contextResult} ${contextTypeClass(result.subject_type)}`}
+                              onClick={() => addComposerContextFromSearchResult(result)}
+                            >
+                              <span>
+                                <strong>{result.label}</strong>
+                                <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
+                              </span>
+                              <em>{result.subject_type}</em>
+                            </button>
+                          ))}
+                        </section>
+                      ))
+                    ) : (
+                      <div className={s.contextSearchState}>No context found.</div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
               <div className={s.composerControlRow}>
                 <div className={s.composerContextButtons}>
                   <button
@@ -1133,10 +1226,25 @@ export default function RhizomePage() {
                     <Pin size={13} />
                   </button>
                 </div>
-                <Button className={s.composerSend} size="sm" type="submit" disabled={!canSend}>
-                  <Send size={15} />
-                  {isStreaming ? 'Sending' : 'Send'}
-                </Button>
+                <div className={s.composerRightControls}>
+                  <Button className={s.composerSend} size="sm" type="submit" disabled={!canSend}>
+                    <Send size={15} />
+                    {isStreaming ? 'Sending' : 'Send'}
+                  </Button>
+                  <div
+                    className={s.composerModelSelector}
+                    title="Model switching will be editable after Cambium supports profile updates."
+                  >
+                    <FilterSelect
+                      label="Model"
+                      value={currentModelValue}
+                      placeholder="Model not set"
+                      options={currentModelOptions}
+                      disabled
+                      onChange={() => {}}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </form>

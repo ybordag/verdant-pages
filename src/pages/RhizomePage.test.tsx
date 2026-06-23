@@ -497,6 +497,23 @@ describe('RhizomePage', () => {
     )
   })
 
+  it('adds message context from composer keyword notation', async () => {
+    const user = userEvent.setup()
+    renderRhizome('/app/rhizome/thread-1')
+
+    const composer = screen.getByLabelText('Message Rhizome')
+    await user.type(composer, 'Can you check plant:tom')
+    await waitFor(() =>
+      expect(mocks.search).toHaveBeenLastCalledWith({ q: 'tom', types: 'plant', limit: 8 }),
+    )
+
+    await user.click(await screen.findByRole('button', { name: /Cherry Tomato/i }))
+
+    expect(await screen.findByText('Cherry Tomato')).toBeInTheDocument()
+    expect(composer).toHaveValue('Can you check')
+    expect(mocks.addThreadContext).not.toHaveBeenCalled()
+  })
+
   it('adds local message context without sending it as thread context', async () => {
     const user = userEvent.setup()
     mocks.listThreads.mockResolvedValue([])
