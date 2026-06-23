@@ -606,8 +606,8 @@ button.sessionCard:disabled {
 }
 
 [data-theme='light'] .sessionStrip {
-  border-top-color: var(--dark-clay);
-  border-bottom-color: var(--dark-clay);
+  border-top-color: var(--clay);
+  border-bottom-color: var(--clay);
 }
 
 [data-theme='light'] .sessionCard,
@@ -872,7 +872,7 @@ button.sessionCard:disabled {
   display: grid;
   align-content: space-between;
   gap: 6px;
-  padding: 9px 12px 8px;
+  padding: 9px 12px 10px;
 }
 
 .startFocusCard {
@@ -882,7 +882,7 @@ button.sessionCard:disabled {
 
 .weatherCardTop {
   display: grid;
-  gap: 2px;
+  gap: 0;
 }
 
 .weatherCardTop span {
@@ -898,7 +898,8 @@ button.sessionCard:disabled {
   align-items: flex-end;
   justify-content: center;
   gap: 10px;
-  min-height: 54px;
+  min-height: 46px;
+  margin-top: -2px;
 }
 
 .weatherIcon {
@@ -955,6 +956,7 @@ button.sessionCard:disabled {
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
+  padding-bottom: 3px;
 }
 
 .weatherMetrics span {
