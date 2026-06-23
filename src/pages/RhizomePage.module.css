@@ -871,6 +871,11 @@ button.sessionCard:disabled {
   padding: 9px 12px 8px;
 }
 
+.startFocusCard {
+  grid-template-rows: auto 1fr;
+  align-content: stretch;
+}
+
 .weatherCardTop {
   display: grid;
   gap: 2px;
@@ -980,6 +985,21 @@ button.sessionCard:disabled {
   gap: 5px;
 }
 
+.startFocusPicker,
+.startFocusPicker label {
+  min-height: 0;
+  height: 100%;
+}
+
+.startFocusPicker label > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .focusPicker label > span {
   color: var(--clay);
   font-family: var(--font-label);
@@ -997,12 +1017,40 @@ button.sessionCard:disabled {
   position: relative;
   display: flex;
   min-height: 30px;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
   background: var(--input-bg);
   padding: 3px 6px;
+}
+
+.focusInputIcon {
+  flex: 0 0 auto;
+  margin-top: 4px;
+  color: var(--clay);
+}
+
+[data-theme='light'] .focusInputIcon {
+  color: var(--dark-clay);
+}
+
+.startFocusPicker .focusInputWrap {
+  min-height: 0;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.startFocusCard:focus-within {
+  border-color: var(--nav-accent);
+  outline: 2px solid rgb(var(--chartreuse-rgb) / 0.18);
+}
+
+.startFocusPicker .focusInputWrap:focus-within {
+  outline: 0;
 }
 
 .sessionCard .focusInputWrap {
@@ -1025,6 +1073,11 @@ button.sessionCard:disabled {
   font-size: 12px;
   outline: 0;
   padding: 3px 1px;
+}
+
+.startFocusPicker .focusInputWrap input {
+  align-self: flex-start;
+  padding-top: 3px;
 }
 
 .focusInputWrap input::placeholder {

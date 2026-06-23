@@ -878,10 +878,11 @@ export default function RhizomePage() {
     }
 
     return (
-      <div className={s.focusPicker}>
+      <div className={[s.focusPicker, mode === 'start' ? s.startFocusPicker : s.sessionFocusPicker].join(' ')}>
         <label>
           <span>{label}</span>
           <div className={s.focusInputWrap}>
+            <Pin className={s.focusInputIcon} size={15} aria-hidden="true" />
             {selected ? (
               <span className={`${s.contextChip} ${contextTypeClass(selected.subject_type)}`}>
                 <em>{selected.subject_type}</em>
