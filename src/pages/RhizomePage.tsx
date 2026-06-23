@@ -351,6 +351,66 @@ function actionButtonClass(action: InteractionActionView): string {
   return s.secondaryAction
 }
 
+function groupContextResults(results: SearchResultItemView[]): Array<[string, SearchResultItemView[]]> {
+  const groups = new Map<string, SearchResultItemView[]>()
+  for (const result of results) {
+    const items = groups.get(result.subject_type) ?? []
+    items.push(result)
+    groups.set(result.subject_type, items)
+  }
+  return Array.from(groups.entries())
+}
+
+function ContextAutocomplete({
+  groups,
+  isTooShort = false,
+  isLoading,
+  isError,
+  loadingLabel = 'Searching context',
+  errorLabel = 'Context search is unavailable.',
+  shortLabel = 'Type at least two characters.',
+  emptyLabel = 'No context found.',
+  disabled = false,
+  onSelect,
+}: {
+  groups: Array<[string, SearchResultItemView[]]>
+  isTooShort?: boolean
+  isLoading: boolean
+  isError: boolean
+  loadingLabel?: string
+  errorLabel?: string
+  shortLabel?: string
+  emptyLabel?: string
+  disabled?: boolean
+  onSelect: (result: SearchResultItemView) => void
+}) {
+  if (isTooShort) return <div className={s.contextSearchState}>{shortLabel}</div>
+  if (isLoading) return <div className={s.contextSearchState}>{loadingLabel}</div>
+  if (isError) return <div className={s.contextSearchState}>{errorLabel}</div>
+  if (groups.length === 0) return <div className={s.contextSearchState}>{emptyLabel}</div>
+
+  return groups.map(([type, results]) => (
+    <section className={s.contextResultGroup} key={type}>
+      <h3>{titleCase(type)}</h3>
+      {results.map((result) => (
+        <button
+          key={`${result.subject_type}-${result.subject_id}`}
+          type="button"
+          className={`${s.contextResult} ${contextTypeClass(result.subject_type)}`}
+          disabled={disabled}
+          onClick={() => onSelect(result)}
+        >
+          <span>
+            <strong>{result.label}</strong>
+            <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
+          </span>
+          <em>{result.subject_type}</em>
+        </button>
+      ))}
+    </section>
+  ))
+}
+
 function messageLabel(message: ThreadMessageView): string {
   return message.role === 'user' ? 'You' : 'Rhizome'
 }
@@ -809,36 +869,15 @@ export default function RhizomePage() {
               />
               {shouldShowAutocomplete ? (
                 <div className={s.contextAutocomplete}>
-                  {contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2 ? (
-                    <div className={s.contextSearchState}>Type at least two characters after the prefix.</div>
-                  ) : contextSearchQuery.isLoading ? (
-                    <div className={s.contextSearchState}>Searching context</div>
-                  ) : contextSearchQuery.isError ? (
-                    <div className={s.contextSearchState}>Context search is unavailable.</div>
-                  ) : groupedContextResults.length > 0 ? (
-                    groupedContextResults.map(([type, results]) => (
-                      <section className={s.contextResultGroup} key={type}>
-                        <h3>{titleCase(type)}</h3>
-                        {results.map((result) => (
-                          <button
-                            key={`${result.subject_type}-${result.subject_id}`}
-                            type="button"
-                            className={`${s.contextResult} ${contextTypeClass(result.subject_type)}`}
-                            disabled={target === 'thread' && addContextMutation.isPending}
-                            onClick={() => addContextFromSearchResult(result)}
-                          >
-                            <span>
-                              <strong>{result.label}</strong>
-                              <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
-                            </span>
-                            <em>{result.subject_type}</em>
-                          </button>
-                        ))}
-                      </section>
-                    ))
-                  ) : parsedContextSearch.q.length >= 2 ? (
-                    <div className={s.contextSearchState}>No context found.</div>
-                  ) : null}
+                  <ContextAutocomplete
+                    groups={groupedContextResults}
+                    isTooShort={contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2}
+                    isLoading={contextSearchQuery.isLoading}
+                    isError={contextSearchQuery.isError}
+                    shortLabel="Type at least two characters after the prefix."
+                    disabled={target === 'thread' && addContextMutation.isPending}
+                    onSelect={addContextFromSearchResult}
+                  />
                 </div>
               ) : null}
             </span>
@@ -905,32 +944,16 @@ export default function RhizomePage() {
             />
             {!selected && term.trim().length > 0 ? (
               <div className={s.focusAutocomplete}>
-                {term.trim().length < 2 ? (
-                  <div className={s.contextSearchState}>Type at least two characters.</div>
-                ) : query.isLoading ? (
-                  <div className={s.contextSearchState}>Searching focus</div>
-                ) : query.isError ? (
-                  <div className={s.contextSearchState}>Focus search is unavailable.</div>
-                ) : results.length > 0 ? (
-                  results.map((result) => (
-                    <button
-                      key={`${mode}-${result.subject_type}-${result.subject_id}`}
-                      type="button"
-                      className={`${s.contextResult} ${contextTypeClass(result.subject_type)}`}
-                      onClick={() => setSelected(contextFromSearchResult(result))}
-                    >
-                      <span>
-                        <strong>{result.label}</strong>
-                        <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
-                      </span>
-                      <em>{result.subject_type}</em>
-                    </button>
-                  ))
-                ) : (
-                  <div className={s.contextSearchState}>
-                    {mode === 'start' ? 'Use this as free-text focus.' : 'No projects found.'}
-                  </div>
-                )}
+                <ContextAutocomplete
+                  groups={groupContextResults(results)}
+                  isTooShort={term.trim().length < 2}
+                  isLoading={query.isLoading}
+                  isError={query.isError}
+                  loadingLabel="Searching focus"
+                  errorLabel="Focus search is unavailable."
+                  emptyLabel={mode === 'start' ? 'Use this as free-text focus.' : 'No projects found.'}
+                  onSelect={(result) => setSelected(contextFromSearchResult(result))}
+                />
               </div>
             ) : null}
           </div>
@@ -1601,33 +1624,12 @@ export default function RhizomePage() {
                         : undefined
                     }
                   >
-                    {composerContextQuery.isLoading ? (
-                      <div className={s.contextSearchState}>Searching context</div>
-                    ) : composerContextQuery.isError ? (
-                      <div className={s.contextSearchState}>Context search is unavailable.</div>
-                    ) : groupedComposerContextResults.length > 0 ? (
-                      groupedComposerContextResults.map(([type, results]) => (
-                        <section className={s.contextResultGroup} key={type}>
-                          <h3>{titleCase(type)}</h3>
-                          {results.map((result) => (
-                            <button
-                              key={`${result.subject_type}-${result.subject_id}`}
-                              type="button"
-                              className={`${s.contextResult} ${contextTypeClass(result.subject_type)}`}
-                              onClick={() => addComposerContextFromSearchResult(result)}
-                            >
-                              <span>
-                                <strong>{result.label}</strong>
-                                <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
-                              </span>
-                              <em>{result.subject_type}</em>
-                            </button>
-                          ))}
-                        </section>
-                      ))
-                    ) : (
-                      <div className={s.contextSearchState}>No context found.</div>
-                    )}
+                    <ContextAutocomplete
+                      groups={groupedComposerContextResults}
+                      isLoading={composerContextQuery.isLoading}
+                      isError={composerContextQuery.isError}
+                      onSelect={addComposerContextFromSearchResult}
+                    />
                   </div>
                 ) : null}
               </div>
