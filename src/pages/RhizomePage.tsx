@@ -90,6 +90,8 @@ interface StartThreadDraft {
   energy: string
 }
 
+type FocusContext = ContextObject | null
+
 interface ComposerContextTrigger {
   start: number
   end: number
@@ -399,6 +401,10 @@ export default function RhizomePage() {
   const [messageContext, setMessageContext] = useState<ContextObject[]>([])
   const [composerCursor, setComposerCursor] = useState(0)
   const [startThreadDraft, setStartThreadDraft] = useState<StartThreadDraft>(EMPTY_START_THREAD_DRAFT)
+  const [startFocusTerm, setStartFocusTerm] = useState('')
+  const [startFocusContext, setStartFocusContext] = useState<FocusContext>(null)
+  const [sessionFocusTerm, setSessionFocusTerm] = useState('')
+  const [sessionFocusContext, setSessionFocusContext] = useState<FocusContext>(null)
   const [composerAutocompletePosition, setComposerAutocompletePosition] =
     useState<ComposerAutocompletePosition | null>(null)
   const streamControllerRef = useRef<AbortController | null>(null)
@@ -444,6 +450,16 @@ export default function RhizomePage() {
     queryFn: () => search({ ...parsedContextSearch, limit: 8 }),
     enabled: Boolean(activeContextTarget) && parsedContextSearch.q.length >= 2,
   })
+  const startFocusQuery = useQuery({
+    queryKey: ['search', 'start-focus', startFocusTerm.trim()],
+    queryFn: () => search({ q: startFocusTerm.trim(), limit: 6 }),
+    enabled: isNewThread && !startFocusContext && startFocusTerm.trim().length >= 2,
+  })
+  const sessionFocusQuery = useQuery({
+    queryKey: ['search', 'session-focus', sessionFocusTerm.trim()],
+    queryFn: () => search({ q: sessionFocusTerm.trim(), types: 'project', limit: 6 }),
+    enabled: sessionEditing && !sessionFocusContext && sessionFocusTerm.trim().length >= 2,
+  })
   const composerContextTrigger = useMemo(
     () => parseComposerContextTrigger(draft, composerCursor),
     [composerCursor, draft],
@@ -469,6 +485,8 @@ export default function RhizomePage() {
     onSuccess: (context) => {
       queryClient.setQueryData(['threads', threadId, 'session-context'], context)
       setSessionDraft(sessionDraftFromContext(context))
+      setSessionFocusContext(null)
+      setSessionFocusTerm('')
       setSessionEditing(false)
       setSessionError(null)
     },
@@ -558,12 +576,24 @@ export default function RhizomePage() {
 
   function startSessionEdit() {
     setSessionDraft(sessionDraftFromContext(sessionContext))
+    setSessionFocusContext(
+      sessionContext?.focus_project_id
+        ? {
+            subject_type: 'project',
+            subject_id: sessionContext.focus_project_id,
+            label: sessionContext.focus_label ?? 'Project focus',
+          }
+        : null,
+    )
+    setSessionFocusTerm(sessionFocusLabel(sessionContext) === 'Not set' ? '' : sessionFocusLabel(sessionContext))
     setSessionError(null)
     setSessionEditing(true)
   }
 
   function cancelSessionEdit() {
     setSessionDraft(sessionDraftFromContext(sessionContext))
+    setSessionFocusContext(null)
+    setSessionFocusTerm('')
     setSessionError(null)
     setSessionEditing(false)
   }
@@ -583,8 +613,8 @@ export default function RhizomePage() {
       preferred_location_type: sessionDraft.preferred_location_type || null,
       open_to_outdoor_work: sessionDraft.open_to_outdoor_work,
       wants_quick_wins: sessionDraft.wants_quick_wins,
+      focus_project_id: sessionFocusContext?.subject_type === 'project' ? sessionFocusContext.subject_id : null,
     }
-    if (sessionContext?.focus_project_id) payload.focus_project_id = sessionContext.focus_project_id
     updateSessionMutation.mutate(payload)
   }
 
@@ -604,6 +634,11 @@ export default function RhizomePage() {
         ? `I have ${startThreadDraft.time_today.trim()}`
         : null,
       startThreadDraft.energy.trim() ? `my energy is ${startThreadDraft.energy.trim()}` : null,
+      startFocusContext
+        ? `my focus is ${contextLabel(startFocusContext)} (${startFocusContext.subject_type})`
+        : startFocusTerm.trim()
+          ? `my focus is ${startFocusTerm.trim()}`
+          : null,
     ].filter(Boolean)
     return details.length > 0 ? `For this thread, ${details.join(', ')}.` : null
   }
@@ -809,6 +844,96 @@ export default function RhizomePage() {
             </span>
           </span>
         </div>
+      </div>
+    )
+  }
+
+  function renderFocusPicker(mode: 'start' | 'session') {
+    const selected = mode === 'start' ? startFocusContext : sessionFocusContext
+    const term = mode === 'start' ? startFocusTerm : sessionFocusTerm
+    const query = mode === 'start' ? startFocusQuery : sessionFocusQuery
+    const label = mode === 'start' ? 'Thread focus' : 'Project focus'
+    const placeholder =
+      mode === 'start' ? 'Project, task, plant, or open question...' : 'Search projects...'
+    const results = query.data?.results ?? EMPTY_SEARCH_RESULTS
+
+    function setSelected(context: FocusContext) {
+      if (mode === 'start') {
+        setStartFocusContext(context)
+        setStartFocusTerm(context ? contextLabel(context) : '')
+      } else {
+        setSessionFocusContext(context)
+        setSessionFocusTerm(context ? contextLabel(context) : '')
+      }
+    }
+
+    function setTerm(value: string) {
+      if (mode === 'start') {
+        setStartFocusContext(null)
+        setStartFocusTerm(value)
+      } else {
+        setSessionFocusContext(null)
+        setSessionFocusTerm(value)
+      }
+    }
+
+    return (
+      <div className={s.focusPicker}>
+        <label>
+          <span>{label}</span>
+          <div className={s.focusInputWrap}>
+            {selected ? (
+              <span className={`${s.contextChip} ${contextTypeClass(selected.subject_type)}`}>
+                <em>{selected.subject_type}</em>
+                <span>{contextLabel(selected)}</span>
+                <button
+                  aria-label={`Clear ${label}`}
+                  type="button"
+                  onClick={() => setSelected(null)}
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ) : null}
+            <input
+              aria-label={label}
+              placeholder={selected ? 'Selected' : placeholder}
+              type="text"
+              value={selected ? '' : term}
+              onChange={(event) => setTerm(event.target.value)}
+            />
+            {!selected && term.trim().length > 0 ? (
+              <div className={s.focusAutocomplete}>
+                {term.trim().length < 2 ? (
+                  <div className={s.contextSearchState}>Type at least two characters.</div>
+                ) : query.isLoading ? (
+                  <div className={s.contextSearchState}>Searching focus</div>
+                ) : query.isError ? (
+                  <div className={s.contextSearchState}>Focus search is unavailable.</div>
+                ) : results.length > 0 ? (
+                  results.map((result) => (
+                    <button
+                      key={`${mode}-${result.subject_type}-${result.subject_id}`}
+                      type="button"
+                      className={`${s.contextResult} ${contextTypeClass(result.subject_type)}`}
+                      onClick={() => setSelected(contextFromSearchResult(result))}
+                    >
+                      <span>
+                        <strong>{result.label}</strong>
+                        <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
+                      </span>
+                      <em>{result.subject_type}</em>
+                    </button>
+                  ))
+                ) : (
+                  <div className={s.contextSearchState}>
+                    {mode === 'start' ? 'Use this as free-text focus.' : 'No projects found.'}
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        </label>
       </div>
     )
   }
@@ -1125,11 +1250,7 @@ export default function RhizomePage() {
                   <option value="high">High</option>
                 </select>
               </label>
-              <div className={s.sessionCard}>
-                <span>Focus</span>
-                <strong>{sessionFocusLabel(sessionContext)}</strong>
-                <small>Project focus is set through Rhizome.</small>
-              </div>
+              <div className={s.sessionCard}>{renderFocusPicker('session')}</div>
               <label className={s.sessionCard}>
                 <span>Location</span>
                 <select
@@ -1334,10 +1455,7 @@ export default function RhizomePage() {
 
                     <article className={s.startFocusCard}>
                       <p className={s.eyebrow}>Focus</p>
-                      <strong>Open question</strong>
-                      <span>
-                        We still need to decide how durable focus should relate to pinned context.
-                      </span>
+                      {renderFocusPicker('start')}
                     </article>
                   </div>
                 </section>

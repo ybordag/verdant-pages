@@ -296,6 +296,26 @@ describe('RhizomePage', () => {
     expect(screen.queryByText(/For this thread, I have 20 minutes/)).not.toBeInTheDocument()
   })
 
+  it('adds free-text blank-thread focus to the hidden first-send context', async () => {
+    const user = userEvent.setup()
+    mocks.listThreads.mockResolvedValue([])
+    mocks.getThreadMessages.mockResolvedValue({ thread_id: 'thread-new', messages: [] })
+    renderRhizome()
+
+    await user.type(await screen.findByLabelText('Thread focus'), 'autumn flower bed')
+    await user.type(screen.getByLabelText('Message Rhizome'), 'What should I do first?')
+    await user.click(screen.getByRole('button', { name: 'Send' }))
+
+    await waitFor(() =>
+      expect(mocks.streamChat).toHaveBeenCalledWith(
+        'thread-new',
+        'For this thread, my focus is autumn flower bed.\n\nWhat should I do first?',
+        expect.any(AbortSignal),
+      ),
+    )
+    expect(screen.queryByText(/For this thread, my focus is autumn flower bed/)).not.toBeInTheDocument()
+  })
+
   it('uses the selected thread from the recent-thread list', async () => {
     renderRhizome('/app/rhizome/thread-1')
 
@@ -347,6 +367,35 @@ describe('RhizomePage', () => {
     expect(await screen.findByText('User set')).toBeInTheDocument()
     expect(screen.getByText('30 minutes')).toBeInTheDocument()
     expect(screen.getByText('High')).toBeInTheDocument()
+  })
+
+  it('persists selected project focus from the active session editor', async () => {
+    const user = userEvent.setup()
+    mocks.search.mockResolvedValue({
+      results: [
+        {
+          subject_type: 'project',
+          subject_id: 'project-2',
+          label: 'Autumn Flower Bed',
+          secondary_label: 'Planning',
+        },
+      ],
+      by_type: { project: 1 },
+    })
+    renderRhizome('/app/rhizome/thread-1')
+
+    await user.click(await screen.findByLabelText('Edit focus'))
+    await user.click(screen.getByLabelText('Clear Project focus'))
+    await user.type(screen.getByLabelText('Project focus'), 'autumn')
+    await user.click(await screen.findByRole('button', { name: /Autumn Flower Bed/i }))
+    await user.click(screen.getByRole('button', { name: 'Save' }))
+
+    await waitFor(() =>
+      expect(mocks.updateThreadSessionContext).toHaveBeenCalledWith(
+        'thread-1',
+        expect.objectContaining({ focus_project_id: 'project-2' }),
+      ),
+    )
   })
 
   it('renders markdown styling in user and Rhizome messages', async () => {

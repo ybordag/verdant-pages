@@ -38,7 +38,7 @@ Three vertical regions:
 
 A persistent narrow strip at the top of the chat area (below the topbar) showing the session context that Rhizome loaded at startup.
 
-**Left — Startup intake:** Rhizome should expose three structured session context values: "How much time do you have?", "What's your energy level?", and "What do you want to focus on?" Display them as compact tiles. These ground Rhizome's recommendations for the session.
+**Left — Startup intake:** Rhizome should expose structured session context values for time available, energy, and thread focus. Verdant shows Time and Energy as free-text starter fields because those values are most useful as user language on the first turn. Focus is a single thread-level anchor: on a blank thread it supports free text or a selected garden object, and Verdant includes that focus in the hidden first-send context. On an active thread, persisted Focus is currently project-backed because the dedicated session-context patch contract accepts `focus_project_id`; broader durable focus refs require a future API expansion.
 
 Current backend note: rhizome#146 is complete and Cambium now proxies `GET/PATCH /api/v1/threads/{id}/session-context`. Verdant should use the dedicated `SessionContextView` endpoint for SessionStrip display/edit flows. `ThreadView.session_context`, when present on thread metadata, is Rhizome's raw stored JSON and is not the frontend display/edit contract.
 
@@ -131,7 +131,7 @@ SSE is the only transport for chat (`streamChat`/`streamResume` — see [sse-str
 - **Connection never opens / drops before any token arrives:** no auto-retry. Show "Connection failed — try again" in the composer area with a manual retry button. Resubmitting a half-sent message automatically would be worse than asking the user to re-trigger it.
 - **Connection drops mid-stream** (after some tokens, before a `{ type: "done" }` event): the consuming component must track a local `sawDone` flag. If the generator returns without it ever being set, treat the response as incomplete — append "⚠ response may be incomplete" rather than presenting partial tokens as the full answer.
 
-Phase 5b now implements the first-pass workbench path: the Send button enables when the draft has text, Enter submits and Shift+Enter inserts a newline, `/app/rhizome` creates a thread only when the first message is sent, uses Cambium's returned thread id, and streams the assistant response into an in-progress Rhizome bubble. Stream failures render an attention banner under the thread title row with retry. The active-thread view also renders the dedicated session-context display/edit controls, the themed read-only model selector, the first-pass pending interaction review panel with resume streaming, the local message-context input, and fully wired pinned thread context search/add/remove.
+Phase 5b now implements the first-pass workbench path: the Send button enables when the draft has text, Enter submits and Shift+Enter inserts a newline, `/app/rhizome` creates a thread only when the first message is sent, uses Cambium's returned thread id, and streams the assistant response into an in-progress Rhizome bubble. Stream failures render an attention banner under the thread title row with retry. The active-thread view also renders the dedicated session-context display/edit controls, project-backed focus editing, the themed read-only model selector, the first-pass pending interaction review panel with resume streaming, the local message-context input, and fully wired pinned thread context search/add/remove.
 
 ---
 

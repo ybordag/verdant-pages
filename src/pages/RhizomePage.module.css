@@ -643,6 +643,7 @@ button.sessionCard:disabled {
 }
 
 .sessionCard input[type='number'],
+.sessionCard input[type='text'],
 .sessionCard select {
   width: 100%;
   min-height: 28px;
@@ -657,6 +658,7 @@ button.sessionCard:disabled {
 }
 
 .sessionCard input[type='number']:focus,
+.sessionCard input[type='text']:focus,
 .sessionCard select:focus {
   border-color: var(--nav-accent);
   outline: 2px solid rgb(var(--chartreuse-rgb) / 0.18);
@@ -770,6 +772,7 @@ button.sessionCard:disabled {
   border-radius: var(--radius-soft);
   background: var(--bg-nav);
   min-height: 160px;
+  overflow: visible;
 }
 
 .startChips {
@@ -965,6 +968,82 @@ button.sessionCard:disabled {
   color: var(--text-muted);
   font-size: 11px;
   line-height: 1.35;
+}
+
+.focusPicker {
+  position: relative;
+  min-width: 0;
+}
+
+.focusPicker label {
+  display: grid;
+  gap: 5px;
+}
+
+.focusPicker label > span {
+  color: var(--clay);
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[data-theme='light'] .focusPicker label > span {
+  color: var(--dark-clay);
+}
+
+.focusInputWrap {
+  position: relative;
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--input-bg);
+  padding: 3px 6px;
+}
+
+.sessionCard .focusInputWrap {
+  margin-top: 5px;
+  background: var(--surface-muted);
+}
+
+.focusInputWrap:focus-within {
+  border-color: var(--nav-accent);
+  outline: 2px solid rgb(var(--chartreuse-rgb) / 0.18);
+}
+
+.focusInputWrap input {
+  min-width: 0;
+  flex: 1 1 auto;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  outline: 0;
+  padding: 3px 1px;
+}
+
+.focusInputWrap input::placeholder {
+  color: var(--text-placeholder);
+  font-style: italic;
+  opacity: 1;
+}
+
+.focusAutocomplete {
+  position: absolute;
+  z-index: 12;
+  top: calc(100% + 5px);
+  left: 0;
+  display: grid;
+  width: min(380px, 100%);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--bg);
 }
 
 .startThreadIntro {
