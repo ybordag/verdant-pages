@@ -398,6 +398,26 @@ describe('RhizomePage', () => {
     )
   })
 
+  it('dismisses focus autocomplete on outside click and reopens only after typing changes', async () => {
+    const user = userEvent.setup()
+    renderRhizome()
+
+    const focusInput = await screen.findByLabelText('Thread focus')
+    await user.type(focusInput, 'tom')
+    expect(await screen.findByRole('button', { name: /Cherry Tomato/i })).toBeInTheDocument()
+
+    await user.click(screen.getByText('Start a thread when you are ready.'))
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: /Cherry Tomato/i })).not.toBeInTheDocument(),
+    )
+
+    await user.click(focusInput)
+    expect(screen.queryByRole('button', { name: /Cherry Tomato/i })).not.toBeInTheDocument()
+
+    await user.type(focusInput, 'a')
+    expect(await screen.findByRole('button', { name: /Cherry Tomato/i })).toBeInTheDocument()
+  })
+
   it('renders markdown styling in user and Rhizome messages', async () => {
     mocks.getThreadMessages.mockResolvedValue({
       thread_id: 'thread-1',
@@ -634,6 +654,26 @@ describe('RhizomePage', () => {
 
     expect(await screen.findByRole('button', { name: /growbag_2/i })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /growbag_1/i })).not.toBeInTheDocument()
+  })
+
+  it('dismisses composer keyword autocomplete until the token changes', async () => {
+    const user = userEvent.setup()
+    renderRhizome('/app/rhizome/thread-1')
+
+    const composer = screen.getByLabelText('Message Rhizome')
+    await user.type(composer, 'Can you check plant:tom')
+    expect(await screen.findByRole('button', { name: /Cherry Tomato/i })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Tomato care plan' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: /Cherry Tomato/i })).not.toBeInTheDocument(),
+    )
+
+    await user.click(composer)
+    expect(screen.queryByRole('button', { name: /Cherry Tomato/i })).not.toBeInTheDocument()
+
+    await user.type(composer, 'a')
+    expect(await screen.findByRole('button', { name: /Cherry Tomato/i })).toBeInTheDocument()
   })
 
   it('adds local message context without sending it as thread context', async () => {

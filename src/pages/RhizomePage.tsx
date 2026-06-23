@@ -24,6 +24,7 @@ import { FilterSelect } from '@/components/activity/FilterControls'
 import Button from '@/components/primitives/Button/Button'
 import MarkdownMessage from '@/components/primitives/MarkdownMessage/MarkdownMessage'
 import Textarea from '@/components/primitives/Textarea/Textarea'
+import ContextAutocomplete from '@/components/rhizome/ContextAutocomplete'
 import {
   addThreadContext,
   createThread,
@@ -361,56 +362,6 @@ function groupContextResults(results: SearchResultItemView[]): Array<[string, Se
   return Array.from(groups.entries())
 }
 
-function ContextAutocomplete({
-  groups,
-  isTooShort = false,
-  isLoading,
-  isError,
-  loadingLabel = 'Searching context',
-  errorLabel = 'Context search is unavailable.',
-  shortLabel = 'Type at least two characters.',
-  emptyLabel = 'No context found.',
-  disabled = false,
-  onSelect,
-}: {
-  groups: Array<[string, SearchResultItemView[]]>
-  isTooShort?: boolean
-  isLoading: boolean
-  isError: boolean
-  loadingLabel?: string
-  errorLabel?: string
-  shortLabel?: string
-  emptyLabel?: string
-  disabled?: boolean
-  onSelect: (result: SearchResultItemView) => void
-}) {
-  if (isTooShort) return <div className={s.contextSearchState}>{shortLabel}</div>
-  if (isLoading) return <div className={s.contextSearchState}>{loadingLabel}</div>
-  if (isError) return <div className={s.contextSearchState}>{errorLabel}</div>
-  if (groups.length === 0) return <div className={s.contextSearchState}>{emptyLabel}</div>
-
-  return groups.map(([type, results]) => (
-    <section className={s.contextResultGroup} key={type}>
-      <h3>{titleCase(type)}</h3>
-      {results.map((result) => (
-        <button
-          key={`${result.subject_type}-${result.subject_id}`}
-          type="button"
-          className={`${s.contextResult} ${contextTypeClass(result.subject_type)}`}
-          disabled={disabled}
-          onClick={() => onSelect(result)}
-        >
-          <span>
-            <strong>{result.label}</strong>
-            <small>{result.secondary_label ?? result.summary ?? result.subject_id}</small>
-          </span>
-          <em>{result.subject_type}</em>
-        </button>
-      ))}
-    </section>
-  ))
-}
-
 function messageLabel(message: ThreadMessageView): string {
   return message.role === 'user' ? 'You' : 'Rhizome'
 }
@@ -465,6 +416,10 @@ export default function RhizomePage() {
   const [startFocusContext, setStartFocusContext] = useState<FocusContext>(null)
   const [sessionFocusTerm, setSessionFocusTerm] = useState('')
   const [sessionFocusContext, setSessionFocusContext] = useState<FocusContext>(null)
+  const [dismissedContextQuery, setDismissedContextQuery] = useState('')
+  const [dismissedStartFocusQuery, setDismissedStartFocusQuery] = useState('')
+  const [dismissedSessionFocusQuery, setDismissedSessionFocusQuery] = useState('')
+  const [dismissedComposerContextQuery, setDismissedComposerContextQuery] = useState('')
   const [composerAutocompletePosition, setComposerAutocompletePosition] =
     useState<ComposerAutocompletePosition | null>(null)
   const streamControllerRef = useRef<AbortController | null>(null)
@@ -524,6 +479,9 @@ export default function RhizomePage() {
     () => parseComposerContextTrigger(draft, composerCursor),
     [composerCursor, draft],
   )
+  const composerContextQueryKey = composerContextTrigger
+    ? `${composerContextTrigger.types}:${composerContextTrigger.q}:${composerContextTrigger.start}:${composerContextTrigger.end}`
+    : ''
   const composerContextQuery = useQuery({
     queryKey: [
       'search',
@@ -753,17 +711,22 @@ export default function RhizomePage() {
     if (activeContextTarget === 'message') {
       addMessageContext(context)
       setContextSearchTerm('')
+      setDismissedContextQuery('')
       return
     }
     if (!threadId) return
     addContextMutation.mutate(context, {
-      onSuccess: () => setContextSearchTerm(''),
+      onSuccess: () => {
+        setContextSearchTerm('')
+        setDismissedContextQuery('')
+      },
     })
   }
 
   function addComposerContextFromSearchResult(result: SearchResultItemView) {
     if (!composerContextTrigger) return
     addMessageContext(contextFromSearchResult(result))
+    setDismissedComposerContextQuery('')
     setDraft((current) => {
       const before = current.slice(0, composerContextTrigger.start).trimEnd()
       const after = current.slice(composerContextTrigger.end).replace(/^\s+/, '')
@@ -790,6 +753,7 @@ export default function RhizomePage() {
     setActiveContextTarget((current) => {
       const nextTarget = current === target ? null : target
       setContextSearchTerm('')
+      setDismissedContextQuery('')
       setMessageContextOpen(nextTarget === 'message')
       setPinnedContextOpen(nextTarget === 'thread')
       return nextTarget
@@ -798,6 +762,7 @@ export default function RhizomePage() {
 
   function closeContextTarget(target: 'message' | 'thread') {
     setContextSearchTerm('')
+    setDismissedContextQuery('')
     setActiveContextTarget((current) => (current === target ? null : current))
     if (target === 'message') setMessageContextOpen(false)
     else setPinnedContextOpen(false)
@@ -815,7 +780,9 @@ export default function RhizomePage() {
     onRemove: (context: ContextObject) => void
   }) {
     const isActive = activeContextTarget === target
-    const shouldShowAutocomplete = isActive && contextSearchTerm.trim().length > 0
+    const contextQueryKey = `${target}:${contextSearchTerm.trim()}`
+    const shouldShowAutocomplete =
+      isActive && contextSearchTerm.trim().length > 0 && dismissedContextQuery !== contextQueryKey
     return (
       <div className={s.contextInlineBox} aria-label={label}>
         <div className={s.contextInlineTitle}>
@@ -864,21 +831,23 @@ export default function RhizomePage() {
                 }}
                 onChange={(event) => {
                   if (!isActive) setActiveContextTarget(target)
+                  setDismissedContextQuery('')
                   setContextSearchTerm(event.target.value)
                 }}
               />
               {shouldShowAutocomplete ? (
-                <div className={s.contextAutocomplete}>
-                  <ContextAutocomplete
-                    groups={groupedContextResults}
-                    isTooShort={contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2}
-                    isLoading={contextSearchQuery.isLoading}
-                    isError={contextSearchQuery.isError}
-                    shortLabel="Type at least two characters after the prefix."
-                    disabled={target === 'thread' && addContextMutation.isPending}
-                    onSelect={addContextFromSearchResult}
-                  />
-                </div>
+                <ContextAutocomplete
+                  anchorMode="inline-below-input"
+                  selectionMode="multi"
+                  groups={groupedContextResults}
+                  isTooShort={contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2}
+                  isLoading={contextSearchQuery.isLoading}
+                  isError={contextSearchQuery.isError}
+                  shortLabel="Type at least two characters after the prefix."
+                  disabled={target === 'thread' && addContextMutation.isPending}
+                  onDismiss={() => setDismissedContextQuery(contextQueryKey)}
+                  onSelect={addContextFromSearchResult}
+                />
               ) : null}
             </span>
           </span>
@@ -895,25 +864,39 @@ export default function RhizomePage() {
     const placeholder =
       mode === 'start' ? 'Project, task, plant, or open question...' : 'Search projects...'
     const results = query.data?.results ?? EMPTY_SEARCH_RESULTS
+    const dismissedFocusQuery =
+      mode === 'start' ? dismissedStartFocusQuery : dismissedSessionFocusQuery
+    const focusQueryKey = `${mode}:${term.trim()}`
+    const shouldShowAutocomplete =
+      !selected && term.trim().length > 0 && dismissedFocusQuery !== focusQueryKey
 
     function setSelected(context: FocusContext) {
       if (mode === 'start') {
         setStartFocusContext(context)
         setStartFocusTerm(context ? contextLabel(context) : '')
+        setDismissedStartFocusQuery('')
       } else {
         setSessionFocusContext(context)
         setSessionFocusTerm(context ? contextLabel(context) : '')
+        setDismissedSessionFocusQuery('')
       }
     }
 
     function setTerm(value: string) {
       if (mode === 'start') {
         setStartFocusContext(null)
+        setDismissedStartFocusQuery('')
         setStartFocusTerm(value)
       } else {
         setSessionFocusContext(null)
+        setDismissedSessionFocusQuery('')
         setSessionFocusTerm(value)
       }
+    }
+
+    function dismissFocusAutocomplete() {
+      if (mode === 'start') setDismissedStartFocusQuery(focusQueryKey)
+      else setDismissedSessionFocusQuery(focusQueryKey)
     }
 
     return (
@@ -921,30 +904,32 @@ export default function RhizomePage() {
         <label>
           <span>{label}</span>
           <div className={s.focusInputWrap}>
-            <Pin className={s.focusInputIcon} size={15} aria-hidden="true" />
-            {selected ? (
-              <span className={`${s.contextChip} ${contextTypeClass(selected.subject_type)}`}>
-                <em>{selected.subject_type}</em>
-                <span>{contextLabel(selected)}</span>
-                <button
-                  aria-label={`Clear ${label}`}
-                  type="button"
-                  onClick={() => setSelected(null)}
-                >
-                  <X size={12} />
-                </button>
-              </span>
-            ) : null}
-            <input
-              aria-label={label}
-              placeholder={selected ? 'Selected' : placeholder}
-              type="text"
-              value={selected ? '' : term}
-              onChange={(event) => setTerm(event.target.value)}
-            />
-            {!selected && term.trim().length > 0 ? (
-              <div className={s.focusAutocomplete}>
+            <span className={s.focusSearchAnchor}>
+              <Pin className={s.focusInputIcon} size={15} aria-hidden="true" />
+              {selected ? (
+                <span className={`${s.contextChip} ${contextTypeClass(selected.subject_type)}`}>
+                  <em>{selected.subject_type}</em>
+                  <span>{contextLabel(selected)}</span>
+                  <button
+                    aria-label={`Clear ${label}`}
+                    type="button"
+                    onClick={() => setSelected(null)}
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ) : null}
+              <input
+                aria-label={label}
+                placeholder={selected ? 'Selected' : placeholder}
+                type="text"
+                value={selected ? '' : term}
+                onChange={(event) => setTerm(event.target.value)}
+              />
+              {shouldShowAutocomplete ? (
                 <ContextAutocomplete
+                  anchorMode="inline-below-input"
+                  selectionMode="single"
                   groups={groupContextResults(results)}
                   isTooShort={term.trim().length < 2}
                   isLoading={query.isLoading}
@@ -952,10 +937,11 @@ export default function RhizomePage() {
                   loadingLabel="Searching focus"
                   errorLabel="Focus search is unavailable."
                   emptyLabel={mode === 'start' ? 'Use this as free-text focus.' : 'No projects found.'}
+                  onDismiss={dismissFocusAutocomplete}
                   onSelect={(result) => setSelected(contextFromSearchResult(result))}
                 />
-              </div>
-            ) : null}
+              ) : null}
+            </span>
           </div>
         </label>
       </div>
@@ -1599,6 +1585,7 @@ export default function RhizomePage() {
                   placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
                   value={draft}
                   onChange={(event) => {
+                    setDismissedComposerContextQuery('')
                     setDraft(event.target.value)
                     setComposerCursor(event.target.selectionStart ?? event.target.value.length)
                   }}
@@ -1612,9 +1599,13 @@ export default function RhizomePage() {
                     }
                   }}
                 />
-                {composerContextTrigger ? (
-                  <div
-                    className={s.composerKeywordAutocomplete}
+                {composerContextTrigger && dismissedComposerContextQuery !== composerContextQueryKey ? (
+                  <ContextAutocomplete
+                    anchorMode="textarea-token"
+                    selectionMode="multi"
+                    groups={groupedComposerContextResults}
+                    isLoading={composerContextQuery.isLoading}
+                    isError={composerContextQuery.isError}
                     style={
                       composerAutocompletePosition
                         ? {
@@ -1623,14 +1614,9 @@ export default function RhizomePage() {
                           }
                         : undefined
                     }
-                  >
-                    <ContextAutocomplete
-                      groups={groupedComposerContextResults}
-                      isLoading={composerContextQuery.isLoading}
-                      isError={composerContextQuery.isError}
-                      onSelect={addComposerContextFromSearchResult}
-                    />
-                  </div>
+                    onDismiss={() => setDismissedComposerContextQuery(composerContextQueryKey)}
+                    onSelect={addComposerContextFromSearchResult}
+                  />
                 ) : null}
               </div>
               <div className={s.composerControlRow}>
