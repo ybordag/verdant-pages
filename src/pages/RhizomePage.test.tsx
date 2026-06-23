@@ -14,6 +14,8 @@ const mocks = vi.hoisted(() => ({
   getThreadSessionContext: vi.fn(),
   getPendingInteraction: vi.fn(),
   getLatestWeather: vi.fn(),
+  getLatestTriage: vi.fn(),
+  listTasksDaily: vi.fn(),
   listThreads: vi.fn(),
   removeThreadContext: vi.fn(),
   search: vi.fn(),
@@ -42,6 +44,14 @@ vi.mock('@/lib/api/interactions', () => ({
 
 vi.mock('@/lib/api/weather', () => ({
   getLatestWeather: mocks.getLatestWeather,
+}))
+
+vi.mock('@/lib/api/triage', () => ({
+  getLatestTriage: mocks.getLatestTriage,
+}))
+
+vi.mock('@/lib/api/tasks', () => ({
+  listTasksDaily: mocks.listTasksDaily,
 }))
 
 vi.mock('@/lib/api/search', () => ({
@@ -147,6 +157,41 @@ describe('RhizomePage', () => {
       derived_impacts: [],
       recommended_actions: [],
     })
+    mocks.getLatestTriage.mockResolvedValue({
+      id: 'triage-1',
+      created_at: '2026-06-22T13:00:00Z',
+      reasoning_summary: 'Check tomatoes first.',
+      urgent_tasks: [
+        {
+          id: 'task-1',
+          project_id: 'project-1',
+          title: 'Check tomato leaves',
+          type: 'inspection',
+          status: 'pending',
+          priority: 'high',
+          estimated_minutes: 10,
+          is_user_modified: false,
+          created_at: '2026-06-22T13:00:00Z',
+          urgency: 'urgent',
+        },
+      ],
+      routine_tasks: [
+        {
+          id: 'task-2',
+          project_id: 'project-1',
+          title: 'Water porch basil',
+          type: 'watering',
+          status: 'pending',
+          priority: 'medium',
+          estimated_minutes: 5,
+          is_user_modified: false,
+          created_at: '2026-06-22T13:00:00Z',
+          urgency: 'routine',
+        },
+      ],
+      project_tasks: [],
+    })
+    mocks.listTasksDaily.mockResolvedValue([])
     mocks.getThreadMessages.mockResolvedValue({
       thread_id: 'thread-1',
       messages: [
@@ -257,6 +302,19 @@ describe('RhizomePage', () => {
     expect(screen.getByRole('link', { name: /Rosemary container plan/i })).toHaveAttribute(
       'href',
       '/app/rhizome/thread-4',
+    )
+  })
+
+  it('renders today shortlist and seeds the composer from a task', async () => {
+    const user = userEvent.setup()
+    renderRhizome()
+
+    expect(await screen.findByLabelText("Today's task shortlist")).toBeInTheDocument()
+    expect(await screen.findByText('From latest triage')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Check tomato leaves/i }))
+
+    expect(screen.getByLabelText('Message Rhizome')).toHaveValue(
+      'Can you help me handle this task today: Check tomato leaves?',
     )
   })
 

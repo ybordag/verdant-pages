@@ -39,6 +39,8 @@ import {
 } from '@/lib/api/chat'
 import { getPendingInteraction } from '@/lib/api/interactions'
 import { search } from '@/lib/api/search'
+import { listTasksDaily } from '@/lib/api/tasks'
+import { getLatestTriage } from '@/lib/api/triage'
 import { getLatestWeather } from '@/lib/api/weather'
 import { useAuth } from '@/lib/auth/context'
 import type {
@@ -47,6 +49,7 @@ import type {
   InteractionEnvelopeView,
   SearchResultItemView,
   SessionContextView,
+  TaskSummaryView,
   ThreadMessageView,
   ThreadView,
   UpdateSessionContextRequest,
@@ -385,6 +388,29 @@ function dateLabel(value?: string): string | null {
   }).format(date)
 }
 
+function taskMeta(task: TaskSummaryView): string {
+  return [task.urgency ?? task.priority, task.status, task.estimated_minutes ? `${task.estimated_minutes} min` : null]
+    .filter(Boolean)
+    .join(' · ')
+}
+
+function shortlistFromTriage(tasks?: {
+  urgent_tasks: TaskSummaryView[]
+  routine_tasks: TaskSummaryView[]
+  project_tasks: TaskSummaryView[]
+} | null): TaskSummaryView[] {
+  if (!tasks) return []
+  const seen = new Set<string>()
+  const shortlist: TaskSummaryView[] = []
+  for (const task of [...tasks.urgent_tasks, ...tasks.routine_tasks, ...tasks.project_tasks]) {
+    if (seen.has(task.id)) continue
+    seen.add(task.id)
+    shortlist.push(task)
+    if (shortlist.length === 3) break
+  }
+  return shortlist
+}
+
 export default function RhizomePage() {
   const { threadId } = useParams()
   const navigate = useNavigate()
@@ -457,6 +483,16 @@ export default function RhizomePage() {
   const blankWeatherQuery = useQuery({
     queryKey: ['weather', 'latest', 'rhizome-start'],
     queryFn: getLatestWeather,
+    enabled: isNewThread,
+  })
+  const latestTriageQuery = useQuery({
+    queryKey: ['triage', 'latest', 'rhizome-start'],
+    queryFn: getLatestTriage,
+    enabled: isNewThread,
+  })
+  const dailyTasksQuery = useQuery({
+    queryKey: ['tasks', 'daily', 'rhizome-start', { limit: 3 }],
+    queryFn: () => listTasksDaily({ limit: 3 }),
     enabled: isNewThread,
   })
   const parsedContextSearch = parseContextSearchTerm(contextSearchTerm)
@@ -551,6 +587,8 @@ export default function RhizomePage() {
   const currentModelOptions =
     currentModelValue === 'current' ? [{ value: currentModelValue, label: currentModelLabel }] : []
   const blankWeather = blankWeatherQuery.data
+  const triageShortlist = shortlistFromTriage(latestTriageQuery.data)
+  const todayShortlist = triageShortlist.length > 0 ? triageShortlist : (dailyTasksQuery.data ?? []).slice(0, 3)
   const weatherKind = weatherIconKind(blankWeather?.conditions_summary, blankWeather?.alerts_summary)
   const weatherRain = firstWeatherMetric(blankWeather?.conditions_summary, /rain\s+([0-9]+(?:\.[0-9]+)?mm)/i)
   const weatherWind = firstWeatherMetric(blankWeather?.conditions_summary, /wind\s+([0-9]+(?:\.[0-9]+)?)/i)
@@ -644,6 +682,12 @@ export default function RhizomePage() {
     }
     setDraft(prompts[kind])
     setComposerCursor(prompts[kind].length)
+  }
+
+  function setTaskStarterDraft(task: TaskSummaryView) {
+    const prompt = `Can you help me handle this task today: ${task.title}?`
+    setDraft(prompt)
+    setComposerCursor(prompt.length)
   }
 
   function startThreadContextText(): string | null {
@@ -1486,6 +1530,35 @@ export default function RhizomePage() {
                     </button>
                   </div>
                 </div>
+                {todayShortlist.length > 0 ? (
+                  <section className={s.todayShortlist} aria-label="Today's task shortlist">
+                    <div className={s.shortlistHeader}>
+                      <span>Today shortlist</span>
+                      <small>
+                        {triageShortlist.length > 0 ? 'From latest triage' : 'From daily tasks'}
+                      </small>
+                    </div>
+                    <div className={s.shortlistRows}>
+                      {todayShortlist.map((task) => (
+                        <button
+                          key={task.id}
+                          type="button"
+                          onClick={() => setTaskStarterDraft(task)}
+                        >
+                          <strong>{task.title}</strong>
+                          <small>{taskMeta(task)}</small>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                ) : latestTriageQuery.isLoading || dailyTasksQuery.isLoading ? (
+                  <section className={s.todayShortlist} aria-label="Today's task shortlist">
+                    <div className={s.shortlistHeader}>
+                      <span>Today shortlist</span>
+                      <small>Loading</small>
+                    </div>
+                  </section>
+                ) : null}
                 {recentThreads.length > 0 ? (
                   <div className={s.recentThreads} aria-label="Recent thread shortcuts">
                     {recentThreads.map((thread) => (
