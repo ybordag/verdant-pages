@@ -153,6 +153,10 @@ function contextLabel(context: ContextObject): string {
   return `${titleCase(context.subject_type)} ${context.subject_id}`
 }
 
+function contextKey(context: Pick<ContextObject, 'subject_type' | 'subject_id'>): string {
+  return `${context.subject_type}:${context.subject_id}`
+}
+
 function contextTypeClass(type: string): string {
   switch (type) {
     case 'plant':
@@ -368,24 +372,29 @@ export default function RhizomePage() {
   const currentModelValue = currentModelLabel === 'Model not set' ? '' : 'current'
   const currentModelOptions =
     currentModelValue === 'current' ? [{ value: currentModelValue, label: currentModelLabel }] : []
+  const activeContextSearchItems = activeContextTarget === 'thread' ? pinnedContext : messageContext
   const groupedContextResults = useMemo(() => {
+    const existingContext = new Set(activeContextSearchItems.map(contextKey))
     const groups = new Map<string, SearchResultItemView[]>()
     for (const result of contextSearchQuery.data?.results ?? EMPTY_SEARCH_RESULTS) {
+      if (existingContext.has(contextKey(result))) continue
       const items = groups.get(result.subject_type) ?? []
       items.push(result)
       groups.set(result.subject_type, items)
     }
     return Array.from(groups.entries())
-  }, [contextSearchQuery.data?.results])
+  }, [activeContextSearchItems, contextSearchQuery.data?.results])
   const groupedComposerContextResults = useMemo(() => {
+    const existingContext = new Set([...pinnedContext, ...messageContext].map(contextKey))
     const groups = new Map<string, SearchResultItemView[]>()
     for (const result of composerContextQuery.data?.results ?? EMPTY_SEARCH_RESULTS) {
+      if (existingContext.has(contextKey(result))) continue
       const items = groups.get(result.subject_type) ?? []
       items.push(result)
       groups.set(result.subject_type, items)
     }
     return Array.from(groups.entries())
-  }, [composerContextQuery.data?.results])
+  }, [composerContextQuery.data?.results, messageContext, pinnedContext])
 
   useEffect(() => {
     return () => streamControllerRef.current?.abort()

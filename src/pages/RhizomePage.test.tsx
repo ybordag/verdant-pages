@@ -499,6 +499,23 @@ describe('RhizomePage', () => {
 
   it('adds message context from composer keyword notation', async () => {
     const user = userEvent.setup()
+    mocks.search.mockResolvedValue({
+      results: [
+        {
+          subject_type: 'plant',
+          subject_id: 'plant-1',
+          label: 'Cherry Tomato (Sungold)',
+          secondary_label: 'growbag_1',
+        },
+        {
+          subject_type: 'plant',
+          subject_id: 'plant-2',
+          label: 'Cherry Tomato (Sungold)',
+          secondary_label: 'growbag_2',
+        },
+      ],
+      by_type: { plant: 2 },
+    })
     renderRhizome('/app/rhizome/thread-1')
 
     const composer = screen.getByLabelText('Message Rhizome')
@@ -507,11 +524,16 @@ describe('RhizomePage', () => {
       expect(mocks.search).toHaveBeenLastCalledWith({ q: 'tom', types: 'plant', limit: 8 }),
     )
 
-    await user.click(await screen.findByRole('button', { name: /Cherry Tomato/i }))
+    await user.click(await screen.findByRole('button', { name: /growbag_1/i }))
 
-    expect(await screen.findByText('Cherry Tomato')).toBeInTheDocument()
+    expect(await screen.findByText('Cherry Tomato (Sungold)')).toBeInTheDocument()
     expect(composer).toHaveValue('Can you check')
     expect(mocks.addThreadContext).not.toHaveBeenCalled()
+
+    await user.type(composer, ' plant:tom')
+
+    expect(await screen.findByRole('button', { name: /growbag_2/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /growbag_1/i })).not.toBeInTheDocument()
   })
 
   it('adds local message context without sending it as thread context', async () => {
