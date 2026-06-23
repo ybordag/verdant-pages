@@ -1136,19 +1136,6 @@ export default function RhizomePage() {
 
   return (
     <main className={s.page}>
-      <header className={s.pageHeader}>
-        <div>
-          <p className={s.eyebrow}>Agent workbench</p>
-          <h1 className={s.title}>
-            Ask <span>Rhizome</span>
-          </h1>
-        </div>
-        <Button size="sm" type="button" onClick={() => navigate('/app/rhizome')}>
-          <Plus size={14} />
-          New
-        </Button>
-      </header>
-
       <section
         className={[
           s.workbench,
@@ -1246,6 +1233,23 @@ export default function RhizomePage() {
                   {threadTitle(activeThread)}
                 </button>
               )}
+            </div>
+            <div className={s.topbarActions}>
+              {hasPendingReviews ? (
+                <button
+                  aria-label="Open pending reviews"
+                  className={s.compactReviewButton}
+                  type="button"
+                  onClick={() => setReviewsPanelOpen(true)}
+                >
+                  <span>Review</span>
+                  <strong>{pendingReviewCount}</strong>
+                </button>
+              ) : null}
+              <Button size="sm" type="button" onClick={() => navigate('/app/rhizome')}>
+                <Plus size={14} />
+                New
+              </Button>
             </div>
           </header>
 
@@ -1400,17 +1404,6 @@ export default function RhizomePage() {
                   {sessionContextQuery.isLoading ? 'Loading' : sessionFocusLabel(sessionContext)}
                 </strong>
               </button>
-              {hasPendingReviews ? (
-                <button
-                  aria-label="Open pending reviews"
-                  className={s.reviewButton}
-                  type="button"
-                  onClick={() => setReviewsPanelOpen(true)}
-                >
-                  <span>Review</span>
-                  <strong>{pendingReviewCount}</strong>
-                </button>
-              ) : null}
             </div>
           ) : null}
 
@@ -1432,6 +1425,13 @@ export default function RhizomePage() {
               <div className={s.emptyChat}>This thread could not load.</div>
             ) : isNewThread ? (
               <div className={[s.emptyChat, s.startThreadState].join(' ')}>
+                <section className={s.scrollHero} aria-label="Rhizome introduction">
+                  <p className={s.eyebrow}>Agent workbench</p>
+                  <h1 className={s.title}>
+                    Ask <span>Rhizome</span>
+                  </h1>
+                  <p>Garden planning, triage, approvals, and day-to-day care decisions.</p>
+                </section>
                 <section className={s.startPanel} aria-label="Start a Rhizome thread">
                   <div className={s.startCardGrid}>
                     <article className={s.startContextCard}>

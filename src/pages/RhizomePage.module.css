@@ -48,7 +48,7 @@
   position: relative;
   display: block;
   width: 100%;
-  height: calc(100vh - 128px);
+  height: calc(100vh - 36px);
   min-height: 560px;
   min-width: 0;
   overflow: hidden;
@@ -419,6 +419,37 @@
   line-height: 1.15;
 }
 
+.topbarActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.compactReviewButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--clay);
+  border-radius: var(--radius-soft);
+  background: rgb(var(--clay-rgb) / 0.14);
+  color: var(--clay);
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 900;
+  padding: 7px 9px;
+  text-transform: uppercase;
+}
+
+.compactReviewButton:hover {
+  background: var(--clay);
+  color: var(--vellum-white);
+}
+
+.compactReviewButton strong {
+  color: currentColor;
+}
+
 .threadTitleButton {
   display: inline-flex;
   max-width: min(56vw, 520px);
@@ -546,7 +577,7 @@
 
 .sessionStrip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   border-top: 1px solid var(--clay);
   border-bottom: 1px solid var(--clay);
@@ -769,6 +800,21 @@ button.sessionCard:disabled {
   justify-content: flex-start;
   gap: 18px;
   padding: 18px;
+}
+
+.scrollHero {
+  display: grid;
+  width: min(1160px, 100%);
+  gap: 4px;
+  padding: 4px 2px 2px;
+  text-align: left;
+}
+
+.scrollHero p:last-child {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .startPanel {
