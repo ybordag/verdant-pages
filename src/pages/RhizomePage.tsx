@@ -189,8 +189,6 @@ function firstWeatherMetric(summary: string | undefined, pattern: RegExp): strin
 
 function weatherTemperatureLabel(summary?: string): string {
   const high = firstWeatherMetric(summary, /high\s+([0-9.]+)F-equivalent/i)
-  const low = firstWeatherMetric(summary, /low\s+([0-9.]+)F-equivalent/i)
-  if (high && low) return `${Math.round(Number(high))}° / ${Math.round(Number(low))}°`
   if (high) return `${Math.round(Number(high))}°`
   return '--'
 }
@@ -490,8 +488,6 @@ export default function RhizomePage() {
   const weatherKind = weatherIconKind(blankWeather?.conditions_summary, blankWeather?.alerts_summary)
   const weatherRain = firstWeatherMetric(blankWeather?.conditions_summary, /rain\s+([0-9]+(?:\.[0-9]+)?mm)/i)
   const weatherWind = firstWeatherMetric(blankWeather?.conditions_summary, /wind\s+([0-9]+(?:\.[0-9]+)?)/i)
-  const canUseStartSessionContext =
-    Boolean(startThreadDraft.time_today.trim()) || Boolean(startThreadDraft.energy.trim())
   const activeContextSearchItems = activeContextTarget === 'thread' ? pinnedContext : messageContext
   const groupedContextResults = useMemo(() => {
     const existingContext = new Set(activeContextSearchItems.map(contextKey))
@@ -572,17 +568,19 @@ export default function RhizomePage() {
     setComposerCursor(prompts[kind].length)
   }
 
-  function useStartSessionContext() {
+  function startThreadContextText(): string | null {
     const details = [
       startThreadDraft.time_today.trim()
         ? `I have ${startThreadDraft.time_today.trim()}`
         : null,
       startThreadDraft.energy.trim() ? `my energy is ${startThreadDraft.energy.trim()}` : null,
     ].filter(Boolean)
-    if (details.length === 0) return
-    const sentence = `For this thread, ${details.join(', ')}.`
-    setDraft((current) => (current.trim() ? `${sentence}\n\n${current}` : `${sentence}\n\n`))
-    setComposerCursor(sentence.length + 2)
+    return details.length > 0 ? `For this thread, ${details.join(', ')}.` : null
+  }
+
+  function messageWithStartContext(message: string): string {
+    const contextText = isNewThread ? startThreadContextText() : null
+    return contextText ? `${contextText}\n\n${message}` : message
   }
 
   function updateThreadContextCache(context: ContextObject, mode: 'add' | 'remove') {
@@ -847,6 +845,7 @@ export default function RhizomePage() {
     if (!message || isStreaming) return
 
     let targetThreadId = threadId
+    const outboundMessage = messageWithStartContext(message)
     const controller = new AbortController()
     streamControllerRef.current?.abort()
     streamControllerRef.current = controller
@@ -872,7 +871,7 @@ export default function RhizomePage() {
       let responseText = ''
       let sawDone = false
       let sawInteraction = false
-      for await (const event of streamChat(targetThreadId, message, controller.signal)) {
+      for await (const event of streamChat(targetThreadId, outboundMessage, controller.signal)) {
         if (event.type === 'token') {
           responseText += event.content
           setStreamingText(responseText)
@@ -1262,13 +1261,6 @@ export default function RhizomePage() {
                           }
                         />
                       </label>
-                      <button
-                        type="button"
-                        disabled={!canUseStartSessionContext}
-                        onClick={useStartSessionContext}
-                      >
-                        Use this for this thread
-                      </button>
                     </article>
 
                     <article className={s.weatherStartCard}>

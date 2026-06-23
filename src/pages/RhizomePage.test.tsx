@@ -219,7 +219,7 @@ describe('RhizomePage', () => {
     expect(await screen.findByText('Before we start')).toBeInTheDocument()
     expect(screen.getByText('Start a thread when you are ready.')).toBeInTheDocument()
     expect(screen.queryByLabelText('Session context')).not.toBeInTheDocument()
-    expect(await screen.findByText('78° / 58° F')).toBeInTheDocument()
+    expect(await screen.findByText('78° F')).toBeInTheDocument()
     expect(await screen.findByText('0.0mm')).toBeInTheDocument()
     expect(await screen.findByText('10.0 mph')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Browse threads' }))
@@ -267,8 +267,10 @@ describe('RhizomePage', () => {
     expect(await screen.findByText('Start a thread when you are ready.')).toBeInTheDocument()
   })
 
-  it('uses blank-thread starter controls to prepare the composer', async () => {
+  it('sends blank-thread starter context without changing the visible composer message', async () => {
     const user = userEvent.setup()
+    mocks.listThreads.mockResolvedValue([])
+    mocks.getThreadMessages.mockResolvedValue({ thread_id: 'thread-new', messages: [] })
     renderRhizome()
 
     await user.click(await screen.findByRole('button', { name: 'Plan' }))
@@ -279,11 +281,19 @@ describe('RhizomePage', () => {
     await user.clear(screen.getByLabelText('Start time today'))
     await user.type(screen.getByLabelText('Start time today'), '20 minutes')
     await user.type(screen.getByLabelText('Start energy'), 'low but focused')
-    await user.click(screen.getByRole('button', { name: 'Use this for this thread' }))
+    expect(screen.queryByText(/For this thread/)).not.toBeInTheDocument()
 
-    expect(screen.getByLabelText('Message Rhizome')).toHaveValue(
-      'For this thread, I have 20 minutes, my energy is low but focused.\n\nHelp me plan the next useful step for my garden today.',
+    await user.click(screen.getByRole('button', { name: 'Send' }))
+
+    await waitFor(() =>
+      expect(mocks.streamChat).toHaveBeenCalledWith(
+        'thread-new',
+        'For this thread, I have 20 minutes, my energy is low but focused.\n\nHelp me plan the next useful step for my garden today.',
+        expect.any(AbortSignal),
+      ),
     )
+    expect(await screen.findByText('Help me plan the next useful step for my garden today.')).toBeInTheDocument()
+    expect(screen.queryByText(/For this thread, I have 20 minutes/)).not.toBeInTheDocument()
   })
 
   it('uses the selected thread from the recent-thread list', async () => {

@@ -769,8 +769,7 @@ button.sessionCard:disabled {
   justify-content: center;
 }
 
-.startChips button,
-.startContextCard button {
+.startChips button {
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
   background: transparent;
@@ -794,8 +793,7 @@ button.sessionCard:disabled {
   color: var(--chartreuse-deep);
 }
 
-.startChips button:hover,
-.startContextCard button:hover:not(:disabled) {
+.startChips button:hover {
   border-color: var(--nav-accent);
   color: var(--text-primary);
 }
@@ -834,19 +832,6 @@ button.sessionCard:disabled {
   font: inherit;
   font-size: 12px;
   padding: 4px 7px;
-}
-
-.startContextCard button {
-  justify-self: start;
-  margin-top: 2px;
-  border-color: var(--clay);
-  background: var(--clay);
-  color: var(--vellum-white);
-}
-
-.startContextCard button:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
 }
 
 .weatherStartCard,
