@@ -1,6 +1,6 @@
 # Agent — Rhizome Chat
 
-**Last updated:** 2026-06-22
+**Last updated:** 2026-06-23
 
 ## Pages in this group
 
@@ -13,36 +13,62 @@
 
 ## Layout
 
-Three vertical regions:
+Rhizome is a workspace canvas rather than a card embedded inside a page. The app nav stays fixed, the Rhizome thread header stays visible, the conversation scrolls in the center, and the composer is anchored at the bottom.
 
 ```
-┌──────────────────────────────────────────────────────────────┬──────────────┐
-│  TOPBAR: "June 14, 2026 · Saturday"  [Model ▾] [New         │              │
-│          Incident] [Run Triage] [New Thread]                 │              │
-├──────────────────────────────────────────────────────────────┤  INTERACTION │
-│  SESSION STRIP                                               │  PANEL       │
-│  Startup intake: Time 45min · Energy Medium · Focus Seeds   │  (open when  │
-│  System status: Weather snapshot · 3 pending reviews        │  pending     │
-├──────────────────────────────────────────────────────────────┤  interactions│
-│  CHAT THREAD                                                 │              │
-│  (scrollable, dot-grid background)                           │              │
-│                                                              │              │
-├──────────────────────────────────────────────────────────────┤              │
-│  COMPOSER: [+] context tray + "Ask Rhizome..."  [Send]       │              │
-└──────────────────────────────────────────────────────────────┴──────────────┘
+┌────────────────────────────────────────────────────────────────────────────┐
+│  RHIZOME HEADER: Ask Rhizome / thread title      [Model ▾] [Review 3]     │
+├────────────────────────────────────────────────────────────────────────────┤
+│  CONVERSATION SCROLL AREA                                                 │
+│  Blank-thread intro cards scroll away as messages accumulate              │
+│  Active messages scroll here on the dot-grid journal background           │
+│                                                                            │
+│                                                                            │
+├────────────────────────────────────────────────────────────────────────────┤
+│  ANCHORED COMPOSER: context buttons + textarea + model/send controls       │
+└────────────────────────────────────────────────────────────────────────────┘
+
+Optional light drawers slide over or resize the workspace:
+
+┌──────────────┬───────────────────────────────────────────────┬──────────────┐
+│ Threads      │ Conversation                                  │ Review drawer│
+│ drawer       │                                               │ context /    │
+│              │                                               │ alerts /     │
+│              │                                               │ approvals    │
+└──────────────┴───────────────────────────────────────────────┴──────────────┘
 ```
 
 ---
 
-## Session strip
+## Workspace header and scroll behavior
 
-A persistent narrow strip at the top of the chat area (below the topbar) showing the session context that Rhizome loaded at startup.
+The thread header is sticky. It should remain visible while the conversation scrolls and may collapse from the large display treatment into a compact bar once the user scrolls down. It owns:
 
-**Left — Startup intake:** Rhizome should expose structured session context values for time available, energy, and thread focus. Verdant shows Time and Energy as free-text starter fields because those values are most useful as user language on the first turn. Focus is a single thread-level anchor: on a blank thread it supports free text or a selected garden object, and Verdant includes that focus in the hidden first-send context. On an active thread, persisted Focus is currently project-backed because the dedicated session-context patch contract accepts `focus_project_id`; broader durable focus refs require a future API expansion.
+- current thread title or `Ask Rhizome`
+- compact thread navigator trigger
+- read-only model selector for now
+- review/context/alert drawer triggers with counts when available
+- quick actions only when they remain compact enough not to crowd the header
 
-Current backend note: rhizome#146 is complete and Cambium now proxies `GET/PATCH /api/v1/threads/{id}/session-context`. Verdant should use the dedicated `SessionContextView` endpoint for SessionStrip display/edit flows. `ThreadView.session_context`, when present on thread metadata, is Rhizome's raw stored JSON and is not the frontend display/edit contract.
+The body scroll belongs to the conversation region, not the entire page. The app nav and composer stay anchored. The user should not be able to scroll the composer off screen or lose the active thread identity.
 
-**Right — System status:** Weather snapshot timestamp, count of pending reviews needing approval. Clicking the review count jumps to the interaction panel.
+The blank-thread intro cards live inside the conversation scroll area. They sit above the "Start a thread when you are ready" prompt and naturally scroll away as the thread fills with messages.
+
+---
+
+## Start-thread cards
+
+`/app/rhizome` and blank new threads show compact cards at the top of the conversation scroll area:
+
+**Before we start** — free-text fields for time today and energy. Verdant reads these values when sending the first message and includes them as first-turn context. There is no separate submit button for this card.
+
+**Weather** — a compact current-weather card: title, observation time, large weather icon plus current temperature, then small precipitation/wind/location facts along the bottom. Forecast highs/lows do not belong in the primary temperature slot.
+
+**Focus / today context** — a thread focus card. Focus is durable intent for this conversation, not just another pinned context chip. It can be free text or a selected task/project/plant/etc. Durable non-project focus refs require a future API expansion; until then, Verdant should keep selected non-project focus as first-turn context rather than pretending it is persisted.
+
+**Today shortlist** — optional compact list of up to three urgent/routine tasks from triage or tasks. This should help the user start a useful conversation without turning Rhizome into a second Today dashboard. Each row can seed the composer or open the context drawer.
+
+Current backend note: rhizome#146 is complete and Cambium now proxies `GET/PATCH /api/v1/threads/{id}/session-context`. Verdant should use the dedicated `SessionContextView` endpoint for active-thread display/edit flows. `ThreadView.session_context`, when present on thread metadata, is Rhizome's raw stored JSON and is not the frontend display/edit contract.
 
 ---
 
@@ -50,11 +76,13 @@ Current backend note: rhizome#146 is complete and Cambium now proxies `GET/PATCH
 
 `/app/rhizome` without a `threadId` is a thread home, not a silently auto-created conversation.
 
-**No threads yet:** show a blank new-thread state with the composer centered in the chat area, a short empty-state line, and a primary "Start new thread" action. Sending the first message creates the thread, streams the response, and navigates to `/app/rhizome/:threadId`.
+**No threads yet:** show the start-thread cards, a compact prompt, starter chips, and the anchored composer. Sending the first message creates the thread, streams the response, and navigates to `/app/rhizome/:threadId`.
 
 **Existing threads:** show a scrollable recent-thread list plus a new-thread entrypoint. The list uses `GET /api/v1/threads?limit=20`, sorted by `last_active_at`, and each row shows thread name, last activity, and a short preview if available. Selecting a thread navigates to `/app/rhizome/:threadId`; "New thread" switches to the blank composer state without creating anything until the user sends.
 
-The active thread page (`/app/rhizome/:threadId`) keeps a compact thread switcher in the topbar so the user can move between conversations without leaving the workbench.
+The active thread page (`/app/rhizome/:threadId`) keeps a compact thread switcher in the sticky header so the user can move between conversations without leaving the workbench.
+
+The full thread list belongs in a light left drawer. When closed, it leaves no narrow residual column behind.
 
 ---
 
@@ -94,7 +122,7 @@ Future polish:
 
 ## Chat thread
 
-The main conversation area. Dot-grid background matching the v2 prototype.
+The main conversation area. Dot-grid background matching the v2 prototype, visually embedded into the page rather than contained in a heavy card. Message bubbles remain opaque so the dot grid never runs through text.
 
 **Message bubbles:**
 - User messages: right-aligned, clay accent left border
@@ -112,13 +140,11 @@ The main conversation area. Dot-grid background matching the v2 prototype.
 
 ## Composer
 
-A `<textarea>` at the bottom. Enter sends (Shift+Enter newline). "Send" button becomes active when input is non-empty.
+A `<textarea>` anchored at the bottom of the workspace. Enter sends (Shift+Enter newline). "Send" button becomes active when input is non-empty.
 
 Placeholder: *"Ask Rhizome about tasks, plants, projects, weather, or incidents…"*
 
-Status line below: zone + model indicator ("Zone 9b · Rhizome is listening").
-
-**Model selector:** A compact selector belongs in the topbar, not the composer. It shows provider + model from `GET /auth/session` (`preferred_provider`, `preferred_model`) and saves changes through `PATCH /auth/profile` when cambium#20 lands. Until that endpoint exists, render the current provider/model as read-only with a disabled selector affordance and a tooltip.
+**Model selector:** A compact selector belongs in the persistent controls, currently in the composer control row so it stays available when the large header scrolls/collapses. It shows provider + model from `GET /auth/session` (`preferred_provider`, `preferred_model`) and saves changes through `PATCH /auth/profile` when cambium#20 lands. Until that endpoint exists, render the current provider/model as read-only with a disabled selector affordance and a tooltip.
 
 **Context controls:** The composer control row owns two context controls: `+` for message context and pin for thread context. The old standalone context strip/modal is deprecated.
 
@@ -135,11 +161,25 @@ Phase 5b now implements the first-pass workbench path: the Send button enables w
 
 ---
 
-## Interaction panel (right, slides open)
+## Right drawer: reviews, alerts, and context
 
-Opens automatically when the stream delivers an `{ type: "interaction" }` event. Closed when no pending interactions exist.
+The right side is a light drawer, not a permanently reserved column. It opens when there is something to review, when the user clicks a review/alert/context trigger, or when the user clicks an object reference. When closed, it leaves no residual rail.
 
-Phase 5b implementation note: Verdant currently consumes the pending-interaction API as a single `InteractionEnvelopeView | null` because that is the available client contract. The panel renders the active interaction and action buttons now; the "pending list" queue affordance remains a 5c polish item unless the API exposes multiple simultaneous pending interactions.
+The drawer has three conceptual modes:
+
+**Reviews / approvals** — state-changing Rhizome proposals that need a user decision. Examples: weather-driven task deferral, treatment plan approval, proposal acceptance, profile update, incident creation, plant batch update. These use structured cards with approve/reject/request-revision actions.
+
+**Alerts** — important information that does not itself require approval. Examples: weather warning, blocked task, overdue task, failed tool/action, missing garden profile, incident escalation. Alerts can link to reviews when an action is proposed, or to context when the user needs to inspect an object.
+
+**Context inspector** — read-only preview of an object the user or Rhizome referenced: plant, task, project, incident, batch, bed, container, weather snapshot, or alert. Actions are contextual, not approval decisions: add to message context, pin to thread, ask Rhizome about this, or open the full page.
+
+Context, alerts, and approvals should not look identical:
+
+- Context uses object colors and neutral reference styling.
+- Alerts use attention styling, with clay/buttercup depending severity.
+- Approvals use formal review cards with clear decision actions.
+
+Phase 5b implementation note: Verdant currently consumes the pending-interaction API as a single `InteractionEnvelopeView | null` because that is the available client contract. The panel renders the active interaction and action buttons now; queue affordances and full context/alert inspector behavior are follow-up work unless the backend exposes the needed lists/details.
 
 **Panel header:** "Current interaction" label, interaction title, brief description.
 
