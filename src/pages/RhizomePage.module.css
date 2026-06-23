@@ -406,10 +406,60 @@
 }
 
 .topbar {
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   border-bottom: 1px solid var(--line);
   background: var(--bg);
-  padding: 14px 16px;
+  padding: 18px 26px 12px;
+  transition:
+    gap 0.18s ease,
+    padding 0.18s ease;
+}
+
+.workspaceHeaderRow,
+.threadHeaderRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+}
+
+.workspaceIdentity {
+  min-width: 0;
+}
+
+.workspaceSubtitle {
+  margin: 5px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.35;
+  transition:
+    margin 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.threadHeaderRow {
+  align-items: flex-end;
+  padding-top: 2px;
+}
+
+.topbarCollapsed {
+  gap: 7px;
+  padding-block: 10px;
+}
+
+.topbarCollapsed .title {
+  font-size: clamp(26px, 2.6vw, 34px);
+}
+
+.topbarCollapsed .workspaceSubtitle {
+  overflow: hidden;
+  max-height: 0;
+  margin-top: 0;
+  opacity: 0;
 }
 
 .topbar h2 {
@@ -422,6 +472,7 @@
 .topbarActions {
   display: inline-flex;
   align-items: center;
+  flex: 0 0 auto;
   gap: 8px;
 }
 

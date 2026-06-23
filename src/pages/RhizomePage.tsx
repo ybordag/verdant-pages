@@ -448,6 +448,7 @@ export default function RhizomePage() {
   const [dismissedComposerContextQuery, setDismissedComposerContextQuery] = useState('')
   const [composerAutocompletePosition, setComposerAutocompletePosition] =
     useState<ComposerAutocompletePosition | null>(null)
+  const [workspaceHeaderCollapsed, setWorkspaceHeaderCollapsed] = useState(false)
   const streamControllerRef = useRef<AbortController | null>(null)
   const composerTextAreaWrapRef = useRef<HTMLDivElement | null>(null)
 
@@ -619,6 +620,10 @@ export default function RhizomePage() {
   useEffect(() => {
     return () => streamControllerRef.current?.abort()
   }, [])
+
+  useEffect(() => {
+    setWorkspaceHeaderCollapsed(false)
+  }, [threadId])
 
   useLayoutEffect(() => {
     if (!composerContextTrigger) {
@@ -1219,37 +1224,55 @@ export default function RhizomePage() {
         ) : null}
 
         <section className={s.conversationWorkspace} aria-label="Conversation with Rhizome">
-          <header className={s.topbar}>
-            <div>
-              <p className={s.eyebrow}>{isNewThread ? 'New conversation' : 'Active thread'}</p>
-              {isNewThread ? (
-                <h2>Blank thread</h2>
-              ) : (
-                <button
-                  className={s.threadTitleButton}
-                  type="button"
-                  onClick={() => setThreadsPanelOpen(true)}
-                >
-                  {threadTitle(activeThread)}
-                </button>
-              )}
+          <header
+            className={[
+              s.topbar,
+              workspaceHeaderCollapsed ? s.topbarCollapsed : '',
+            ].join(' ')}
+          >
+            <div className={s.workspaceHeaderRow}>
+              <div className={s.workspaceIdentity}>
+                <p className={s.eyebrow}>Agent workbench</p>
+                <h1 className={s.title}>
+                  Ask <span>Rhizome</span>
+                </h1>
+                <p className={s.workspaceSubtitle}>
+                  Garden planning, triage, approvals, and day-to-day care decisions.
+                </p>
+              </div>
+              <div className={s.topbarActions}>
+                {hasPendingReviews ? (
+                  <button
+                    aria-label="Open pending reviews"
+                    className={s.compactReviewButton}
+                    type="button"
+                    onClick={() => setReviewsPanelOpen(true)}
+                  >
+                    <span>Review</span>
+                    <strong>{pendingReviewCount}</strong>
+                  </button>
+                ) : null}
+                <Button size="sm" type="button" onClick={() => navigate('/app/rhizome')}>
+                  <Plus size={14} />
+                  New
+                </Button>
+              </div>
             </div>
-            <div className={s.topbarActions}>
-              {hasPendingReviews ? (
-                <button
-                  aria-label="Open pending reviews"
-                  className={s.compactReviewButton}
-                  type="button"
-                  onClick={() => setReviewsPanelOpen(true)}
-                >
-                  <span>Review</span>
-                  <strong>{pendingReviewCount}</strong>
-                </button>
-              ) : null}
-              <Button size="sm" type="button" onClick={() => navigate('/app/rhizome')}>
-                <Plus size={14} />
-                New
-              </Button>
+            <div className={s.threadHeaderRow}>
+              <div>
+                <p className={s.eyebrow}>{isNewThread ? 'New conversation' : 'Active thread'}</p>
+                {isNewThread ? (
+                  <h2>Blank thread</h2>
+                ) : (
+                  <button
+                    className={s.threadTitleButton}
+                    type="button"
+                    onClick={() => setThreadsPanelOpen(true)}
+                  >
+                    {threadTitle(activeThread)}
+                  </button>
+                )}
+              </div>
             </div>
           </header>
 
@@ -1418,20 +1441,16 @@ export default function RhizomePage() {
             </div>
           ) : null}
 
-          <div className={s.threadBody}>
+          <div
+            className={s.threadBody}
+            onScroll={(event) => setWorkspaceHeaderCollapsed(event.currentTarget.scrollTop > 24)}
+          >
             {threadId && activeThreadQuery.isLoading ? (
               <div className={s.emptyChat}>Loading thread</div>
             ) : threadId && activeThreadQuery.isError ? (
               <div className={s.emptyChat}>This thread could not load.</div>
             ) : isNewThread ? (
               <div className={[s.emptyChat, s.startThreadState].join(' ')}>
-                <section className={s.scrollHero} aria-label="Rhizome introduction">
-                  <p className={s.eyebrow}>Agent workbench</p>
-                  <h1 className={s.title}>
-                    Ask <span>Rhizome</span>
-                  </h1>
-                  <p>Garden planning, triage, approvals, and day-to-day care decisions.</p>
-                </section>
                 <section className={s.startPanel} aria-label="Start a Rhizome thread">
                   <div className={s.startCardGrid}>
                     <article className={s.startContextCard}>
