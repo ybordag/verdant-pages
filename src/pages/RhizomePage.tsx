@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   AlertTriangle,
-  CalendarDays,
   CloudRain,
   CloudSun,
   Droplets,
@@ -84,6 +83,11 @@ interface SessionDraft {
   wants_quick_wins: boolean
 }
 
+interface StartThreadDraft {
+  time_today: string
+  energy: string
+}
+
 interface ComposerContextTrigger {
   start: number
   end: number
@@ -102,6 +106,11 @@ const EMPTY_SESSION_DRAFT: SessionDraft = {
   preferred_location_type: '',
   open_to_outdoor_work: false,
   wants_quick_wins: false,
+}
+
+const EMPTY_START_THREAD_DRAFT: StartThreadDraft = {
+  time_today: '',
+  energy: '',
 }
 
 function formatDate(value?: string): string {
@@ -183,7 +192,7 @@ function weatherTemperatureLabel(summary?: string): string {
   const low = firstWeatherMetric(summary, /low\s+([0-9.]+)F-equivalent/i)
   if (high && low) return `${Math.round(Number(high))}° / ${Math.round(Number(low))}°`
   if (high) return `${Math.round(Number(high))}°`
-  return 'Weather'
+  return '--'
 }
 
 function weatherIconKind(summary?: string, alerts?: string): 'rain' | 'alert' | 'clear' {
@@ -361,7 +370,7 @@ export default function RhizomePage() {
   const [contextSearchTerm, setContextSearchTerm] = useState('')
   const [messageContext, setMessageContext] = useState<ContextObject[]>([])
   const [composerCursor, setComposerCursor] = useState(0)
-  const [startSessionDraft, setStartSessionDraft] = useState<SessionDraft>(EMPTY_SESSION_DRAFT)
+  const [startThreadDraft, setStartThreadDraft] = useState<StartThreadDraft>(EMPTY_START_THREAD_DRAFT)
   const [composerAutocompletePosition, setComposerAutocompletePosition] =
     useState<ComposerAutocompletePosition | null>(null)
   const streamControllerRef = useRef<AbortController | null>(null)
@@ -479,14 +488,10 @@ export default function RhizomePage() {
     currentModelValue === 'current' ? [{ value: currentModelValue, label: currentModelLabel }] : []
   const blankWeather = blankWeatherQuery.data
   const weatherKind = weatherIconKind(blankWeather?.conditions_summary, blankWeather?.alerts_summary)
-  const weatherRain = firstWeatherMetric(blankWeather?.conditions_summary, /rain\s+([0-9.]+mm)/i)
-  const weatherWind = firstWeatherMetric(blankWeather?.conditions_summary, /wind\s+([0-9.]+)/i)
+  const weatherRain = firstWeatherMetric(blankWeather?.conditions_summary, /rain\s+([0-9]+(?:\.[0-9]+)?mm)/i)
+  const weatherWind = firstWeatherMetric(blankWeather?.conditions_summary, /wind\s+([0-9]+(?:\.[0-9]+)?)/i)
   const canUseStartSessionContext =
-    Boolean(startSessionDraft.available_minutes.trim()) ||
-    Boolean(startSessionDraft.energy_level) ||
-    Boolean(startSessionDraft.preferred_location_type) ||
-    startSessionDraft.open_to_outdoor_work ||
-    startSessionDraft.wants_quick_wins
+    Boolean(startThreadDraft.time_today.trim()) || Boolean(startThreadDraft.energy.trim())
   const activeContextSearchItems = activeContextTarget === 'thread' ? pinnedContext : messageContext
   const groupedContextResults = useMemo(() => {
     const existingContext = new Set(activeContextSearchItems.map(contextKey))
@@ -569,15 +574,10 @@ export default function RhizomePage() {
 
   function useStartSessionContext() {
     const details = [
-      startSessionDraft.available_minutes
-        ? `I have ${startSessionDraft.available_minutes} minutes`
+      startThreadDraft.time_today.trim()
+        ? `I have ${startThreadDraft.time_today.trim()}`
         : null,
-      startSessionDraft.energy_level ? `my energy is ${startSessionDraft.energy_level}` : null,
-      startSessionDraft.preferred_location_type
-        ? `I want to focus on ${startSessionDraft.preferred_location_type}s`
-        : null,
-      startSessionDraft.open_to_outdoor_work ? 'I am open to outdoor work' : null,
-      startSessionDraft.wants_quick_wins ? 'I want quick wins' : null,
+      startThreadDraft.energy.trim() ? `my energy is ${startThreadDraft.energy.trim()}` : null,
     ].filter(Boolean)
     if (details.length === 0) return
     const sentence = `For this thread, ${details.join(', ')}.`
@@ -1236,52 +1236,31 @@ export default function RhizomePage() {
                         <span>Time today</span>
                         <input
                           aria-label="Start time today"
-                          inputMode="numeric"
-                          min="0"
-                          type="number"
-                          value={startSessionDraft.available_minutes}
+                          placeholder="45 minutes, all afternoon..."
+                          type="text"
+                          value={startThreadDraft.time_today}
                           onChange={(event) =>
-                            setStartSessionDraft((current) => ({
+                            setStartThreadDraft((current) => ({
                               ...current,
-                              available_minutes: event.target.value,
+                              time_today: event.target.value,
                             }))
                           }
                         />
                       </label>
                       <label>
                         <span>Energy</span>
-                        <select
+                        <input
                           aria-label="Start energy"
-                          value={startSessionDraft.energy_level}
+                          placeholder="low, focused, tired but can water..."
+                          type="text"
+                          value={startThreadDraft.energy}
                           onChange={(event) =>
-                            setStartSessionDraft((current) => ({
+                            setStartThreadDraft((current) => ({
                               ...current,
-                              energy_level: event.target.value as SessionDraft['energy_level'],
+                              energy: event.target.value,
                             }))
                           }
-                        >
-                          <option value="">Not set</option>
-                          <option value="low">Low</option>
-                          <option value="medium">Medium</option>
-                          <option value="high">High</option>
-                        </select>
-                      </label>
-                      <label>
-                        <span>Focus</span>
-                        <select
-                          aria-label="Start focus"
-                          value={startSessionDraft.preferred_location_type}
-                          onChange={(event) =>
-                            setStartSessionDraft((current) => ({
-                              ...current,
-                              preferred_location_type: event.target.value as SessionDraft['preferred_location_type'],
-                            }))
-                          }
-                        >
-                          <option value="">Not set</option>
-                          <option value="bed">Beds</option>
-                          <option value="container">Containers</option>
-                        </select>
+                        />
                       </label>
                       <button
                         type="button"
@@ -1294,41 +1273,35 @@ export default function RhizomePage() {
 
                     <article className={s.weatherStartCard}>
                       <div className={s.weatherCardTop}>
-                        <span>
-                          <CalendarDays size={13} />
-                          {weatherObservedLabel(blankWeather?.created_at)}
-                        </span>
-                        {weatherKind === 'rain' ? (
-                          <CloudRain size={24} />
-                        ) : weatherKind === 'alert' ? (
-                          <AlertTriangle size={24} />
-                        ) : (
-                          <CloudSun size={24} />
-                        )}
+                        <p className={s.eyebrow}>Weather</p>
+                        <span>{weatherObservedLabel(blankWeather?.created_at)}</span>
                       </div>
-                      <strong className={s.weatherTemp}>
-                        {blankWeatherQuery.isLoading
-                          ? 'Loading'
-                          : weatherTemperatureLabel(blankWeather?.conditions_summary)}
-                      </strong>
-                      <span className={s.weatherSummary}>
-                        {blankWeather?.alerts_summary ||
-                          blankWeather?.derived_impacts?.[0]?.summary ||
-                          blankWeather?.location_label ||
-                          'Add a garden profile location to unlock weather context.'}
-                      </span>
+                      <div className={s.weatherHero}>
+                        {weatherKind === 'rain' ? (
+                          <CloudRain size={44} />
+                        ) : weatherKind === 'alert' ? (
+                          <AlertTriangle size={44} />
+                        ) : (
+                          <CloudSun size={44} />
+                        )}
+                        <strong>
+                          {blankWeatherQuery.isLoading
+                            ? 'Loading'
+                            : `${weatherTemperatureLabel(blankWeather?.conditions_summary)} F`}
+                        </strong>
+                      </div>
                       <div className={s.weatherMetrics} aria-label="Weather details">
                         <span>
-                          <Thermometer size={12} />
-                          {blankWeather?.forecast_start_date ?? 'No date'}
-                        </span>
-                        <span>
                           <Droplets size={12} />
-                          {weatherRain ?? 'Rain n/a'}
+                          {weatherRain ?? '--'}
                         </span>
                         <span>
                           <Wind size={12} />
-                          {weatherWind ? `${weatherWind} wind` : 'Wind n/a'}
+                          {weatherWind ? `${weatherWind} mph` : '--'}
+                        </span>
+                        <span>
+                          <Thermometer size={12} />
+                          {blankWeather?.location_label ?? '--'}
                         </span>
                       </div>
                     </article>

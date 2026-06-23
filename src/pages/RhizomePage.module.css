@@ -759,7 +759,7 @@ button.sessionCard:disabled {
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
   background: var(--bg-nav);
-  min-height: 174px;
+  min-height: 160px;
 }
 
 .startChips {
@@ -803,7 +803,7 @@ button.sessionCard:disabled {
 .startContextCard {
   display: grid;
   align-content: start;
-  gap: 7px;
+  gap: 10px;
   padding: 12px;
 }
 
@@ -852,68 +852,58 @@ button.sessionCard:disabled {
 .weatherStartCard,
 .startFocusCard {
   display: grid;
-  align-content: start;
+  align-content: space-between;
   gap: 8px;
   padding: 12px;
 }
 
 .weatherCardTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  color: var(--text-muted);
+  display: grid;
+  gap: 2px;
 }
 
 .weatherCardTop span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+  color: var(--text-muted);
   font-family: var(--font-label);
   font-size: 9px;
   font-weight: 800;
   text-transform: uppercase;
 }
 
-.weatherCardTop svg {
+.weatherHero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 62px;
+}
+
+.weatherHero svg {
   color: var(--clay);
 }
 
-.weatherTemp {
+.weatherHero strong {
   color: var(--text-primary);
   font-family: var(--font-display);
-  font-size: 34px;
-  line-height: 0.95;
-}
-
-.weatherSummary {
-  display: -webkit-box;
-  overflow: hidden;
-  color: var(--text-muted);
-  font-size: 11px;
-  line-height: 1.35;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  font-size: 32px;
+  line-height: 1;
 }
 
 .weatherMetrics {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 2px;
+  justify-content: center;
+  gap: 8px;
 }
 
 .weatherMetrics span {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  border: 1px solid var(--line-subtle);
-  border-radius: var(--radius-tight);
+  gap: 4px;
   color: var(--text-muted);
   font-family: var(--font-label);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 800;
-  padding: 3px 5px;
   text-transform: uppercase;
 }
 

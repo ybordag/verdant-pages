@@ -219,8 +219,9 @@ describe('RhizomePage', () => {
     expect(await screen.findByText('Before we start')).toBeInTheDocument()
     expect(screen.getByText('Start a thread when you are ready.')).toBeInTheDocument()
     expect(screen.queryByLabelText('Session context')).not.toBeInTheDocument()
-    expect(await screen.findByText('78° / 58°')).toBeInTheDocument()
-    expect(await screen.findByText('No weather alerts.')).toBeInTheDocument()
+    expect(await screen.findByText('78° / 58° F')).toBeInTheDocument()
+    expect(await screen.findByText('0.0mm')).toBeInTheDocument()
+    expect(await screen.findByText('10.0 mph')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Browse threads' }))
     expect(await screen.findByRole('heading', { name: 'Threads' })).toBeInTheDocument()
     expect(screen.getByText('No threads yet')).toBeInTheDocument()
@@ -276,13 +277,12 @@ describe('RhizomePage', () => {
     )
 
     await user.clear(screen.getByLabelText('Start time today'))
-    await user.type(screen.getByLabelText('Start time today'), '20')
-    await user.selectOptions(screen.getByLabelText('Start energy'), 'low')
-    await user.selectOptions(screen.getByLabelText('Start focus'), 'container')
+    await user.type(screen.getByLabelText('Start time today'), '20 minutes')
+    await user.type(screen.getByLabelText('Start energy'), 'low but focused')
     await user.click(screen.getByRole('button', { name: 'Use this for this thread' }))
 
     expect(screen.getByLabelText('Message Rhizome')).toHaveValue(
-      'For this thread, I have 20 minutes, my energy is low, I want to focus on containers.\n\nHelp me plan the next useful step for my garden today.',
+      'For this thread, I have 20 minutes, my energy is low but focused.\n\nHelp me plan the next useful step for my garden today.',
     )
   })
 
