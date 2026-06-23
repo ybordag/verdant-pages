@@ -427,6 +427,11 @@
   min-width: 0;
 }
 
+.workspaceHeaderRow {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
 .workspaceIdentity {
   min-width: 0;
 }
@@ -443,7 +448,9 @@
 
 .threadHeaderRow {
   align-items: flex-end;
+  border-bottom: 1px solid var(--line);
   padding-top: 2px;
+  padding-bottom: 10px;
 }
 
 .topbarCollapsed {
