@@ -56,15 +56,15 @@
 }
 
 .withThreads {
-  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  grid-template-columns: 210px minmax(0, 1fr);
 }
 
 .withReviews {
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  grid-template-columns: minmax(0, 1fr) minmax(430px, 494px);
 }
 
 .withThreads.withReviews {
-  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr) minmax(320px, 380px);
+  grid-template-columns: 210px minmax(0, 1fr) minmax(430px, 494px);
 }
 
 .threadRail,
