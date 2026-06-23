@@ -770,7 +770,7 @@ button.sessionCard:disabled {
 .startFocusCard {
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
-  background: var(--bg-nav);
+  background: var(--bg);
   min-height: 160px;
   overflow: visible;
 }
@@ -842,7 +842,11 @@ button.sessionCard:disabled {
 [data-theme='light'] .startContextCard .eyebrow,
 [data-theme='light'] .weatherStartCard .eyebrow,
 [data-theme='light'] .startFocusCard .eyebrow {
-  color: var(--dark-clay);
+  color: var(--clay);
+}
+
+[data-theme='light'] .startContextCard label > span {
+  color: var(--text-muted);
 }
 
 .startContextCard input,
@@ -1032,7 +1036,7 @@ button.sessionCard:disabled {
 }
 
 [data-theme='light'] .focusInputIcon {
-  color: var(--dark-clay);
+  color: var(--clay);
 }
 
 .startFocusPicker .focusInputWrap {
@@ -1097,6 +1101,12 @@ button.sessionCard:disabled {
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
   background: var(--bg);
+}
+
+.startFocusPicker .focusAutocomplete {
+  top: 28px;
+  left: 0;
+  width: min(380px, 100%);
 }
 
 .startThreadIntro {
