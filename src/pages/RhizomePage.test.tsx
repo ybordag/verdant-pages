@@ -219,7 +219,7 @@ describe('RhizomePage', () => {
     expect(await screen.findByText('Before we start')).toBeInTheDocument()
     expect(screen.getByText('Start a thread when you are ready.')).toBeInTheDocument()
     expect(screen.queryByLabelText('Session context')).not.toBeInTheDocument()
-    expect(await screen.findByText('78° F')).toBeInTheDocument()
+    expect(await screen.findByLabelText('78 degrees Fahrenheit')).toBeInTheDocument()
     expect(await screen.findByText('0.0mm')).toBeInTheDocument()
     expect(await screen.findByText('10.0 mph')).toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Browse threads' }))

@@ -530,8 +530,8 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   gap: 8px;
-  border-top: 1px solid rgb(var(--clay-rgb) / 0.7);
-  border-bottom: 1px solid rgb(var(--clay-rgb) / 0.7);
+  border-top: 1px solid var(--clay);
+  border-bottom: 1px solid var(--clay);
   background:
     linear-gradient(112deg, rgb(var(--clay-rgb) / 0.12), transparent 48%),
     linear-gradient(252deg, rgb(var(--chartreuse-rgb) / 0.08), transparent 58%),
@@ -545,7 +545,7 @@
 
 .sessionCard,
 .reviewButton {
-  border: 1px solid rgb(var(--clay-rgb) / 0.35);
+  border: 1px solid rgb(var(--clay-rgb) / 0.62);
   border-radius: var(--radius-soft);
   background: var(--bg);
   padding: 8px 10px;
@@ -603,6 +603,16 @@ button.sessionCard:disabled {
 [data-theme='light'] .sessionStrip span,
 [data-theme='light'] .sessionCard span {
   color: var(--dark-clay);
+}
+
+[data-theme='light'] .sessionStrip {
+  border-top-color: var(--dark-clay);
+  border-bottom-color: var(--dark-clay);
+}
+
+[data-theme='light'] .sessionCard,
+[data-theme='light'] .reviewButton {
+  border-color: rgb(var(--clay-rgb) / 0.5);
 }
 
 .sessionStrip strong,
@@ -811,12 +821,14 @@ button.sessionCard:disabled {
 }
 
 .startContextCard span,
+.startContextCard .eyebrow,
 .weatherStartCard .eyebrow,
 .startFocusCard .eyebrow {
   color: var(--clay);
 }
 
 [data-theme='light'] .startContextCard span,
+[data-theme='light'] .startContextCard .eyebrow,
 [data-theme='light'] .weatherStartCard .eyebrow,
 [data-theme='light'] .startFocusCard .eyebrow {
   color: var(--dark-clay);
@@ -834,12 +846,18 @@ button.sessionCard:disabled {
   padding: 4px 7px;
 }
 
+.startContextCard input::placeholder {
+  color: var(--text-placeholder);
+  font-style: italic;
+  opacity: 1;
+}
+
 .weatherStartCard,
 .startFocusCard {
   display: grid;
   align-content: space-between;
-  gap: 8px;
-  padding: 12px;
+  gap: 6px;
+  padding: 9px 12px 8px;
 }
 
 .weatherCardTop {
@@ -857,20 +875,58 @@ button.sessionCard:disabled {
 
 .weatherHero {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  gap: 12px;
-  min-height: 62px;
+  gap: 10px;
+  min-height: 54px;
 }
 
-.weatherHero svg {
+.weatherIcon {
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+}
+
+.weatherIconRain {
+  color: #6ea6d9;
+}
+
+.weatherIconHeat,
+.weatherIconSmoke,
+.weatherIconAlert {
   color: var(--clay);
 }
 
-.weatherHero strong {
+.weatherIconWind,
+.weatherIconCloud {
+  color: var(--text-muted);
+}
+
+.weatherIconClear {
+  color: var(--buttercup);
+}
+
+.weatherTemp {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   color: var(--text-primary);
   font-family: var(--font-display);
-  font-size: 32px;
+  line-height: 1;
+}
+
+.weatherTemp strong {
+  color: inherit;
+  font-family: inherit;
+  font-size: 30px;
+  line-height: 0.9;
+}
+
+.weatherTemp span {
+  align-self: center;
+  color: inherit;
+  font-family: inherit;
+  font-size: 18px;
   line-height: 1;
 }
 

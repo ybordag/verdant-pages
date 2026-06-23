@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   AlertTriangle,
+  Cloud,
   CloudRain,
   CloudSun,
   Droplets,
@@ -12,6 +13,7 @@ import {
   Plus,
   Search,
   Send,
+  Sun,
   Sprout,
   Thermometer,
   Wind,
@@ -189,15 +191,43 @@ function firstWeatherMetric(summary: string | undefined, pattern: RegExp): strin
 
 function weatherTemperatureLabel(summary?: string): string {
   const high = firstWeatherMetric(summary, /high\s+([0-9.]+)F-equivalent/i)
-  if (high) return `${Math.round(Number(high))}°`
+  if (high) return `${Math.round(Number(high))}`
   return '--'
 }
 
-function weatherIconKind(summary?: string, alerts?: string): 'rain' | 'alert' | 'clear' {
+function weatherIconKind(
+  summary?: string,
+  alerts?: string,
+): 'rain' | 'heat' | 'smoke' | 'wind' | 'cloud' | 'alert' | 'clear' {
   const text = `${summary ?? ''} ${alerts ?? ''}`.toLowerCase()
+  if (text.includes('smoke') || text.includes('air quality')) return 'smoke'
+  if (text.includes('heat')) return 'heat'
   if (text.includes('rain')) return 'rain'
-  if (text.includes('storm') || text.includes('wind') || text.includes('alert')) return 'alert'
+  if (text.includes('wind') || text.includes('breezy')) return 'wind'
+  if (text.includes('cloud') || text.includes('overcast')) return 'cloud'
+  if (text.includes('storm') || text.includes('alert') || text.includes('warning')) return 'alert'
   return 'clear'
+}
+
+function WeatherIcon({ kind }: { kind: ReturnType<typeof weatherIconKind> }) {
+  const className = [s.weatherIcon, s[`weatherIcon${titleCase(kind)}`]].join(' ')
+
+  switch (kind) {
+    case 'rain':
+      return <CloudRain className={className} aria-hidden="true" />
+    case 'heat':
+    case 'smoke':
+    case 'alert':
+      return <AlertTriangle className={className} aria-hidden="true" />
+    case 'wind':
+      return <Wind className={className} aria-hidden="true" />
+    case 'cloud':
+      return <Cloud className={className} aria-hidden="true" />
+    case 'clear':
+      return <Sun className={className} aria-hidden="true" />
+    default:
+      return <CloudSun className={className} aria-hidden="true" />
+  }
 }
 
 function contextLabel(context: ContextObject): string {
@@ -1269,18 +1299,22 @@ export default function RhizomePage() {
                         <span>{weatherObservedLabel(blankWeather?.created_at)}</span>
                       </div>
                       <div className={s.weatherHero}>
-                        {weatherKind === 'rain' ? (
-                          <CloudRain size={44} />
-                        ) : weatherKind === 'alert' ? (
-                          <AlertTriangle size={44} />
-                        ) : (
-                          <CloudSun size={44} />
-                        )}
-                        <strong>
-                          {blankWeatherQuery.isLoading
-                            ? 'Loading'
-                            : `${weatherTemperatureLabel(blankWeather?.conditions_summary)} F`}
-                        </strong>
+                        <WeatherIcon kind={weatherKind} />
+                        <span
+                          className={s.weatherTemp}
+                          aria-label={
+                            blankWeatherQuery.isLoading
+                              ? 'Weather loading'
+                              : `${weatherTemperatureLabel(blankWeather?.conditions_summary)} degrees Fahrenheit`
+                          }
+                        >
+                          <strong>
+                            {blankWeatherQuery.isLoading
+                              ? 'Loading'
+                              : weatherTemperatureLabel(blankWeather?.conditions_summary)}
+                          </strong>
+                          {!blankWeatherQuery.isLoading && <span>° F</span>}
+                        </span>
                       </div>
                       <div className={s.weatherMetrics} aria-label="Weather details">
                         <span>
