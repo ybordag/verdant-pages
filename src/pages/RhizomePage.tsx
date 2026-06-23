@@ -1218,7 +1218,7 @@ export default function RhizomePage() {
           </aside>
         ) : null}
 
-        <section className={s.chatPane} aria-label="Conversation with Rhizome">
+        <section className={s.conversationWorkspace} aria-label="Conversation with Rhizome">
           <header className={s.topbar}>
             <div>
               <p className={s.eyebrow}>{isNewThread ? 'New conversation' : 'Active thread'}</p>
