@@ -854,9 +854,14 @@ button.sessionCard:disabled {
 }
 
 .startThreadState {
+  display: flex;
+  align-items: center;
   justify-content: flex-start;
+  min-height: 100%;
+  flex-direction: column;
   gap: 18px;
   padding: 18px;
+  text-align: center;
 }
 
 .scrollHero {

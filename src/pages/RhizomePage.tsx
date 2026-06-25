@@ -1450,7 +1450,7 @@ export default function RhizomePage() {
             ) : threadId && activeThreadQuery.isError ? (
               <div className={s.emptyChat}>This thread could not load.</div>
             ) : isNewThread ? (
-              <div className={[s.emptyChat, s.startThreadState].join(' ')}>
+              <div className={s.startThreadState}>
                 <section className={s.startPanel} aria-label="Start a Rhizome thread">
                   <div className={s.startCardGrid}>
                     <article className={s.startContextCard}>
