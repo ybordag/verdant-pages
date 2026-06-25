@@ -429,10 +429,17 @@
 }
 
 .workspaceHeaderRow {
+  overflow: hidden;
+  max-height: 118px;
   border-bottom: 1px solid var(--line);
-  padding-bottom: 12px;
   margin-inline: -26px;
-  padding-inline: 26px;
+  padding: 0 26px 12px;
+  opacity: 1;
+  transition:
+    max-height 0.18s ease,
+    opacity 0.14s ease,
+    padding 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .workspaceIdentity {
@@ -452,22 +459,37 @@
 .threadHeaderRow {
   align-items: flex-end;
   padding-top: 2px;
+  transition:
+    padding 0.18s ease,
+    min-height 0.18s ease;
 }
 
 .topbarCollapsed {
-  gap: 7px;
-  padding-block: 10px;
+  gap: 0;
+  padding-block: 7px;
 }
 
-.topbarCollapsed .title {
-  font-size: clamp(26px, 2.6vw, 34px);
-}
-
-.topbarCollapsed .workspaceSubtitle {
-  overflow: hidden;
+.topbarCollapsed .workspaceHeaderRow {
   max-height: 0;
-  margin-top: 0;
+  border-bottom-color: transparent;
+  padding-block: 0;
   opacity: 0;
+  pointer-events: none;
+}
+
+.topbarCollapsed .threadHeaderRow {
+  align-items: center;
+  padding-top: 0;
+}
+
+.topbarCollapsed .threadHeaderText .eyebrow {
+  display: none;
+}
+
+.topbarCollapsed h2,
+.topbarCollapsed .threadTitleButton {
+  font-size: 15px;
+  line-height: 1.1;
 }
 
 .topbar h2 {
@@ -477,11 +499,8 @@
   line-height: 1.15;
 }
 
-.topbarActions {
-  display: inline-flex;
-  align-items: center;
-  flex: 0 0 auto;
-  gap: 8px;
+.threadHeaderText {
+  min-width: 0;
 }
 
 .compactReviewButton {

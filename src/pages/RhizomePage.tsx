@@ -1244,26 +1244,9 @@ export default function RhizomePage() {
                   Garden planning, triage, approvals, and day-to-day care decisions.
                 </p>
               </div>
-              <div className={s.topbarActions}>
-                {hasPendingReviews ? (
-                  <button
-                    aria-label="Open pending reviews"
-                    className={s.compactReviewButton}
-                    type="button"
-                    onClick={() => setReviewsPanelOpen(true)}
-                  >
-                    <span>Review</span>
-                    <strong>{pendingReviewCount}</strong>
-                  </button>
-                ) : null}
-                <Button size="sm" type="button" onClick={() => navigate('/app/rhizome')}>
-                  <Plus size={14} />
-                  New
-                </Button>
-              </div>
             </div>
             <div className={s.threadHeaderRow}>
-              <div>
+              <div className={s.threadHeaderText}>
                 <p className={s.eyebrow}>{isNewThread ? 'New conversation' : 'Active thread'}</p>
                 {isNewThread ? (
                   <h2>Blank thread</h2>
@@ -1277,6 +1260,17 @@ export default function RhizomePage() {
                   </button>
                 )}
               </div>
+              {hasPendingReviews ? (
+                <button
+                  aria-label="Open pending reviews"
+                  className={s.compactReviewButton}
+                  type="button"
+                  onClick={() => setReviewsPanelOpen(true)}
+                >
+                  <span>Review</span>
+                  <strong>{pendingReviewCount}</strong>
+                </button>
+              ) : null}
             </div>
           </header>
 

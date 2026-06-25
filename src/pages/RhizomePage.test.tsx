@@ -318,11 +318,10 @@ describe('RhizomePage', () => {
     )
   })
 
-  it('uses the page-level new button to return to a blank thread', async () => {
+  it('does not render a page-level new thread button', async () => {
     renderRhizome('/app/rhizome/thread-1')
 
-    await userEvent.click(screen.getByRole('button', { name: 'New' }))
-    expect(await screen.findByText('Start a thread when you are ready.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'New' })).not.toBeInTheDocument()
   })
 
   it('sends blank-thread starter context without changing the visible composer message', async () => {
