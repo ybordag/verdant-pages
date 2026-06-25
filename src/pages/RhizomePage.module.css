@@ -935,18 +935,19 @@ button.sessionCard:disabled {
 .startListsGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 20px;
   width: min(1160px, 100%);
   align-items: start;
 }
 
-.todayShortlist {
+.startListSection {
   display: grid;
   gap: 6px;
+  min-width: 0;
   text-align: left;
 }
 
-.shortlistHeader {
+.startListHeader {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -955,7 +956,7 @@ button.sessionCard:disabled {
   padding-bottom: 5px;
 }
 
-.shortlistHeader span {
+.startListHeader span {
   color: var(--text-muted);
   font-family: var(--font-label);
   font-size: 9px;
@@ -964,12 +965,16 @@ button.sessionCard:disabled {
   text-transform: uppercase;
 }
 
-.shortlistHeader small {
+.startListHeader small {
+  overflow: hidden;
   color: var(--text-muted);
   font-size: 10px;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.shortlistRows {
+.startListSurface {
   display: grid;
   border: 1px solid var(--line);
   border-radius: var(--radius-soft);
@@ -977,16 +982,14 @@ button.sessionCard:disabled {
   padding: 3px 6px;
 }
 
-.shortlistRows button {
-  --context-color: var(--clay);
-
+.startListRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   width: 100%;
   border: 0;
-  border-left: 2px solid var(--context-color);
+  border-left: 2px solid transparent;
   border-bottom: 1px solid var(--line-subtle);
   border-radius: 0;
   background: transparent;
@@ -995,53 +998,70 @@ button.sessionCard:disabled {
   font: inherit;
   padding: 6px 2px 6px 7px;
   text-align: left;
+  text-decoration: none;
 }
 
-.shortlistRows button:hover {
-  background: color-mix(in srgb, var(--context-color) 10%, transparent);
+.startListRow:hover {
+  background: var(--surface-muted);
 }
 
-.shortlistRows button:last-child {
+.startListRow:last-child {
   border-bottom: 0;
 }
 
-.shortlistRows button > span {
+.startListRow > span {
   min-width: 0;
   flex: 1 1 auto;
 }
 
-.shortlistRows strong {
+.startListRow strong {
   display: block;
   overflow: hidden;
   color: var(--text-primary);
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 800;
   line-height: 1.2;
   text-overflow: ellipsis;
+  text-transform: none;
   white-space: nowrap;
 }
 
-.shortlistRows small {
+.startListRow small {
   display: block;
   overflow: hidden;
   margin-top: 2px;
   color: var(--text-muted);
+  font-family: var(--font-body);
   font-size: 11px;
   font-weight: 700;
   line-height: 1.25;
   text-overflow: ellipsis;
-  text-transform: capitalize;
+  text-transform: none;
   white-space: nowrap;
 }
 
-.shortlistRows em {
+.startListRow em {
   flex: 0 0 auto;
-  color: var(--context-color);
   font-family: var(--font-label);
   font-size: 9px;
   font-style: normal;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.taskListRow {
+  --context-color: var(--clay);
+
+  border-left-color: var(--context-color);
+}
+
+.taskListRow:hover {
+  background: color-mix(in srgb, var(--context-color) 10%, transparent);
+}
+
+.taskListRow em {
+  color: var(--context-color);
 }
 
 .startContextCard {
@@ -1451,41 +1471,7 @@ button.sessionCard:disabled {
 }
 
 .recentThreads {
-  display: grid;
-  gap: 6px;
-  text-align: left;
-}
-
-.recentThreads a {
-  display: block;
-  border-bottom: 1px solid var(--line-subtle);
-  color: var(--text-secondary);
-  padding: 8px 0;
-  text-align: left;
-  text-decoration: none;
-}
-
-.recentThreads a:hover {
-  background: var(--surface-muted);
-}
-
-.recentThreads strong {
-  display: block;
-  overflow: hidden;
-  color: var(--text-primary);
-  font-size: 13px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.recentThreads small {
-  display: block;
-  overflow: hidden;
-  margin-top: 2px;
-  color: var(--text-muted);
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
 }
 
 .recentThreads button {
