@@ -1559,10 +1559,10 @@ export default function RhizomePage() {
                       <small>{recentThreads.length > 0 ? 'Recent conversations' : 'Navigator'}</small>
                     </div>
                     {recentThreads.length > 0 ? (
-                      <div className={s.startListSurface}>
+                      <div className={s.threadListRows}>
                         {recentThreads.map((thread) => (
                           <Link
-                            className={s.startListRow}
+                            className={s.threadListRow}
                             key={thread.thread_id}
                             to={`/app/rhizome/${encodeURIComponent(thread.thread_id)}`}
                           >
@@ -1593,10 +1593,10 @@ export default function RhizomePage() {
                           {triageShortlist.length > 0 ? 'From latest triage' : 'From daily tasks'}
                         </small>
                       </div>
-                      <div className={s.startListSurface}>
+                      <div className={s.taskListRows}>
                         {todayShortlist.map((task) => (
                           <button
-                            className={`${s.startListRow} ${s.taskListRow}`}
+                            className={s.taskListRow}
                             key={task.id}
                             type="button"
                             onClick={() => setTaskStarterDraft(task)}
