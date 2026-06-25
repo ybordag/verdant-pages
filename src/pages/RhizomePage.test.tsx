@@ -374,6 +374,31 @@ describe('RhizomePage', () => {
     expect(screen.queryByText(/For this thread, my focus is autumn flower bed/)).not.toBeInTheDocument()
   })
 
+  it('selects blank-thread focus from autocomplete and uses it in hidden first-send context', async () => {
+    const user = userEvent.setup()
+    mocks.listThreads.mockResolvedValue([])
+    mocks.getThreadMessages.mockResolvedValue({ thread_id: 'thread-new', messages: [] })
+    renderRhizome()
+
+    await user.type(await screen.findByLabelText('Thread focus'), 'tomato')
+    await user.click(await screen.findByRole('button', { name: /Cherry Tomato/i }))
+
+    expect(screen.getByText('plant')).toBeInTheDocument()
+    expect(screen.getByText('Cherry Tomato')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Cherry Tomato/i })).not.toBeInTheDocument()
+
+    await user.type(screen.getByLabelText('Message Rhizome'), 'What should I do first?')
+    await user.click(screen.getByRole('button', { name: 'Send' }))
+
+    await waitFor(() =>
+      expect(mocks.streamChat).toHaveBeenCalledWith(
+        'thread-new',
+        'For this thread, my focus is Cherry Tomato (plant).\n\nWhat should I do first?',
+        expect.any(AbortSignal),
+      ),
+    )
+  })
+
   it('uses the selected thread from the recent-thread list', async () => {
     renderRhizome('/app/rhizome/thread-1')
 

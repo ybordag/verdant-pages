@@ -912,6 +912,7 @@ export default function RhizomePage() {
     const label = mode === 'start' ? 'Thread focus' : 'Project focus'
     const placeholder =
       mode === 'start' ? 'Project, task, plant, or open question...' : 'Search projects...'
+    const inputId = mode === 'start' ? 'rhizome-start-focus' : 'rhizome-session-focus'
     const results = query.data?.results ?? EMPTY_SEARCH_RESULTS
     const dismissedFocusQuery =
       mode === 'start' ? dismissedStartFocusQuery : dismissedSessionFocusQuery
@@ -950,8 +951,10 @@ export default function RhizomePage() {
 
     return (
       <div className={[s.focusPicker, mode === 'start' ? s.startFocusPicker : s.sessionFocusPicker].join(' ')}>
-        <label>
-          <span>{label}</span>
+        <div className={s.focusPickerBody}>
+          <label className={s.focusInputLabel} htmlFor={inputId}>
+            {label}
+          </label>
           <div className={s.focusInputWrap}>
             <span className={s.focusSearchAnchor}>
               <Pin className={s.focusInputIcon} size={15} aria-hidden="true" />
@@ -970,6 +973,7 @@ export default function RhizomePage() {
               ) : null}
               <input
                 aria-label={label}
+                id={inputId}
                 placeholder={selected ? 'Selected' : placeholder}
                 type="text"
                 value={selected ? '' : term}
@@ -992,7 +996,7 @@ export default function RhizomePage() {
               ) : null}
             </span>
           </div>
-        </label>
+        </div>
       </div>
     )
   }

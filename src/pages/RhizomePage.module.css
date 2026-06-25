@@ -1282,18 +1282,18 @@ button.sessionCard:disabled {
   min-width: 0;
 }
 
-.focusPicker label {
+.focusPickerBody {
   display: grid;
   gap: 5px;
 }
 
 .startFocusPicker,
-.startFocusPicker label {
+.startFocusPicker .focusPickerBody {
   min-height: 0;
   height: 100%;
 }
 
-.startFocusPicker label > span {
+.startFocusPicker .focusInputLabel {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1302,7 +1302,7 @@ button.sessionCard:disabled {
   white-space: nowrap;
 }
 
-.focusPicker label > span {
+.focusInputLabel {
   color: var(--clay);
   font-family: var(--font-label);
   font-size: 9px;
@@ -1311,7 +1311,7 @@ button.sessionCard:disabled {
   text-transform: uppercase;
 }
 
-[data-theme='light'] .focusPicker label > span {
+[data-theme='light'] .focusInputLabel {
   color: var(--dark-clay);
 }
 
