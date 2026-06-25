@@ -932,11 +932,17 @@ button.sessionCard:disabled {
   color: var(--text-primary);
 }
 
+.startListsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  width: min(1160px, 100%);
+  align-items: start;
+}
+
 .todayShortlist {
   display: grid;
-  width: min(760px, 94%);
   gap: 6px;
-  margin-top: 2px;
   text-align: left;
 }
 
@@ -965,42 +971,77 @@ button.sessionCard:disabled {
 
 .shortlistRows {
   display: grid;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-soft);
+  background: var(--bg);
+  padding: 3px 6px;
 }
 
 .shortlistRows button {
-  display: grid;
-  gap: 2px;
+  --context-color: var(--clay);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   width: 100%;
   border: 0;
+  border-left: 2px solid var(--context-color);
   border-bottom: 1px solid var(--line-subtle);
+  border-radius: 0;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   cursor: pointer;
-  padding: 7px 0;
+  font: inherit;
+  padding: 6px 2px 6px 7px;
   text-align: left;
 }
 
 .shortlistRows button:hover {
-  background: var(--surface-muted);
+  background: color-mix(in srgb, var(--context-color) 10%, transparent);
+}
+
+.shortlistRows button:last-child {
+  border-bottom: 0;
+}
+
+.shortlistRows button > span {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .shortlistRows strong {
+  display: block;
   overflow: hidden;
   color: var(--text-primary);
   font-size: 13px;
+  font-weight: 800;
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .shortlistRows small {
+  display: block;
   overflow: hidden;
+  margin-top: 2px;
   color: var(--text-muted);
-  font-size: 10px;
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1.25;
   text-overflow: ellipsis;
   text-transform: capitalize;
   white-space: nowrap;
+}
+
+.shortlistRows em {
+  flex: 0 0 auto;
+  color: var(--context-color);
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
 }
 
 .startContextCard {
@@ -1411,9 +1452,7 @@ button.sessionCard:disabled {
 
 .recentThreads {
   display: grid;
-  width: min(760px, 94%);
-  margin-top: 14px;
-  border-top: 1px solid var(--line-subtle);
+  gap: 6px;
   text-align: left;
 }
 
@@ -1847,7 +1886,8 @@ button.sessionCard:disabled {
   }
 
   .startCardGrid,
-  .startContextCard {
+  .startContextCard,
+  .startListsGrid {
     grid-template-columns: 1fr;
   }
 

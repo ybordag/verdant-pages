@@ -1549,59 +1549,68 @@ export default function RhizomePage() {
                     </button>
                   </div>
                 </div>
-                {todayShortlist.length > 0 ? (
-                  <section className={s.todayShortlist} aria-label="Today's task shortlist">
+                <div className={s.startListsGrid}>
+                  <section className={s.recentThreads} aria-label="Recent thread shortcuts">
                     <div className={s.shortlistHeader}>
-                      <span>Today shortlist</span>
-                      <small>
-                        {triageShortlist.length > 0 ? 'From latest triage' : 'From daily tasks'}
-                      </small>
+                      <span>Previous threads</span>
+                      <small>{recentThreads.length > 0 ? 'Recent conversations' : 'Navigator'}</small>
                     </div>
-                    <div className={s.shortlistRows}>
-                      {todayShortlist.map((task) => (
-                        <button
-                          key={task.id}
-                          type="button"
-                          onClick={() => setTaskStarterDraft(task)}
-                        >
-                          <strong>{task.title}</strong>
-                          <small>{taskMeta(task)}</small>
-                        </button>
-                      ))}
-                    </div>
-                  </section>
-                ) : latestTriageQuery.isLoading || dailyTasksQuery.isLoading ? (
-                  <section className={s.todayShortlist} aria-label="Today's task shortlist">
-                    <div className={s.shortlistHeader}>
-                      <span>Today shortlist</span>
-                      <small>Loading</small>
-                    </div>
-                  </section>
-                ) : null}
-                {recentThreads.length > 0 ? (
-                  <div className={s.recentThreads} aria-label="Recent thread shortcuts">
-                    {recentThreads.map((thread) => (
-                      <Link
-                        key={thread.thread_id}
-                        to={`/app/rhizome/${encodeURIComponent(thread.thread_id)}`}
-                      >
-                        <strong>{threadTitle(thread)}</strong>
-                        <small>{threadPreview(thread)}</small>
-                      </Link>
-                    ))}
-                    {threads.length > RECENT_THREAD_LIMIT ? (
+                    {recentThreads.length > 0 ? (
+                      <>
+                        {recentThreads.map((thread) => (
+                          <Link
+                            key={thread.thread_id}
+                            to={`/app/rhizome/${encodeURIComponent(thread.thread_id)}`}
+                          >
+                            <strong>{threadTitle(thread)}</strong>
+                            <small>{threadPreview(thread)}</small>
+                          </Link>
+                        ))}
+                        {threads.length > RECENT_THREAD_LIMIT ? (
+                          <button type="button" onClick={() => setThreadsPanelOpen(true)}>
+                            Look through more threads
+                          </button>
+                        ) : null}
+                      </>
+                    ) : (
                       <button type="button" onClick={() => setThreadsPanelOpen(true)}>
-                        Look through more threads
+                        Browse threads
                       </button>
-                    ) : null}
-                  </div>
-                ) : (
-                  <div className={s.recentThreads} aria-label="Thread navigator shortcut">
-                    <button type="button" onClick={() => setThreadsPanelOpen(true)}>
-                      Browse threads
-                    </button>
-                  </div>
-                )}
+                    )}
+                  </section>
+                  {todayShortlist.length > 0 ? (
+                    <section className={s.todayShortlist} aria-label="Today's task shortlist">
+                      <div className={s.shortlistHeader}>
+                        <span>Today shortlist</span>
+                        <small>
+                          {triageShortlist.length > 0 ? 'From latest triage' : 'From daily tasks'}
+                        </small>
+                      </div>
+                      <div className={s.shortlistRows}>
+                        {todayShortlist.map((task) => (
+                          <button
+                            key={task.id}
+                            type="button"
+                            onClick={() => setTaskStarterDraft(task)}
+                          >
+                            <span>
+                              <strong>{task.title}</strong>
+                              <small>{taskMeta(task)}</small>
+                            </span>
+                            <em>Task</em>
+                          </button>
+                        ))}
+                      </div>
+                    </section>
+                  ) : latestTriageQuery.isLoading || dailyTasksQuery.isLoading ? (
+                    <section className={s.todayShortlist} aria-label="Today's task shortlist">
+                      <div className={s.shortlistHeader}>
+                        <span>Today shortlist</span>
+                        <small>Loading</small>
+                      </div>
+                    </section>
+                  ) : null}
+                </div>
               </div>
             ) : (
               <>
