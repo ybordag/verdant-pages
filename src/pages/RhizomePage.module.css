@@ -996,7 +996,7 @@ button.sessionCard:disabled {
   color: var(--text-primary);
   cursor: pointer;
   font: inherit;
-  padding: 8px 0;
+  padding: 10px 0 8px;
   text-align: left;
   text-decoration: none;
 }
