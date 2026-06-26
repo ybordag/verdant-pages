@@ -94,6 +94,13 @@ interface StartThreadDraft {
   energy: string
 }
 
+interface OptimisticSessionContext {
+  threadId: string
+  timeLabel: string
+  energyLabel: string
+  focusLabel: string
+}
+
 type FocusContext = ContextObject | null
 
 interface ComposerContextTrigger {
@@ -373,8 +380,18 @@ function messageClass(message: ThreadMessageView): string {
   return message.role === 'user' ? s.userMessage : s.rhizomeMessage
 }
 
+function stripTransportStartContext(content: string): string {
+  if (!content.startsWith('For this thread, ')) return content
+  const [, visible] = content.split(/\n\n(.+)/s)
+  return visible?.trim() || content
+}
+
+function displayMessageContent(message: ThreadMessageView): string {
+  return message.role === 'user' ? stripTransportStartContext(message.content) : message.content
+}
+
 function messageKey(message: ThreadMessageView): string {
-  return `${message.role}:${message.content}`
+  return `${message.role}:${displayMessageContent(message)}`
 }
 
 function dateLabel(value?: string): string | null {
@@ -427,6 +444,8 @@ export default function RhizomePage() {
   const [streamError, setStreamError] = useState<string | null>(null)
   const [retryMessage, setRetryMessage] = useState<string | null>(null)
   const [isStreaming, setIsStreaming] = useState(false)
+  const [optimisticSessionContext, setOptimisticSessionContext] =
+    useState<OptimisticSessionContext | null>(null)
   const [sessionEditing, setSessionEditing] = useState(false)
   const [sessionDraft, setSessionDraft] = useState<SessionDraft>(EMPTY_SESSION_DRAFT)
   const [sessionError, setSessionError] = useState<string | null>(null)
@@ -450,6 +469,7 @@ export default function RhizomePage() {
     useState<ComposerAutocompletePosition | null>(null)
   const [workspaceHeaderCollapsed, setWorkspaceHeaderCollapsed] = useState(false)
   const streamControllerRef = useRef<AbortController | null>(null)
+  const workspaceHeaderCollapsedRef = useRef(false)
   const composerTextAreaWrapRef = useRef<HTMLDivElement | null>(null)
 
   const threadsQuery = useQuery({
@@ -565,6 +585,20 @@ export default function RhizomePage() {
 
   const activeThread = activeThreadFromList ?? activeThreadQuery.data
   const sessionContext = sessionContextQuery.data
+  const activeOptimisticSession =
+    optimisticSessionContext?.threadId === threadId ? optimisticSessionContext : null
+  const sessionTimeDisplay =
+    sessionContext?.available_minutes
+      ? sessionTimeLabel(sessionContext)
+      : activeOptimisticSession?.timeLabel ?? sessionTimeLabel(sessionContext)
+  const sessionEnergyDisplay =
+    sessionContext?.energy_level
+      ? titleCase(sessionContext.energy_level)
+      : activeOptimisticSession?.energyLabel ?? titleCase(sessionContext?.energy_level)
+  const sessionFocusDisplay =
+    sessionContext?.focus_label?.trim()
+      ? sessionFocusLabel(sessionContext)
+      : activeOptimisticSession?.focusLabel ?? sessionFocusLabel(sessionContext)
   const pinnedContext = activeThread?.pinned_context ?? EMPTY_CONTEXT
   const pendingInteraction = streamInteraction ?? pendingInteractionQuery.data ?? null
   const messages = (messagesQuery.data?.messages ?? []).filter((message) => {
@@ -622,8 +656,17 @@ export default function RhizomePage() {
   }, [])
 
   useEffect(() => {
+    workspaceHeaderCollapsedRef.current = false
     setWorkspaceHeaderCollapsed(false)
   }, [threadId])
+
+  function updateWorkspaceHeaderCollapse(scrollTop: number) {
+    const isCollapsed = workspaceHeaderCollapsedRef.current
+    const nextCollapsed = isCollapsed ? scrollTop > 8 : scrollTop > 72
+    if (nextCollapsed === isCollapsed) return
+    workspaceHeaderCollapsedRef.current = nextCollapsed
+    setWorkspaceHeaderCollapsed(nextCollapsed)
+  }
 
   useLayoutEffect(() => {
     if (!composerContextTrigger) {
@@ -708,6 +751,16 @@ export default function RhizomePage() {
           : null,
     ].filter(Boolean)
     return details.length > 0 ? `For this thread, ${details.join(', ')}.` : null
+  }
+
+  function startThreadSessionLabels(): Omit<OptimisticSessionContext, 'threadId'> {
+    return {
+      timeLabel: startThreadDraft.time_today.trim() || 'Not set',
+      energyLabel: startThreadDraft.energy.trim() || 'Not set',
+      focusLabel: startFocusContext
+        ? contextLabel(startFocusContext)
+        : startFocusTerm.trim() || 'Not set',
+    }
   }
 
   function messageWithStartContext(message: string): string {
@@ -1074,8 +1127,19 @@ export default function RhizomePage() {
 
     try {
       if (!targetThreadId) {
+        const optimisticLabels = startThreadSessionLabels()
         const createdThread = await createThread({})
         targetThreadId = createdThread.thread_id
+        if (
+          optimisticLabels.timeLabel !== 'Not set' ||
+          optimisticLabels.energyLabel !== 'Not set' ||
+          optimisticLabels.focusLabel !== 'Not set'
+        ) {
+          setOptimisticSessionContext({
+            threadId: targetThreadId,
+            ...optimisticLabels,
+          })
+        }
         navigate(`/app/rhizome/${encodeURIComponent(targetThreadId)}`)
       }
 
@@ -1133,6 +1197,7 @@ export default function RhizomePage() {
       setStreamError(null)
       setRetryMessage(null)
       void queryClient.invalidateQueries({ queryKey: ['threads', { limit: THREAD_LIMIT }] })
+      void queryClient.invalidateQueries({ queryKey: ['threads', targetThreadId, 'messages'] })
       void queryClient.invalidateQueries({ queryKey: ['threads', targetThreadId, 'session-context'] })
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
@@ -1397,9 +1462,13 @@ export default function RhizomePage() {
               >
                 <span>Time</span>
                 <strong>
-                  {sessionContextQuery.isLoading ? 'Loading' : sessionTimeLabel(sessionContext)}
+                  {sessionContextQuery.isLoading && !activeOptimisticSession ? 'Loading' : sessionTimeDisplay}
                 </strong>
-                {sessionSourceLabel(sessionContext) ? <small>{sessionSourceLabel(sessionContext)}</small> : null}
+                {activeOptimisticSession && !sessionContext?.available_minutes ? (
+                  <small>Pending</small>
+                ) : sessionSourceLabel(sessionContext) ? (
+                  <small>{sessionSourceLabel(sessionContext)}</small>
+                ) : null}
               </button>
               <button
                 aria-label="Edit energy"
@@ -1410,7 +1479,7 @@ export default function RhizomePage() {
               >
                 <span>Energy</span>
                 <strong>
-                  {sessionContextQuery.isLoading ? 'Loading' : titleCase(sessionContext?.energy_level)}
+                  {sessionContextQuery.isLoading && !activeOptimisticSession ? 'Loading' : sessionEnergyDisplay}
                 </strong>
               </button>
               <button
@@ -1422,7 +1491,7 @@ export default function RhizomePage() {
               >
                 <span>Focus</span>
                 <strong>
-                  {sessionContextQuery.isLoading ? 'Loading' : sessionFocusLabel(sessionContext)}
+                  {sessionContextQuery.isLoading && !activeOptimisticSession ? 'Loading' : sessionFocusDisplay}
                 </strong>
               </button>
             </div>
@@ -1441,7 +1510,7 @@ export default function RhizomePage() {
 
           <div
             className={s.threadBody}
-            onScroll={(event) => setWorkspaceHeaderCollapsed(event.currentTarget.scrollTop > 24)}
+            onScroll={(event) => updateWorkspaceHeaderCollapse(event.currentTarget.scrollTop)}
           >
             {threadId && activeThreadQuery.isLoading ? (
               <div className={s.emptyChat}>Loading thread</div>
@@ -1658,7 +1727,7 @@ export default function RhizomePage() {
                           {showDaySeparator ? <div className={s.daySeparator}>{label}</div> : null}
                           <article className={[s.messageBubble, messageClass(message)].join(' ')}>
                             <div className={s.messageMeta}>{messageLabel(message)}</div>
-                            <MarkdownMessage content={message.content} />
+                            <MarkdownMessage content={displayMessageContent(message)} />
                           </article>
                         </li>
                       )

@@ -328,6 +328,17 @@ describe('RhizomePage', () => {
     const user = userEvent.setup()
     mocks.listThreads.mockResolvedValue([])
     mocks.getThreadMessages.mockResolvedValue({ thread_id: 'thread-new', messages: [] })
+    mocks.getThreadSessionContext.mockResolvedValue({
+      available_minutes: null,
+      energy_level: null,
+      focus_project_id: null,
+      focus_label: null,
+      preferred_location_type: null,
+      open_to_outdoor_work: null,
+      wants_quick_wins: null,
+      source: 'unset',
+      updated_at: null,
+    })
     renderRhizome()
 
     await user.click(await screen.findByRole('button', { name: 'Plan' }))
@@ -350,6 +361,8 @@ describe('RhizomePage', () => {
       ),
     )
     expect(await screen.findByText('Help me plan the next useful step for my garden today.')).toBeInTheDocument()
+    expect(await screen.findByText('20 minutes')).toBeInTheDocument()
+    expect(screen.getByText('low but focused')).toBeInTheDocument()
     expect(screen.queryByText(/For this thread, I have 20 minutes/)).not.toBeInTheDocument()
   })
 
@@ -396,6 +409,25 @@ describe('RhizomePage', () => {
         expect.any(AbortSignal),
       ),
     )
+  })
+
+  it('strips transport-only starter context from persisted first messages', async () => {
+    mocks.getThreadMessages.mockResolvedValue({
+      thread_id: 'thread-1',
+      messages: [
+        {
+          role: 'user',
+          content:
+            'For this thread, I have 35 minutes, my energy is low but focused, my focus is Courtyard Tomatoes March 2026 (batch).\n\nI want to make useful progress today.',
+          type: 'human',
+        },
+      ],
+    })
+
+    renderRhizome('/app/rhizome/thread-1')
+
+    expect(await screen.findByText('I want to make useful progress today.')).toBeInTheDocument()
+    expect(screen.queryByText(/For this thread, I have 35 minutes/)).not.toBeInTheDocument()
   })
 
   it('uses the selected thread from the recent-thread list', async () => {
