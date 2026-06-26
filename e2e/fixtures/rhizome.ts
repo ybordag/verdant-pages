@@ -37,13 +37,10 @@ export interface RhizomeFixtureState {
 }
 
 export interface SessionContextFixture {
-  available_minutes?: number | null
-  energy_level?: 'low' | 'medium' | 'high' | null
-  focus_project_id?: string | null
-  focus_label?: string | null
-  preferred_location_type?: 'bed' | 'container' | null
-  open_to_outdoor_work?: boolean | null
-  wants_quick_wins?: boolean | null
+  time_text?: string | null
+  energy_text?: string | null
+  focus_text?: string | null
+  focus_context: ContextFixture[]
   source: 'unset' | 'inferred' | 'user'
   updated_at?: string | null
 }
@@ -76,7 +73,12 @@ export async function mockAuthenticatedRhizomeApi(
     },
     sessionContexts: {
       'thread-1': makeSessionContext(),
-      'thread-2': makeSessionContext({ available_minutes: 20, energy_level: 'low', focus_label: 'Seedlings' }),
+      'thread-2': makeSessionContext({
+        time_text: '20 minutes',
+        energy_text: 'low',
+        focus_text: 'Seedlings',
+        focus_context: [],
+      }),
     },
   }
   let streamCount = 0
@@ -216,13 +218,23 @@ export async function mockAuthenticatedRhizomeApi(
       await new Promise((resolve) => setTimeout(resolve, options.streamDelayMs))
     }
 
-    const response = [
-      'Here is a markdown response:\n\n',
-      '* **Bold option**\n',
-      '* *Italic option*\n',
-      '* `inline code`\n\n',
-      'Paragraph two.',
-    ].join('')
+    const sessionContext = state.sessionContexts[threadId]
+    const hasStructuredTomatoBatch = sessionContext?.focus_context.some(
+      (item) => item.subject_type === 'batch' && item.subject_id === 'batch-courtyard-tomatoes',
+    )
+    const response =
+      hasStructuredTomatoBatch && message.includes('useful progress')
+        ? [
+            'Courtyard Tomatoes March 2026 has several pending setup tasks.\n\n',
+            'Your first task should be: **Prepare growbag_1**.',
+          ].join('')
+        : [
+            'Here is a markdown response:\n\n',
+            '* **Bold option**\n',
+            '* *Italic option*\n',
+            '* `inline code`\n\n',
+            'Paragraph two.',
+          ].join('')
     state.messages[threadId] = [
       ...(state.messages[threadId] ?? []),
       { role: 'user', type: 'human', content: message },
@@ -260,16 +272,43 @@ export async function mockAuthenticatedRhizomeApi(
   })
 
   await page.route('**/api/v1/search**', async (route) => {
+    const url = new URL(route.request().url())
+    const query = (url.searchParams.get('q') ?? '').toLowerCase()
+    const types = new Set((url.searchParams.get('types') ?? '').split(',').filter(Boolean))
+    const results = makeSearchResults().filter((result) => {
+      const matchesType = types.size === 0 || types.has(result.subject_type)
+      const searchable = [result.label, result.secondary_label, result.summary, result.subject_type].join(' ').toLowerCase()
+      return matchesType && searchable.includes(query)
+    })
     await json(route, {
-      results: [
-        {
-          subject_type: 'plant',
-          subject_id: 'plant-1',
-          label: 'Cherry Tomato',
-          secondary_label: 'Growbag A',
-        },
-      ],
-      by_type: { plant: 1 },
+      results,
+      by_type: results.reduce<Record<string, number>>((acc, result) => {
+        acc[result.subject_type] = (acc[result.subject_type] ?? 0) + 1
+        return acc
+      }, {}),
+    })
+  })
+
+  await page.route('**/api/v1/tasks/daily**', async (route) => {
+    await json(route, makeDailyTasks())
+  })
+
+  await page.route('**/api/v1/triage/latest', async (route) => {
+    await json(route, null)
+  })
+
+  await page.route('**/api/v1/weather/latest', async (route) => {
+    await json(route, {
+      id: 'weather-1',
+      created_at: '2026-06-22T04:51:00Z',
+      location_label: 'Oakland, CA',
+      timezone: 'America/Los_Angeles',
+      forecast_start_date: '2026-06-22',
+      forecast_end_date: '2026-06-23',
+      conditions_summary: 'current 78F, rain 0.0mm, wind 6.0',
+      alerts_summary: null,
+      derived_impacts: [],
+      recommended_actions: [],
     })
   })
 
@@ -297,16 +336,59 @@ function makeThread(threadId: string, title = threadId, preview = 'No messages y
 
 function makeSessionContext(overrides: Partial<SessionContextFixture> = {}): SessionContextFixture {
   return {
-    available_minutes: 45,
-    energy_level: 'medium',
-    focus_project_id: 'project-1',
-    focus_label: 'Autumn flower bed',
-    preferred_location_type: 'bed',
-    open_to_outdoor_work: true,
-    wants_quick_wins: false,
+    time_text: '45 minutes',
+    energy_text: 'medium',
+    focus_text: 'Autumn flower bed',
+    focus_context: [{ subject_type: 'project', subject_id: 'project-1' }],
     source: 'inferred',
     updated_at: '2026-06-22T04:30:00Z',
     ...overrides,
+  }
+}
+
+function makeSearchResults() {
+  return [
+    {
+      subject_type: 'batch',
+      subject_id: 'batch-courtyard-tomatoes',
+      label: 'Courtyard Tomatoes March 2026',
+      secondary_label: 'Cherry Tomato (Sungold) batch',
+    },
+    {
+      subject_type: 'task',
+      subject_id: 'task-growbag-1',
+      label: 'Prepare growbag_1',
+      secondary_label: 'Courtyard Tomatoes March 2026 · pending',
+    },
+    {
+      subject_type: 'plant',
+      subject_id: 'plant-1',
+      label: 'Cherry Tomato',
+      secondary_label: 'Growbag A',
+    },
+  ]
+}
+
+function makeDailyTasks() {
+  return [
+    makeTask('task-growbag-1', 'Prepare growbag_1', 45),
+    makeTask('task-growbag-2', 'Prepare growbag_2', 45),
+    makeTask('task-acquire-starts', 'Acquire Tomato starts', 30),
+  ]
+}
+
+function makeTask(id: string, title: string, estimatedMinutes: number) {
+  return {
+    id,
+    project_id: 'project-courtyard-tomatoes',
+    title,
+    type: 'milestone',
+    status: 'pending',
+    priority: 'blocker',
+    estimated_minutes: estimatedMinutes,
+    is_user_modified: false,
+    created_at: '2026-06-22T04:00:00Z',
+    blocked: true,
   }
 }
 

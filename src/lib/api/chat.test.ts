@@ -51,7 +51,12 @@ describe('chat API', () => {
   })
 
   it('updateThreadSessionContext patches the structured session context', async () => {
-    const data = { available_minutes: 45, energy_level: 'low' as const, focus_project_id: null }
+    const data = {
+      time_text: '45 minutes',
+      energy_text: 'low but focused',
+      focus_text: 'How do I fertilize the cherry tomatoes?',
+      focus_context: [{ subject_type: 'plant', subject_id: 'plant-1' }],
+    }
     await chat.updateThreadSessionContext('thread-1', data)
     expect(client.apiFetch).toHaveBeenCalledWith('/api/v1/threads/thread-1/session-context', {
       method: 'PATCH',

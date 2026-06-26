@@ -744,24 +744,19 @@ export interface CreateThreadRequest {
 }
 
 export interface SessionContextView {
-  available_minutes?: number | null
-  energy_level?: 'low' | 'medium' | 'high' | null
-  focus_project_id?: string | null
-  focus_label?: string | null
-  preferred_location_type?: 'bed' | 'container' | null
-  open_to_outdoor_work?: boolean | null
-  wants_quick_wins?: boolean | null
+  time_text?: string | null
+  energy_text?: string | null
+  focus_text?: string | null
+  focus_context: ContextObject[]
   source: 'unset' | 'inferred' | 'user'
   updated_at?: string | null
 }
 
 export interface UpdateSessionContextRequest {
-  available_minutes?: number | null
-  energy_level?: 'low' | 'medium' | 'high' | null
-  focus_project_id?: string | null
-  preferred_location_type?: 'bed' | 'container' | null
-  open_to_outdoor_work?: boolean | null
-  wants_quick_wins?: boolean | null
+  time_text?: string | null
+  energy_text?: string | null
+  focus_text?: string | null
+  focus_context?: Array<Pick<ContextObject, 'subject_type' | 'subject_id'>> | null
 }
 
 // ---------------------------------------------------------------------------

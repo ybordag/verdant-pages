@@ -41,6 +41,56 @@ test('Rhizome chat creates a thread, streams markdown, and preserves clean histo
   await expect(page.getByText('Error: no garden profile found.')).not.toBeVisible()
 })
 
+test('Rhizome chat sends structured startup session context before the first thread message', async ({ page }) => {
+  const state = await mockAuthenticatedRhizomeApi(page, { streamDelayMs: 150 })
+  const message =
+    "I want to make useful progress today. Given my garden profile, today's tasks, weather, and this context, what should I do first?"
+
+  await page.goto('/app/rhizome')
+  await expect(page.getByText('Start a thread when you are ready.')).toBeVisible()
+
+  await page.getByLabel('Start time today').fill('35 minutes')
+  await page.getByLabel('Start energy').fill('low but focused')
+  await page.getByLabel('Thread focus').fill('tomato')
+  await page
+    .getByRole('button', { name: /Courtyard Tomatoes March 2026/i })
+    .filter({ hasText: 'batch' })
+    .click()
+  await page.getByLabel('Message Rhizome').fill(message)
+  await page.getByRole('button', { name: 'Send' }).click()
+
+  await expect.poll(() => state.createdThreadIds).toContainEqual('thread-new')
+  await expect(page).toHaveURL(/\/app\/rhizome\/thread-new$/)
+
+  await expect.poll(() => state.sessionContexts['thread-new']).toMatchObject({
+    time_text: '35 minutes',
+    energy_text: 'low but focused',
+    focus_text: 'Courtyard Tomatoes March 2026',
+    focus_context: [{ subject_type: 'batch', subject_id: 'batch-courtyard-tomatoes' }],
+    source: 'user',
+  })
+  await expect.poll(() => state.streamRequests).toEqual([{ threadId: 'thread-new', message }])
+
+  await expect(page.getByText('35 minutes')).toBeVisible()
+  await expect(page.getByText('low but focused')).toBeVisible()
+  await expect(page.getByText('Courtyard Tomatoes March 2026')).toBeVisible()
+  await expect(page.getByLabel('Thread messages').getByText(message)).toHaveCount(1)
+  await expect(page.getByLabel('Thread messages').getByText('For this thread')).toHaveCount(0)
+
+  await expect(page.getByText('Prepare growbag_1', { exact: true })).toBeVisible()
+  await expect(page.getByLabel('Thread messages').getByText('no urgent or routine tasks')).toHaveCount(0)
+  await expect(page.getByLabel('Thread messages').getByText('[object Object]')).toHaveCount(0)
+  await expect.poll(() => state.messages['thread-new']).toEqual([
+    { role: 'user', type: 'human', content: message },
+    {
+      role: 'assistant',
+      type: 'ai',
+      content:
+        'Courtyard Tomatoes March 2026 has several pending setup tasks.\n\nYour first task should be: **Prepare growbag_1**.',
+    },
+  ])
+})
+
 test('Rhizome chat retries a failed stream without duplicating the response', async ({ page }) => {
   const state = await mockAuthenticatedRhizomeApi(page, { failFirstStream: true })
 
@@ -82,19 +132,20 @@ test('Rhizome pinned context can be searched, added, and removed', async ({ page
   const state = await mockAuthenticatedRhizomeApi(page)
 
   await page.goto('/app/rhizome/thread-1')
-  await expect(page.getByLabel('Pinned context')).toContainText('No pinned context')
 
-  await page.getByRole('button', { name: 'Add context' }).click()
-  await page.getByLabel('Search context').fill('tom')
-  await page.getByRole('button', { name: /Cherry Tomato/i }).click()
+  await page.getByRole('button', { name: 'Add pinned context' }).click()
+  const pinnedContext = page.getByLabel('Pinned context for this thread', { exact: true })
+  await expect(pinnedContext).toBeVisible()
+  await page.getByLabel('Search Pinned context for this thread').fill('tom')
+  await page.getByRole('button', { name: /Cherry Tomato/i }).filter({ hasText: 'plant' }).click()
 
-  await expect(page.getByLabel('Pinned context')).toContainText('Plant plant-1')
+  await expect(pinnedContext).toContainText('Cherry Tomato')
   await expect.poll(() => state.threads[0].pinned_context).toEqual([
-    { subject_type: 'plant', subject_id: 'plant-1' },
+    { subject_type: 'plant', subject_id: 'plant-1', label: 'Cherry Tomato' },
   ])
 
-  await page.getByRole('button', { name: 'Remove Plant plant-1 context' }).click()
-  await expect(page.getByLabel('Pinned context')).toContainText('No pinned context')
+  await page.getByRole('button', { name: 'Remove Cherry Tomato context' }).click()
+  await expect(pinnedContext).not.toContainText('Cherry Tomato')
   await expect.poll(() => state.threads[0].pinned_context).toEqual([])
 })
 

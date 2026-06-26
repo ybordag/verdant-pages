@@ -200,24 +200,18 @@ describe('RhizomePage', () => {
       ],
     })
     mocks.getThreadSessionContext.mockResolvedValue({
-      available_minutes: 45,
-      energy_level: 'medium',
-      focus_project_id: 'project-1',
-      focus_label: 'Seedlings',
-      preferred_location_type: 'bed',
-      open_to_outdoor_work: true,
-      wants_quick_wins: false,
+      time_text: '45 minutes',
+      energy_text: 'medium',
+      focus_text: 'Seedlings',
+      focus_context: [{ subject_type: 'project', subject_id: 'project-1', label: 'Seedlings' }],
       source: 'inferred',
       updated_at: '2026-06-21T18:00:00Z',
     })
     mocks.updateThreadSessionContext.mockResolvedValue({
-      available_minutes: 30,
-      energy_level: 'high',
-      focus_project_id: 'project-1',
-      focus_label: 'Seedlings',
-      preferred_location_type: 'container',
-      open_to_outdoor_work: false,
-      wants_quick_wins: true,
+      time_text: '30 minutes',
+      energy_text: 'high',
+      focus_text: 'Seedlings',
+      focus_context: [{ subject_type: 'project', subject_id: 'project-1', label: 'Seedlings' }],
       source: 'user',
       updated_at: '2026-06-21T18:30:00Z',
     })
@@ -329,13 +323,10 @@ describe('RhizomePage', () => {
     mocks.listThreads.mockResolvedValue([])
     mocks.getThreadMessages.mockResolvedValue({ thread_id: 'thread-new', messages: [] })
     mocks.getThreadSessionContext.mockResolvedValue({
-      available_minutes: null,
-      energy_level: null,
-      focus_project_id: null,
-      focus_label: null,
-      preferred_location_type: null,
-      open_to_outdoor_work: null,
-      wants_quick_wins: null,
+      time_text: null,
+      energy_text: null,
+      focus_text: null,
+      focus_context: [],
       source: 'unset',
       updated_at: null,
     })
@@ -354,9 +345,17 @@ describe('RhizomePage', () => {
     await user.click(screen.getByRole('button', { name: 'Send' }))
 
     await waitFor(() =>
+      expect(mocks.updateThreadSessionContext).toHaveBeenCalledWith('thread-new', {
+        time_text: '20 minutes',
+        energy_text: 'low but focused',
+        focus_text: null,
+        focus_context: [],
+      }),
+    )
+    await waitFor(() =>
       expect(mocks.streamChat).toHaveBeenCalledWith(
         'thread-new',
-        'For this thread, I have 20 minutes, my energy is low but focused.\n\nHelp me plan the next useful step for my garden today.',
+        'Help me plan the next useful step for my garden today.',
         expect.any(AbortSignal),
       ),
     )
@@ -377,9 +376,17 @@ describe('RhizomePage', () => {
     await user.click(screen.getByRole('button', { name: 'Send' }))
 
     await waitFor(() =>
+      expect(mocks.updateThreadSessionContext).toHaveBeenCalledWith('thread-new', {
+        time_text: null,
+        energy_text: null,
+        focus_text: 'autumn flower bed',
+        focus_context: [],
+      }),
+    )
+    await waitFor(() =>
       expect(mocks.streamChat).toHaveBeenCalledWith(
         'thread-new',
-        'For this thread, my focus is autumn flower bed.\n\nWhat should I do first?',
+        'What should I do first?',
         expect.any(AbortSignal),
       ),
     )
@@ -403,9 +410,17 @@ describe('RhizomePage', () => {
     await user.click(screen.getByRole('button', { name: 'Send' }))
 
     await waitFor(() =>
+      expect(mocks.updateThreadSessionContext).toHaveBeenCalledWith('thread-new', {
+        time_text: null,
+        energy_text: null,
+        focus_text: 'Cherry Tomato',
+        focus_context: [{ subject_type: 'plant', subject_id: 'plant-1' }],
+      }),
+    )
+    await waitFor(() =>
       expect(mocks.streamChat).toHaveBeenCalledWith(
         'thread-new',
-        'For this thread, my focus is Cherry Tomato (plant).\n\nWhat should I do first?',
+        'What should I do first?',
         expect.any(AbortSignal),
       ),
     )
@@ -449,7 +464,7 @@ describe('RhizomePage', () => {
 
     const sessionContext = await screen.findByLabelText('Session context')
     expect(await within(sessionContext).findByText('45 minutes')).toBeInTheDocument()
-    expect(within(sessionContext).getByText('Medium')).toBeInTheDocument()
+    expect(within(sessionContext).getByText('medium')).toBeInTheDocument()
     expect(within(sessionContext).getByText('Seedlings')).toBeInTheDocument()
     expect(within(sessionContext).getByText('Inferred')).toBeInTheDocument()
     expect(mocks.getThreadSessionContext).toHaveBeenCalledWith('thread-1')
@@ -461,26 +476,22 @@ describe('RhizomePage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Edit time today' }))
     await user.clear(screen.getByLabelText('Time today'))
-    await user.type(screen.getByLabelText('Time today'), '30')
-    await user.selectOptions(screen.getByLabelText('Energy'), 'high')
-    await user.selectOptions(screen.getByLabelText('Preferred location'), 'container')
-    await user.click(screen.getByLabelText('Outdoor work'))
-    await user.click(screen.getByLabelText('Quick wins'))
+    await user.type(screen.getByLabelText('Time today'), '30 minutes')
+    await user.clear(screen.getByLabelText('Energy'))
+    await user.type(screen.getByLabelText('Energy'), 'high')
     await user.click(screen.getByRole('button', { name: 'Save' }))
 
     await waitFor(() =>
       expect(mocks.updateThreadSessionContext).toHaveBeenCalledWith('thread-1', {
-        available_minutes: 30,
-        energy_level: 'high',
-        preferred_location_type: 'container',
-        open_to_outdoor_work: false,
-        wants_quick_wins: true,
-        focus_project_id: 'project-1',
+        time_text: '30 minutes',
+        energy_text: 'high',
+        focus_text: 'Seedlings',
+        focus_context: [{ subject_type: 'project', subject_id: 'project-1' }],
       }),
     )
     expect(await screen.findByText('User set')).toBeInTheDocument()
     expect(screen.getByText('30 minutes')).toBeInTheDocument()
-    expect(screen.getByText('High')).toBeInTheDocument()
+    expect(screen.getByText('high')).toBeInTheDocument()
   })
 
   it('persists selected project focus from the active session editor', async () => {
@@ -507,7 +518,10 @@ describe('RhizomePage', () => {
     await waitFor(() =>
       expect(mocks.updateThreadSessionContext).toHaveBeenCalledWith(
         'thread-1',
-        expect.objectContaining({ focus_project_id: 'project-2' }),
+        expect.objectContaining({
+          focus_text: 'Autumn Flower Bed',
+          focus_context: [{ subject_type: 'project', subject_id: 'project-2' }],
+        }),
       ),
     )
   })
@@ -849,6 +863,24 @@ describe('RhizomePage', () => {
     )
     expect(await screen.findByText('How are the tomatoes?')).toBeInTheDocument()
     expect(await screen.findByText('Check soil moisture.')).toBeInTheDocument()
+  })
+
+  it('does not duplicate streamed text when a provider sends cumulative chunks', async () => {
+    const user = userEvent.setup()
+    mocks.streamChat.mockImplementationOnce(() =>
+      streamEvents([
+        { type: 'token', content: 'Would you like ' },
+        { type: 'token', content: 'Would you like to check tomatoes specifically?' },
+        { type: 'done' },
+      ]),
+    )
+    renderRhizome('/app/rhizome/thread-1')
+
+    await user.type(await screen.findByLabelText('Message Rhizome'), 'What should I do?')
+    await user.keyboard('{Enter}')
+
+    expect(await screen.findByText('Would you like to check tomatoes specifically?')).toBeInTheDocument()
+    expect(screen.queryByText(/Would you like Would you like/)).not.toBeInTheDocument()
   })
 
   it('shows a retry control when streaming fails', async () => {

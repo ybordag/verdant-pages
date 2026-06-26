@@ -78,15 +78,9 @@ const CONTEXT_TYPE_ALIASES = new Map([
   ['incidents', 'incident'],
 ])
 
-type EnergyLevel = NonNullable<SessionContextView['energy_level']>
-type LocationType = NonNullable<SessionContextView['preferred_location_type']>
-
 interface SessionDraft {
-  available_minutes: string
-  energy_level: EnergyLevel | ''
-  preferred_location_type: LocationType | ''
-  open_to_outdoor_work: boolean
-  wants_quick_wins: boolean
+  time_text: string
+  energy_text: string
 }
 
 interface StartThreadDraft {
@@ -116,11 +110,8 @@ interface ComposerAutocompletePosition {
 }
 
 const EMPTY_SESSION_DRAFT: SessionDraft = {
-  available_minutes: '',
-  energy_level: '',
-  preferred_location_type: '',
-  open_to_outdoor_work: false,
-  wants_quick_wins: false,
+  time_text: '',
+  energy_text: '',
 }
 
 const EMPTY_START_THREAD_DRAFT: StartThreadDraft = {
@@ -163,11 +154,8 @@ function titleCase(value?: string | null): string {
 function sessionDraftFromContext(context?: SessionContextView): SessionDraft {
   if (!context) return EMPTY_SESSION_DRAFT
   return {
-    available_minutes: context.available_minutes ? String(context.available_minutes) : '',
-    energy_level: context.energy_level ?? '',
-    preferred_location_type: context.preferred_location_type ?? '',
-    open_to_outdoor_work: Boolean(context.open_to_outdoor_work),
-    wants_quick_wins: Boolean(context.wants_quick_wins),
+    time_text: context.time_text ?? '',
+    energy_text: context.energy_text ?? '',
   }
 }
 
@@ -177,12 +165,25 @@ function sessionSourceLabel(context?: SessionContextView): string | null {
 }
 
 function sessionTimeLabel(context?: SessionContextView): string {
-  if (!context?.available_minutes) return 'Not set'
-  return `${context.available_minutes} minutes`
+  return context?.time_text?.trim() || 'Not set'
 }
 
 function sessionFocusLabel(context?: SessionContextView): string {
-  return context?.focus_label?.trim() || 'Not set'
+  const focusText = context?.focus_text?.trim()
+  if (focusText) return focusText
+  const labels = context?.focus_context.map((item) => contextLabel(item)).filter(Boolean) ?? []
+  return labels.length > 0 ? labels.join(', ') : 'Not set'
+}
+
+function sessionFocusContextRefs(context: FocusContext): UpdateSessionContextRequest['focus_context'] {
+  return context
+    ? [
+        {
+          subject_type: context.subject_type,
+          subject_id: context.subject_id,
+        },
+      ]
+    : []
 }
 
 function weatherObservedLabel(value?: string): string {
@@ -390,6 +391,13 @@ function displayMessageContent(message: ThreadMessageView): string {
   return message.role === 'user' ? stripTransportStartContext(message.content) : message.content
 }
 
+function appendStreamContent(current: string, next: string): string {
+  if (!next) return current
+  if (!current) return next
+  if (next === current || next.startsWith(current)) return next
+  return current + next
+}
+
 function messageKey(message: ThreadMessageView): string {
   return `${message.role}:${displayMessageContent(message)}`
 }
@@ -588,15 +596,15 @@ export default function RhizomePage() {
   const activeOptimisticSession =
     optimisticSessionContext?.threadId === threadId ? optimisticSessionContext : null
   const sessionTimeDisplay =
-    sessionContext?.available_minutes
+    sessionContext?.time_text?.trim()
       ? sessionTimeLabel(sessionContext)
       : activeOptimisticSession?.timeLabel ?? sessionTimeLabel(sessionContext)
   const sessionEnergyDisplay =
-    sessionContext?.energy_level
-      ? titleCase(sessionContext.energy_level)
-      : activeOptimisticSession?.energyLabel ?? titleCase(sessionContext?.energy_level)
+    sessionContext?.energy_text?.trim()
+      ? sessionContext.energy_text
+      : activeOptimisticSession?.energyLabel ?? 'Not set'
   const sessionFocusDisplay =
-    sessionContext?.focus_label?.trim()
+    sessionContext?.focus_text?.trim() || (sessionContext?.focus_context.length ?? 0) > 0
       ? sessionFocusLabel(sessionContext)
       : activeOptimisticSession?.focusLabel ?? sessionFocusLabel(sessionContext)
   const pinnedContext = activeThread?.pinned_context ?? EMPTY_CONTEXT
@@ -680,15 +688,7 @@ export default function RhizomePage() {
 
   function startSessionEdit() {
     setSessionDraft(sessionDraftFromContext(sessionContext))
-    setSessionFocusContext(
-      sessionContext?.focus_project_id
-        ? {
-            subject_type: 'project',
-            subject_id: sessionContext.focus_project_id,
-            label: sessionContext.focus_label ?? 'Project focus',
-          }
-        : null,
-    )
+    setSessionFocusContext(sessionContext?.focus_context[0] ?? null)
     setSessionFocusTerm(sessionFocusLabel(sessionContext) === 'Not set' ? '' : sessionFocusLabel(sessionContext))
     setSessionError(null)
     setSessionEditing(true)
@@ -704,20 +704,11 @@ export default function RhizomePage() {
 
   function saveSessionContext() {
     if (!threadId) return
-    const minutesText = sessionDraft.available_minutes.trim()
-    const minutes = minutesText ? Number(minutesText) : null
-    if (minutes !== null && (!Number.isInteger(minutes) || minutes < 0)) {
-      setSessionError('Time must be a whole number of minutes.')
-      return
-    }
-
     const payload: UpdateSessionContextRequest = {
-      available_minutes: minutes,
-      energy_level: sessionDraft.energy_level || null,
-      preferred_location_type: sessionDraft.preferred_location_type || null,
-      open_to_outdoor_work: sessionDraft.open_to_outdoor_work,
-      wants_quick_wins: sessionDraft.wants_quick_wins,
-      focus_project_id: sessionFocusContext?.subject_type === 'project' ? sessionFocusContext.subject_id : null,
+      time_text: sessionDraft.time_text.trim() || null,
+      energy_text: sessionDraft.energy_text.trim() || null,
+      focus_text: sessionFocusTerm.trim() || null,
+      focus_context: sessionFocusContextRefs(sessionFocusContext),
     }
     updateSessionMutation.mutate(payload)
   }
@@ -738,21 +729,6 @@ export default function RhizomePage() {
     setComposerCursor(prompt.length)
   }
 
-  function startThreadContextText(): string | null {
-    const details = [
-      startThreadDraft.time_today.trim()
-        ? `I have ${startThreadDraft.time_today.trim()}`
-        : null,
-      startThreadDraft.energy.trim() ? `my energy is ${startThreadDraft.energy.trim()}` : null,
-      startFocusContext
-        ? `my focus is ${contextLabel(startFocusContext)} (${startFocusContext.subject_type})`
-        : startFocusTerm.trim()
-          ? `my focus is ${startFocusTerm.trim()}`
-          : null,
-    ].filter(Boolean)
-    return details.length > 0 ? `For this thread, ${details.join(', ')}.` : null
-  }
-
   function startThreadSessionLabels(): Omit<OptimisticSessionContext, 'threadId'> {
     return {
       timeLabel: startThreadDraft.time_today.trim() || 'Not set',
@@ -763,9 +739,18 @@ export default function RhizomePage() {
     }
   }
 
-  function messageWithStartContext(message: string): string {
-    const contextText = isNewThread ? startThreadContextText() : null
-    return contextText ? `${contextText}\n\n${message}` : message
+  function startThreadSessionPayload(): UpdateSessionContextRequest | null {
+    const timeText = startThreadDraft.time_today.trim()
+    const energyText = startThreadDraft.energy.trim()
+    const focusText = startFocusTerm.trim()
+    const focusContext = sessionFocusContextRefs(startFocusContext) ?? []
+    if (!timeText && !energyText && !focusText && focusContext.length === 0) return null
+    return {
+      time_text: timeText || null,
+      energy_text: energyText || null,
+      focus_text: focusText || null,
+      focus_context: focusContext,
+    }
   }
 
   function updateThreadContextCache(context: ContextObject, mode: 'add' | 'remove') {
@@ -1072,7 +1057,7 @@ export default function RhizomePage() {
         : action.id
       for await (const event of streamResume(threadId, resolution, controller.signal)) {
         if (event.type === 'token') {
-          responseText += event.content
+          responseText = appendStreamContent(responseText, event.content)
           setStreamingText(responseText)
         } else if (event.type === 'interaction') {
           setStreamInteraction(event.payload)
@@ -1116,7 +1101,6 @@ export default function RhizomePage() {
     if (!message || isStreaming) return
 
     let targetThreadId = threadId
-    const outboundMessage = messageWithStartContext(message)
     const controller = new AbortController()
     streamControllerRef.current?.abort()
     streamControllerRef.current = controller
@@ -1128,6 +1112,7 @@ export default function RhizomePage() {
     try {
       if (!targetThreadId) {
         const optimisticLabels = startThreadSessionLabels()
+        const startupSessionPayload = startThreadSessionPayload()
         const createdThread = await createThread({})
         targetThreadId = createdThread.thread_id
         if (
@@ -1139,6 +1124,10 @@ export default function RhizomePage() {
             threadId: targetThreadId,
             ...optimisticLabels,
           })
+        }
+        if (startupSessionPayload) {
+          const startupContext = await updateThreadSessionContext(targetThreadId, startupSessionPayload)
+          queryClient.setQueryData(['threads', targetThreadId, 'session-context'], startupContext)
         }
         navigate(`/app/rhizome/${encodeURIComponent(targetThreadId)}`)
       }
@@ -1153,9 +1142,9 @@ export default function RhizomePage() {
       let responseText = ''
       let sawDone = false
       let sawInteraction = false
-      for await (const event of streamChat(targetThreadId, outboundMessage, controller.signal)) {
+      for await (const event of streamChat(targetThreadId, message, controller.signal)) {
         if (event.type === 'token') {
-          responseText += event.content
+          responseText = appendStreamContent(responseText, event.content)
           setStreamingText(responseText)
         } else if (event.type === 'interaction') {
           sawInteraction = true
@@ -1363,81 +1352,31 @@ export default function RhizomePage() {
                 <span>Time today</span>
                 <input
                   aria-label="Time today"
-                  inputMode="numeric"
-                  min="0"
-                  step="1"
-                  type="number"
-                  value={sessionDraft.available_minutes}
+                  type="text"
+                  value={sessionDraft.time_text}
                   onChange={(event) =>
                     setSessionDraft((current) => ({
                       ...current,
-                      available_minutes: event.target.value,
+                      time_text: event.target.value,
                     }))
                   }
                 />
               </label>
               <label className={s.sessionCard}>
                 <span>Energy</span>
-                <select
+                <input
                   aria-label="Energy"
-                  value={sessionDraft.energy_level}
+                  type="text"
+                  value={sessionDraft.energy_text}
                   onChange={(event) =>
                     setSessionDraft((current) => ({
                       ...current,
-                      energy_level: event.target.value as SessionDraft['energy_level'],
+                      energy_text: event.target.value,
                     }))
                   }
-                >
-                  <option value="">Not set</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
+                />
               </label>
               <div className={s.sessionCard}>{renderFocusPicker('session')}</div>
-              <label className={s.sessionCard}>
-                <span>Location</span>
-                <select
-                  aria-label="Preferred location"
-                  value={sessionDraft.preferred_location_type}
-                  onChange={(event) =>
-                    setSessionDraft((current) => ({
-                      ...current,
-                      preferred_location_type: event.target.value as SessionDraft['preferred_location_type'],
-                    }))
-                  }
-                >
-                  <option value="">Not set</option>
-                  <option value="bed">Bed</option>
-                  <option value="container">Container</option>
-                </select>
-              </label>
-              <label className={[s.sessionCard, s.sessionCheck].join(' ')}>
-                <input
-                  type="checkbox"
-                  checked={sessionDraft.open_to_outdoor_work}
-                  onChange={(event) =>
-                    setSessionDraft((current) => ({
-                      ...current,
-                      open_to_outdoor_work: event.target.checked,
-                    }))
-                  }
-                />
-                <span>Outdoor work</span>
-              </label>
-              <label className={[s.sessionCard, s.sessionCheck].join(' ')}>
-                <input
-                  type="checkbox"
-                  checked={sessionDraft.wants_quick_wins}
-                  onChange={(event) =>
-                    setSessionDraft((current) => ({
-                      ...current,
-                      wants_quick_wins: event.target.checked,
-                    }))
-                  }
-                />
-                <span>Quick wins</span>
-              </label>
               <div className={s.sessionActions}>
                 {sessionError ? <span role="alert">{sessionError}</span> : null}
                 <button
@@ -1464,7 +1403,7 @@ export default function RhizomePage() {
                 <strong>
                   {sessionContextQuery.isLoading && !activeOptimisticSession ? 'Loading' : sessionTimeDisplay}
                 </strong>
-                {activeOptimisticSession && !sessionContext?.available_minutes ? (
+                {activeOptimisticSession && !sessionContext?.time_text?.trim() ? (
                   <small>Pending</small>
                 ) : sessionSourceLabel(sessionContext) ? (
                   <small>{sessionSourceLabel(sessionContext)}</small>
@@ -1633,8 +1572,10 @@ export default function RhizomePage() {
                             key={thread.thread_id}
                             to={`/app/rhizome/${encodeURIComponent(thread.thread_id)}`}
                           >
-                            <strong>{threadTitle(thread)}</strong>
-                            <small>{threadPreview(thread)}</small>
+                            <span>
+                              <strong>{threadTitle(thread)}</strong>
+                              <small>{threadPreview(thread)}</small>
+                            </span>
                           </Link>
                         ))}
                       </div>
