@@ -73,7 +73,9 @@ test('Rhizome chat sends structured startup session context before the first thr
 
   await expect(page.getByText('35 minutes')).toBeVisible()
   await expect(page.getByText('low but focused')).toBeVisible()
-  await expect(page.getByText('Courtyard Tomatoes March 2026')).toBeVisible()
+  await expect(
+    page.getByRole('button', { name: 'Edit focus' }).filter({ hasText: 'Courtyard Tomatoes March 2026' }),
+  ).toBeVisible()
   await expect(page.getByLabel('Thread messages').getByText(message)).toHaveCount(1)
   await expect(page.getByLabel('Thread messages').getByText('For this thread')).toHaveCount(0)
 
