@@ -5,7 +5,8 @@
 1. Read [current status](docs/status/current.md) and the [roadmap](docs/roadmap/overview.md).
 2. Read the relevant [page spec](docs/pages/) and [capability matrix](docs/capabilities.md).
 3. Use the [codebase tour](docs/architecture/codebase-tour.md) to find the owning module.
-4. Run the smallest setup mode that can prove the change.
+4. For a complex route, read [frontend structure](docs/architecture/frontend-structure.md).
+5. Run the smallest setup mode that can prove the change.
 
 Repository-wide coding-agent invariants are in [CLAUDE.md](CLAUDE.md). Product terms are in the [glossary](docs/glossary.md).
 
@@ -34,9 +35,10 @@ Verdant branches use tree names. Phase sub-branches may use species names when t
 1. Confirm current behavior in source and tests.
 2. Confirm backend capability in Cambium/Rhizome when the change crosses the API boundary.
 3. Implement with existing tokens, primitives, and API modules.
-4. Cover loading, empty, populated, error, disabled, and race states that apply.
-5. Verify light/dark and desktop/narrow layouts for user-facing changes.
-6. Update current status, page specs, capability matrix, or API catalog where needed.
+4. Keep route pages as composition roots and move cohesive workflow behavior into feature modules when complexity warrants it.
+5. Cover loading, empty, populated, error, disabled, and race states that apply.
+6. Verify light/dark and desktop/narrow layouts for user-facing changes.
+7. Update current status, page specs, capability matrix, or API catalog where needed.
 
 Do not build speculative frontend wrappers for backend routes that do not exist. Open or update the appropriate backend issue with a concrete request/response contract.
 
@@ -66,6 +68,7 @@ See [testing](docs/development/testing.md).
 - `docs/roadmap/overview.md`: future sequence and acceptance outcomes.
 - `docs/roadmap/history.md`: completed milestone record.
 - `docs/pages/`: intended page behavior, not a duplicate backend-status ledger.
+- `docs/pages/_template.md`: required concerns for a new or materially redesigned page spec.
 - `docs/capabilities.md`: cross-repo readiness at a glance.
 - `docs/development/deferred-work.md`: intentionally postponed work with a re-enable condition.
 

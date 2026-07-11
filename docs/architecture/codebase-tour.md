@@ -55,7 +55,9 @@ Use [current status](../status/current.md) for readiness, page specs for intende
 | `src/components/activity/` | Activity history workflow |
 | `src/components/rhizome/` | Shared Rhizome controls such as context autocomplete |
 
-See [component architecture](components.md) for the current inventory. Do not treat proposed entries in [design patterns](../design/patterns.md) as existing components.
+Complex product workflows will migrate into `src/features/<domain>/`, beginning with Rhizome. This target may contain domain components, hooks/controllers, pure helpers, and feature-local types while the route page remains the composition root.
+
+See [component architecture](components.md) for the current inventory and [frontend structure](frontend-structure.md) for the accepted target. Do not treat proposed entries in [design patterns](../design/patterns.md) as existing components.
 
 ## API And Types
 

@@ -2,7 +2,7 @@
 
 **Last verified:** 2026-07-10
 
-This document describes components that exist in the repository. Proposed shared UI patterns live in [design patterns](../design/patterns.md), and page-specific composition belongs in the [page specs](../pages/).
+This document describes components that exist in the repository. The accepted organization for complex workflows lives in [frontend structure](frontend-structure.md), proposed shared UI patterns live in [design patterns](../design/patterns.md), and page-specific composition belongs in the [page specs](../pages/).
 
 ## Conventions
 
@@ -87,6 +87,7 @@ Use these tests when deciding where code belongs:
 | Is it domain-neutral and reusable? | `components/primitives/` |
 | Is it global navigation, status, or application framing? | `components/shell/` |
 | Does it encode one domain workflow and have multiple consumers? | `components/<domain>/` |
+| Does it combine domain components, hooks, workflow state, and helpers? | `features/<domain>/` |
 | Does it coordinate route data and the whole screen? | `pages/` |
 | Is it only a visual composition proposed for a future page? | Document it in `docs/design/patterns.md` first |
 
@@ -116,5 +117,6 @@ Reusable controls must support:
 - [Design tokens](design-tokens.md)
 - [Visual identity](../design/visual-identity.md)
 - [Design patterns](../design/patterns.md)
+- [Frontend structure](frontend-structure.md)
 - [Codebase tour](codebase-tour.md)
 - [Testing](../development/testing.md)

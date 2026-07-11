@@ -11,9 +11,10 @@ Verdant Pages is the React frontend for the Gardening Agent system. It calls Cam
 1. [Purpose and boundaries](overview/purpose.md)
 2. [Quickstart](getting-started/quickstart.md)
 3. [Codebase tour](architecture/codebase-tour.md)
-4. [Current status](status/current.md)
-5. The relevant [page spec](pages/) and [capability matrix](capabilities.md)
-6. [Contributing](../CONTRIBUTING.md)
+4. [Frontend structure](architecture/frontend-structure.md)
+5. [Current status](status/current.md)
+6. The relevant [page spec](pages/) and [capability matrix](capabilities.md)
+7. [Contributing](../CONTRIBUTING.md)
 
 ### Coding agent or returning contributor
 
@@ -62,6 +63,7 @@ Do not duplicate live branch names, test counts, or blocker status outside `stat
 - [Codebase tour](architecture/codebase-tour.md)
 - [Tech stack](architecture/tech-stack.md)
 - [Route structure](architecture/routes.md)
+- [Frontend structure for complex features](architecture/frontend-structure.md)
 - [Component architecture](architecture/components.md)
 - [Design tokens and theming](architecture/design-tokens.md)
 - [API client architecture](architecture/api-client.md)
@@ -81,6 +83,7 @@ Do not duplicate live branch names, test counts, or blocker status outside `stat
 - [Incidents](pages/06-incidents.md)
 - [Activity](pages/07-activity.md)
 - [Account and settings](pages/08-account.md)
+- [Page specification template](pages/_template.md)
 
 ### Design
 

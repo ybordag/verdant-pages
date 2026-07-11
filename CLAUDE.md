@@ -34,8 +34,9 @@ Use the shortest path that fits the task:
 1. [Current status](docs/status/current.md) - active phase, priorities, blockers, quality gates.
 2. [Roadmap](docs/roadmap/overview.md) - intended delivery order and acceptance criteria.
 3. [Codebase tour](docs/architecture/codebase-tour.md) - where current code lives.
-4. Relevant [page specification](docs/pages/) - intended user experience.
-5. [Visual identity](docs/design/visual-identity.md) - design principles and visual language.
+4. [Frontend structure](docs/architecture/frontend-structure.md) - how complex route features are organized.
+5. Relevant [page specification](docs/pages/) - intended user experience.
+6. [Visual identity](docs/design/visual-identity.md) - design principles and visual language.
 
 ## Commands
 
@@ -64,6 +65,7 @@ src/
 |   |-- primitives/     Domain-neutral UI controls
 |   |-- rhizome/        Shared Rhizome/context controls
 |   `-- shell/          Navigation, app shell, notifications, connectivity, toasts
+|-- features/           Target home for complex domain workflows; introduced incrementally
 |-- lib/
 |   |-- api/            Typed Cambium client modules and request-shape tests
 |   |-- auth/           Session context and useAuth
@@ -96,6 +98,9 @@ docs/                   Product, architecture, design, development, and roadmap 
   for transient presentation, not cached backend records.
 - **Use design tokens.** Add reusable values to `tokens.css`; do not scatter
   literal colors across component CSS.
+- **Keep complex route pages thin.** Route pages own identity and composition;
+  feature modules own cohesive domain components, hooks, workflow state, and
+  helpers. Do not replace a god page with a god hook.
 - **Routes own durable workflows.** Full creation and complex editing use
   dedicated URLs. Temporary navigation, review, and context inspection may use
   workspace drawers when the page specification calls for them.
@@ -120,10 +125,11 @@ docs/                   Product, architecture, design, development, and roadmap 
 ### Add or change a page
 
 1. Read the page specification and visual principles.
-2. Keep route-level data ownership in the page or a dedicated feature hook.
-3. Extract reusable controls or repeated domain presentations.
-4. Cover loading, error, empty, populated, and mutation states as applicable.
-5. Add browser coverage for the phase's user-visible acceptance path.
+2. Use the [page template](docs/pages/_template.md) when defining a new or materially redesigned workflow.
+3. Keep route identity/composition in the page and cohesive workflow state in dedicated feature hooks/controllers.
+4. Extract components around domain responsibilities, not visual rectangles.
+5. Cover loading, error, empty, populated, and mutation states as applicable.
+6. Add browser coverage for the phase's user-visible acceptance path.
 
 ### Work with Rhizome chat
 
