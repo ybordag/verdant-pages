@@ -1,65 +1,69 @@
-# Purpose and Design
+# Purpose And Product Boundaries
 
-## What Verdant Pages is
+**Last reviewed:** 2026-07-10
 
-Verdant Pages is the browser-based frontend for the Gardening Agent system. It is the surface through which a user does everything: reviews their daily triage, acts on tasks, monitors their garden objects, plans projects, chats with Rhizome, and handles pending approvals.
+## What Verdant Pages Is
 
-The rest of the system — Rhizome (the agent and domain engine), Cambium (the API gateway), Fairlead (the inference router) — exists to serve this surface. From the user's perspective, Verdant is the product.
+Verdant Pages is the browser frontend for the Gardening Agent system. It is the primary surface for daily orientation, garden records, tasks, projects, incidents, Rhizome conversations, and structured reviews.
 
----
+The intended product is a calm gardening journal combined with an operational workspace: users should be able to understand what matters today, act on it, and see the resulting garden state without learning backend concepts.
 
-## Where it fits in the system
+## System Boundary
 
-```
+```text
 Browser
-  └── Verdant Pages (React SPA)
-        └── Cambium :8080  (Go API gateway — auth, versioned JSON API)
-              └── Rhizome :8001  (Python — agent, domain logic, Postgres)
-                    └── Fairlead  (Rust — inference router, vLLM)
+  -> Verdant Pages (React SPA)
+  -> Cambium (Go gateway: auth and versioned API)
+  -> Rhizome (Python: agent, domain logic, persistence)
+  -> model providers / Fairlead where configured
 ```
 
-Verdant talks **only** to Cambium. It has no awareness of Rhizome internals, LangGraph, SQLAlchemy, or Postgres. The boundary is clean: Verdant is a consumer of a versioned JSON API with well-defined DTOs. Cambium absorbs any Rhizome API changes so Verdant does not need to.
+Verdant talks only to Cambium. It does not import Rhizome internals or access its database. Cambium is the frontend's network boundary; Rhizome remains the source of gardening-domain behavior.
 
----
+## Product Loop
 
-## Design principles
+The final experience is organized around a repeatable loop:
 
-**1. The app is the product.** The CLI is a development surface; Verdant is what users actually live in. Every architectural decision in this repo is evaluated against: does it make the app feel fast, honest, and easy to act in?
+1. create an account and establish a usable garden profile;
+2. orient with weather, triage, and today's work;
+3. inspect or update garden objects;
+4. ask Rhizome for planning, diagnosis, or prioritization;
+5. review structured proposed actions;
+6. complete work and see activity/history update.
 
-**2. Fetch is the contract, not the tool name.** All API calls go through `apiFetch` in `src/lib/api/client.ts`. This is not boilerplate — it's the single place where auth headers are attached, 401s are caught and retried, and API errors are surfaced consistently. Nothing calls `fetch()` directly.
+The [roadmap](../roadmap/overview.md) sequences the remaining work toward this loop. [Current status](../status/current.md) records what is actually implemented now.
 
-**3. Token security is non-negotiable.** The JWT access token lives in a module variable in memory — never in `localStorage`, never in a cookie, never in a URL. It disappears on page reload, which is intentional; `POST /auth/refresh` re-establishes the session silently. This is the only safe approach given the sensitivity of the token.
+## Design And Engineering Principles
 
-**4. SSE via fetch, not EventSource.** The agent chat stream requires an `Authorization: Bearer` header. `EventSource` cannot send custom headers. Verdant uses `fetch` + `ReadableStream` for all SSE consumption. This is a firm architectural constraint — never use `EventSource` in this repo.
+1. **The app is the product.** Optimize for understandable workflows and honest state, not backend convenience.
+2. **Structured data over prose parsing.** Use typed views and stable object references whenever the backend supports them.
+3. **One gateway boundary.** All browser network calls go through Cambium.
+4. **Secure session defaults.** Access tokens remain in memory; refresh tokens remain in Cambium-owned httpOnly cookies.
+5. **Durable routes for durable work.** Objects and editing workflows need linkable routes. Temporary thread, context, and review panels are acceptable when they support a current workspace and collapse cleanly.
+6. **Server state has one owner.** TanStack Query owns remote state and invalidation; local state owns temporary presentation only.
+7. **Optimism must be reversible.** Optimistic mutations need rollback, duplicate suppression, and tests.
+8. **Accessibility and responsive behavior are completion criteria.** They are not polish deferred until production.
+9. **Current facts and future design stay separate.** Status belongs in `docs/status/`; intended behavior belongs in page and design specs.
 
-**5. Pages over drawers.** Creation and editing flows use dedicated routes (`/app/plants/new`, `/app/tasks/:id`). The only drawer in the app is the notification drawer. This keeps the URL honest, makes deep-linking trivial, and avoids the complexity of sheet-state management.
+## Ownership
 
-**6. Optimistic mutations with honest rollback.** Completing a task strikes it through immediately. If the server rejects the action, the UI reverts and shows an error. TanStack Query handles this pattern cleanly — don't bypass it with local state.
+Verdant owns:
 
----
+- public, login, registration, and future onboarding UI;
+- authenticated shell and navigation;
+- page layouts, interactions, and responsive behavior;
+- rendering structured domain views and review actions;
+- Rhizome threads, streams, context selection, and composer behavior;
+- frontend loading, empty, error, and offline states.
 
-## What Verdant owns
+Verdant does not own:
 
-- Login, registration, and session management UI
-- App shell: navigation, quick actions, garden profile card, notification drawer
-- All page layouts and interactions across 8 page groups
-- Rendering of triage, tasks, proposals, treatment plans, and weather reviews
-- Interaction-resolution UI (structured approval cards)
-- Agent chat thread list, streaming message display, and composer
-- Media upload and display flows (future roadmap, blocked on rhizome#117)
+- token issuance or refresh-cookie policy;
+- gardening-domain rules and persistence;
+- agent graph and tool behavior;
+- inference routing;
+- background monitoring jobs.
 
-## What Verdant does not own
+## Intended User
 
-- Auth token issuance — Cambium owns this
-- Domain logic — Rhizome owns this
-- Persistence — Postgres, owned by Rhizome
-- Inference routing — Fairlead owns this
-- Background monitoring — Rhizome's `scripts/monitor.py` cron runner
-
----
-
-## The user
-
-A single user managing a hobby garden. Think: Bay Area Zone 9b, vegetables and flowers, beds and containers, organic-first, limited weekend time. The app is designed around their daily rhythm: morning check-in (Today page), task execution across the week, occasional project planning.
-
-The system is currently single-tenant. Multi-tenancy is on the Rhizome roadmap; the schema is ready but tool queries haven't been hardened yet.
+The core persona is a primary gardener managing a personal garden with limited time and attention. Authentication and user isolation exist across the stack, so documentation and code must not assume one global database user. Product design may remain optimized for one gardener's workspace rather than organization/team administration.

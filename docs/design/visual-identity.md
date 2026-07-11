@@ -1,6 +1,6 @@
 # Visual Identity & Design Principles
 
-**Last updated:** 2026-06-21
+**Last reviewed:** 2026-07-10
 
 This is the prose companion to [architecture/design-tokens.md](../architecture/design-tokens.md) — that doc has the exact CSS variable names and values; this one explains *why* those values were chosen and how to use them consistently as new screens get built. If the two ever disagree on a value, `architecture/design-tokens.md` (and `src/styles/tokens.css` behind it) wins — fix this doc to match.
 
@@ -20,6 +20,7 @@ Verdant Pages is the primary user-facing surface for Rhizome — it replaces the
 - Approvals are explicit and low-friction — never bury a decision in prose.
 - Weather and treatment workflows should feel operational, not like reading a report.
 - Image/media flows should fit naturally into the app as that capability lands.
+- Prefer borders, surface contrast, and page bands over shadows. Shadows are reserved for transient overlays that otherwise lack separation.
 
 ## Visual tone
 
@@ -53,6 +54,8 @@ Two material families, used consistently:
 - **Dark chrome** (vellum-tinted overlays on a near-black base, not a separate dark palette) for app shell, page background, card footers, dark headers, and framing elements. This keeps the dark theme from accumulating muddy near-neutrals while preserving the dark journal-cover/soil feeling.
 
 `vellum-light` is the default paper surface. `vellum-pale` works well for quieter surfaces like calendar cells. `vellum` (the darker paper variant) is for moments that want more warmth or age.
+
+In the authenticated light theme, `vellum-page` is the app background and `vellum` is the navigation surface. Opaque message/content surfaces must prevent the page dot texture from showing through.
 
 Brand color usage rules — these are deliberate, not arbitrary:
 - **Chartreuse** — active navigation, current work, lively botanical accents.

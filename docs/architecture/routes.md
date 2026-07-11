@@ -1,79 +1,51 @@
 # Route Structure
 
-**Last updated:** 2026-06-21
+**Last verified:** 2026-07-10
 
-All authenticated routes live under `/app` and are wrapped by `ProtectedRoute`. `/login` and `/register` are wrapped by `PublicOnlyRoute`, which redirects to `/app/today` if the user is already authenticated (so a logged-in user can't land back on the login form).
+`src/routes/router.tsx` is authoritative. Route presence does not imply page completion; see [current status](../status/current.md) and the [page specs](../pages/).
 
-```
-/                           → LandingPage (public marketing page)
-/login                      → PublicOnlyRoute + LoginPage
-/register                   → PublicOnlyRoute + RegisterPage
+## Public Routes
 
-/app                        → ProtectedRoute + AppShell layout
-  /app/today                → TodayPage
-
-  /app/tasks                → TasksPage — Today view (tasks/daily, default)
-  /app/tasks/week           → TasksPage — This Week view (tasks/due?days_ahead=7)
-  /app/tasks/project/:id    → TasksPage — By Project view (tasks?project_id=X)
-  /app/tasks/kind/:type     → TasksPage — By Kind view (tasks?type=X)
-  /app/tasks/area           → TasksPage — By Area view (tasks?subject_type=X&subject_id=Y)
-  /app/tasks/progress       → TasksPage — Progress / Velocity view
-  /app/tasks/:id            → TaskDetailPage — full task detail and edit
-  /app/tasks/series/:id     → TaskSeriesPage — edit a recurring series rule
-
-  /app/calendar             → CalendarPage — full month/week view across all entity types
-
-  /app/rhizome              → RhizomePage — agent chat (auto-creates thread if none)
-  /app/rhizome/:threadId    → RhizomePage — specific thread loaded
-
-  /app/garden               → GardenPage — hub (map, profile, tab previews for beds/containers/plants/activity)
-  /app/beds                 → BedListPage — full bed list with filters and TanStack Table
-  /app/beds/new             → BedCreatePage — static form
-  /app/beds/:id             → BedDetailPage
-  /app/containers           → ContainerListPage — full container list with filters and TanStack Table
-  /app/containers/new       → ContainerCreatePage — static form
-  /app/containers/:id       → ContainerDetailPage
-  /app/plants               → PlantsPage — full plant list (card grid or ledger, filters)
-  /app/plants/new           → PlantCreatePage — 4-step progressive wizard
-  /app/plants/:id           → PlantDetailPage
-
-  /app/projects             → ProjectsPage — project list
-  /app/projects/new         → ProjectCreatePage — create project wizard
-  /app/projects/:id         → ProjectDetailPage
-  /app/projects/:id/proposals/:proposalId → ProposalDetailPage
-
-  /app/incidents            → IncidentsPage
-  /app/incidents/:id        → IncidentDetailPage
-
-  /app/activity             → ActivityPage — global activity feed
-
-  /app/settings             → SettingsPage — provider keys, preferences
-```
-
-## Nav items
-
-Seven top-level nav items in three groups:
-
-| Group | Nav items |
+| Route | Page |
 |---|---|
-| Orientation | Rhizome, Today |
-| Work | Tasks, Calendar, Projects |
-| Operational | Incidents, Activity |
+| `/` | Landing |
+| `/login` | Login; redirects authenticated users to Today |
+| `/register` | Registration; redirects authenticated users to Today |
 
-**Garden, Plants, Beds, and Containers are NOT top-level nav items.** They are accessed through the garden profile card widget in the sidebar. The card links to:
+## Authenticated Routes
 
-| Card link | Route |
+All routes below use `ProtectedRoute` and `AppShell`. `/app` redirects to `/app/today`.
+
+| Area | Routes |
 |---|---|
-| Garden (overview) | `/app/garden` |
-| Plants | `/app/plants` |
-| Beds | `/app/beds` |
-| Containers | `/app/containers` |
+| Today | `/app/today` |
+| Tasks | `/app/tasks`, `/week`, `/project/:id`, `/kind/:type`, `/area`, `/progress`, `/new`, `/series/:id`, `/:id` under `/app/tasks` |
+| Calendar | `/app/calendar` |
+| Rhizome | `/app/rhizome`, `/app/rhizome/:threadId` |
+| Garden | `/app/garden` |
+| Beds | `/app/beds`, `/app/beds/new`, `/app/beds/:id` |
+| Containers | `/app/containers`, `/app/containers/new`, `/app/containers/:id` |
+| Plants | `/app/plants`, `/app/plants/new`, `/app/plants/:id` |
+| Projects | `/app/projects`, `/app/projects/new`, `/app/projects/:id`, `/app/projects/:id/proposals/:proposalId` |
+| Incidents | `/app/incidents`, `/app/incidents/:id` |
+| Activity | `/app/activity` |
+| Account | `/app/settings` |
 
-**The Garden hub tabs are previews only.** Each tab (Beds, Containers, Plants, Activity) shows a compact summary with a "See all →" link that navigates to the full dedicated list page. Plants, Beds, and Containers all follow the same pattern: preview tab in the hub → full list page → detail page → creation page.
+`/app/rhizome` shows a blank/new-thread workspace and recent threads. It does not silently create a thread; creation occurs when the user starts the conversation.
 
-## Notes
+## Navigation
 
-- The Tasks page shares a single route component (`TasksPage`) across all its views. The active view is determined by the URL. A filter rail in the left of the page shows all view options.
-- `/app/tasks` and `/app/calendar` are deliberately separate — they serve different cognitive modes (operational ledger vs temporal overview). The Calendar is not a view mode within Tasks.
-- Deep links work for all views — every URL is bookmarkable and browser-back navigable.
-- The notification drawer is the only drawer in the app. It opens from the 🔔 button in the nav footer. All other creation/editing flows use dedicated pages (`/new` routes) or inline interactions.
+Top-level navigation:
+
+- Orientation: Rhizome, Today
+- Work: Tasks, Calendar, Projects
+- Operational: Incidents, Activity
+
+Garden, Plants, Beds, and Containers are accessed through the garden profile section rather than the top-level nav.
+
+## Route Rules
+
+- Durable objects and editing flows use durable URLs.
+- Filters that users may bookmark or revisit should use URL search parameters.
+- Temporary panels may support thread navigation, context inspection, and structured review without becoming routes of their own.
+- Route parameters identify records; do not put access tokens or sensitive context in URLs.

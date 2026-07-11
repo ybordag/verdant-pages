@@ -94,7 +94,7 @@ A horizontal timeline with tasks as bars and dependency edges as arrows. This is
 
 **Dependency lines:** directed arrows from blocking task to blocked task. Rendered as curves between the end of the blocking bar and the start of the blocked bar.
 
-**Drag interactions (Pragmatic Drag and Drop):**
+**Planned drag interactions (library to be selected during implementation):**
 - Drag a task bar left/right to change `scheduled_date` — calls bulk update on drop for any cascade changes
 - Drag the right edge of a bar to extend/shorten the window
 - Drag from the right edge of one task to the left edge of another to create a dependency — calls `POST /api/v1/tasks/{id}/dependencies`

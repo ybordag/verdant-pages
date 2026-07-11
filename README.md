@@ -12,7 +12,7 @@ Verdant talks exclusively to **Cambium** (the Go API gateway). It has no knowled
 
 ## Tech stack
 
-Vite 8 · React 19 · TypeScript (strict) · React Router v6 · TanStack Query v5 · TanStack Table v8 · Pragmatic Drag and Drop · CSS custom properties
+Vite 8 · React 19 · TypeScript (strict) · React Router v6 · TanStack Query v5 · TanStack Table v8 · Lucide React · CSS custom properties
 
 ## Quick start
 

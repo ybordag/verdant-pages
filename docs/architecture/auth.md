@@ -1,101 +1,77 @@
-# Auth & Session Architecture
+# Authentication And Session Architecture
 
-**Last updated:** 2026-06-20
+**Last verified:** 2026-07-10
 
-## Token model
+## Token Model
 
-Cambium issues two tokens on every successful auth:
+| Token | Frontend storage | Transport |
+|---|---|---|
+| Access token | Module-scoped memory | `Authorization: Bearer` header |
+| Refresh token | Cambium-owned httpOnly cookie | Browser cookie on auth refresh/logout requests |
 
-| Token | Lifetime | Storage | Transport |
-|---|---|---|---|
-| Access token | 15 min | In-memory (module-scoped variable) | `Authorization: Bearer <token>` header |
-| Refresh token | 7 days | httpOnly cookie (set by Cambium) | Auto-sent by browser on `POST /auth/refresh` |
+The frontend never writes either token to local storage, session storage, or a URL. In-memory access storage limits persistent token exposure; it does not make XSS harmless.
 
-## Why in-memory over localStorage
+## Current UI
 
-The primary threat is XSS. If an attacker injects malicious JavaScript into the page, `localStorage` is directly readable and the token can be exfiltrated. An in-memory token lives only in a module-scoped variable: an active XSS script can still read it in that moment, but there is no persistent artifact to steal after the fact, no access from other tabs, and the token is gone when the page closes.
+Verdant implements:
 
-In-memory does not make XSS harmless — it removes the *persistent, extractable* attack surface. Paired with the httpOnly refresh token (which JavaScript cannot access at all), this is a well-layered design.
+- `/login`;
+- `/register`;
+- protected and public-only route guards;
+- app-mount session restoration;
+- logout from the authenticated shell;
+- proactive access-token refresh.
 
-**The overhead:** the token is gone on every page reload, so on every page load the app calls `POST /auth/refresh` before rendering authenticated content. One round-trip (~50–100ms in production). A loading state on mount handles this gracefully.
+Garden-profile onboarding is not yet implemented. It is planned as the post-registration completion step in Phase 5c; see [onboarding](../pages/00-onboarding.md).
 
-## Auth flow
+## Session Lifecycle
 
-### App mount (silent refresh)
+### App mount
 
-1. App renders with no access token in memory (every reload starts here — that's the point of in-memory storage).
-2. `AuthContext` immediately calls `POST /auth/refresh`. The browser auto-attaches the httpOnly refresh cookie — no JS-readable token is ever sent.
-3. **200** → response body has `{ access_token }`. Store it in the module variable, populate `AuthContext.user` from the response, render the authenticated app.
-4. **401** (refresh token expired or revoked) → `AuthContext.user` stays `null`, redirect to `/login`.
-5. A `<LoadingScreen />` covers steps 1–4 so the app never flashes an unauthenticated state for a user who is actually logged in.
+1. The app starts without an in-memory access token.
+2. `AuthProvider` attempts `POST /auth/refresh`; the browser sends Cambium's refresh cookie.
+3. On success, the access token is stored in memory and `/auth/session` loads the user session.
+4. On failure, the user remains unauthenticated and protected routes redirect to `/login`.
+5. A loading state prevents authenticated content from flashing before restoration finishes.
 
-### Login
+### Login and registration
 
-1. User submits the login form → `POST /auth/login { email, password }`.
-2. **200** → response has `{ access_token }`. Store it in the module variable. Cambium also sets the httpOnly refresh cookie on this response (no frontend action needed for that part).
-3. Start the proactive refresh timer (see below). Redirect to `/app/today`.
-4. **401** (bad credentials) → show an inline error on the form. Token state is untouched — there was nothing to roll back.
+1. Submit credentials to Cambium.
+2. Store the returned access token in memory; Cambium sets the refresh cookie.
+3. Load session state and navigate into the app.
+4. Render validation/authentication errors inline without clearing unrelated form state.
+
+Registration currently enters the authenticated app. Phase 5c will route users without a usable garden profile through onboarding before the normal daily workspace.
+
+### Ordinary request refresh
+
+`apiFetch` retries one unauthorized request after a successful refresh. It must not recurse indefinitely. A failed refresh clears frontend authentication so the route guard can return the user to login.
 
 ### Logout
 
-1. User triggers logout → `POST /auth/logout`.
-2. Cambium revokes the refresh token server-side and clears the httpOnly cookie in the response.
-3. Frontend clears the in-memory access token, stops the proactive refresh timer, redirects to `/login`.
-4. This request is fire-and-forget from the UI's perspective — even if it fails, the frontend still clears local state and redirects, since the user's intent ("log me out") should never be blocked by a network blip.
+Logout asks Cambium to revoke/clear refresh state, then clears the in-memory token and local user state. The UI should honor logout locally even if the network request fails.
 
-### Proactive refresh (keeping the session alive)
+## Ownership
 
-1. After any successful login or silent refresh, start `setInterval(refreshToken, 12 * 60 * 1000)` — fires every 12 minutes, ahead of the 15-minute access token expiry.
-2. Additionally, on tab focus (`visibilitychange` → visible): if the current token was issued more than 10 minutes ago, refresh immediately rather than waiting for the interval. This covers the case where a tab was backgrounded past the expiry window.
-3. Either path calls the same refresh logic as app-mount step 2 — success updates the token silently; a 401 here means the refresh token itself expired (7 days idle) or was revoked, and the user is redirected to `/login` mid-session.
+| Concern | Owner |
+|---|---|
+| Access token variable and refresh request | `src/lib/api/client.ts` / `auth.ts` |
+| User state and lifecycle coordination | `src/lib/auth/context.tsx` |
+| Authenticated route protection | `src/routes/ProtectedRoute.tsx` |
+| Redirect authenticated users away from auth forms | `src/routes/PublicOnlyRoute.tsx` |
+| Refresh cookie issuance, expiry, revocation | Cambium |
 
-## AuthContext
+## Registration Policy
 
-```typescript
-interface AuthState {
-  user: SessionResponse | null;
-  isLoading: boolean;
-}
-interface AuthActions {
-  login(email: string, password: string): Promise<void>;
-  register(email: string, password: string): Promise<void>;
-  logout(): Promise<void>;
-}
-type AuthContextValue = AuthState & AuthActions;
-```
+Local and portfolio deployments currently allow email/password registration. Before a public production deployment, decide whether registration remains open and add appropriate abuse controls, rate limits, password policy, and account-recovery behavior. Do not rely on project obscurity as a security boundary.
 
-## ProtectedRoute / PublicOnlyRoute
+## Test Expectations
 
-```tsx
-function ProtectedRoute() {
-  const { user, isLoading } = useAuth();
-  if (isLoading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/login" replace />;
-  return <Outlet />;
-}
+Cover:
 
-function PublicOnlyRoute() {
-  const { user, isLoading } = useAuth();
-  if (isLoading) return null;
-  if (user) return <Navigate to="/app/today" replace />;
-  return <Outlet />;
-}
-```
-
-All `/app/*` routes are wrapped in `ProtectedRoute` (`src/routes/ProtectedRoute.tsx`). `/login` and `/register` are wrapped in `PublicOnlyRoute` (`src/routes/PublicOnlyRoute.tsx`), which redirects to `/app/today` when already authenticated.
-
-## Login / Register screens
-
-No auth screens exist in the prototype — design them in the same botanical aesthetic:
-
-- **Background:** `--bg` (#181510 dark / #FAF6EE light)
-- **Card:** centered, `--bg-nav` background, `--line` border, `border-radius: 8px`, `padding: 40px`
-- **Logo:** "Verdant Pages" in `--font-display` at 28px, chartreuse
-- **Tagline:** short line in `--font-botanical`, `--text-s`
-- **Fields:** `Input` primitive with chartreuse focus ring
-- **Submit:** primary `Button` (chartreuse fill, dark text)
-- **Toggle link:** small link to the other auth page in `--font-label`, pine color
-
-No third-party OAuth. Email + password only (matching Cambium's auth model).
-
-**Registration policy:** open/public for now — anyone can `POST /auth/register`. Very few people know about the project, so obscurity acts as the gate rather than an invite system or approval flow. Revisit if the project becomes more public.
+- successful and failed login/registration;
+- silent refresh success and failure;
+- a single 401 refresh/retry path;
+- logout local cleanup when the server request fails;
+- protected/public-only redirects;
+- no token persistence in browser-readable storage.

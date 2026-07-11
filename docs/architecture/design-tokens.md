@@ -1,170 +1,108 @@
-# Design Tokens & Theming
+# Design Tokens And Theming
 
-**Last updated:** 2026-06-20
+**Last verified:** 2026-07-10
 
-`src/styles/tokens.css` is the single source of truth. Tokens originate from the locked design study at [`design/mockups/base/typography-and-surfaces.html`](../design/mockups/base/typography-and-surfaces.html) — see [`design/visual-identity.md`](../design/visual-identity.md) for the rationale behind these values. Do not restyle or invent new values without explicit sign-off.
+`src/styles/tokens.css` is authoritative. This document explains the current token families and how to use them; it does not replace the CSS file.
 
-## Token file structure
+## Structure
 
+```text
+:root                 base palette, fonts, radii, RGB channels
+[data-theme="dark"]  semantic mappings for dark mode
+[data-theme="light"] semantic mappings for light mode
 ```
-:root                    — theme-independent base palette, typography, radius
-[data-theme="dark"]      — semantic tokens mapped for dark backgrounds
-[data-theme="light"]     — semantic tokens mapped for paper/vellum surfaces
-```
 
-## Base palette (`:root`)
+Components should consume semantic tokens such as `--bg`, `--text-primary`, and `--line`. Base palette tokens are appropriate when color carries a specific product meaning.
 
-### Ink / vellum scale
+## Base Palette
 
-| Token | Value | Role |
+### Ink And Vellum
+
+| Token | Current value | Intended role |
 |---|---|---|
-| `--inkwell` | `#1C1814` | Near-black ink, primary text on paper |
-| `--vellum` | `#F2E8C9` | Base warm parchment |
-| `--vellum-light` | `#F6F0E0` | Slightly lighter — primary card surface |
-| `--vellum-pale` | `#F8F4EC` | Secondary card surface |
-| `--vellum-whisper` | `#FAF7F2` | Quiet surface / light-theme page bg |
-| `--vellum-white` | `#FDFCFA` | Raised surface / modal bg |
+| `--inkwell` | `#1C1814` | Primary ink |
+| `--inkwell-light` | `#6F665A` | Muted ink-like neutral |
+| `--vellum-dark` | `#E9DEB7` | Dark paper accent |
+| `--vellum` | `#F2E8C9` | Navigation and warm paper |
+| `--vellum-page` | `#F4ECD5` | Light-theme app page background |
+| `--vellum-grey` | `#8F8672` | Greyed vellum text/accent |
+| `--vellum-bright` | relative lighter vellum | Light marketing page background |
+| `--vellum-light` | `#F6F0E0` | Primary light paper surface |
+| `--vellum-pale` | `#F8F4EC` | Secondary paper surface |
+| `--vellum-whisper` | `#FAF7F2` | Quiet paper surface |
+| `--vellum-white` | `#FDFCFA` | Raised light surface |
 
-### Brand
+### Brand And Category Colors
 
-| Token | Value |
+| Token | Role |
 |---|---|
-| `--chartreuse` | `#B8D43A` |
-| `--pine` | `#2B5C2F` |
-| `--clay` | `#E06B4A` |
-| `--buttercup` | `#FFC94D` |
-| `--pale-herb` | `#B0EAAC` |
-| `--peony` | `#F5A0C8` |
-| `--cornflower` | `#A0B8F5` |
-| `--wisteria` | `#D7A5FF` |
+| `--chartreuse`, `--chartreuse-deep` | active work and accessible chartreuse text/borders |
+| `--pine`, `--pine-light` | garden/Rhizome authority and plant context |
+| `--clay`, `--dark-clay` | user actions, task context, warm emphasis |
+| `--buttercup` | warning/sun accents |
+| `--pale-herb` | gentle positive/plant accents |
+| `--peony`, `--cornflower`, `--wisteria` | category distinctions where needed |
 
-### Dark tints (text on coloured chip/badge backgrounds)
+Dark text companions (`--dark-amber`, `--dark-fern`, `--dark-berry`, `--dark-navy`, `--dark-plum`) support readable text on colored backgrounds.
 
-| Token | Value |
-|---|---|
-| `--dark-amber` | `#2C1E00` |
-| `--dark-fern` | `#0C1E0C` |
-| `--dark-berry` | `#280C18` |
-| `--dark-navy` | `#0A1428` |
-| `--dark-plum` | `#1A0A2C` |
+RGB channel tokens exist for alpha composition. Reuse them instead of repeating channel values.
 
-### RGB channels
+## Semantic Theme Tokens
 
-Used for `rgb(var(--foo-rgb) / alpha)` alpha composition:
-
-| Token | Value |
-|---|---|
-| `--inkwell-rgb` | `28 24 20` |
-| `--vellum-rgb` | `242 232 201` |
-| `--pine-rgb` | `43 92 47` |
-
-### Border radius
-
-| Token | Value |
-|---|---|
-| `--radius-tight` | `6px` |
-| `--radius-soft` | `8px` |
-| `--radius-journal` | `10px` |
-| `--radius-round` | `14px` |
-
-### Display variation
-
-| Token | Value | Usage |
-|---|---|---|
-| `--display-bounce` | `20` | `font-variation-settings: "BNCE" var(--display-bounce)` on Shantell Sans |
-| `--display-weight` | `700` | `font-weight: var(--display-weight)` on display headings |
-
-## Semantic tokens (theme-scoped)
-
-These are set by `[data-theme="dark"]` and `[data-theme="light"]`.
-
-### App shell
+### Shell
 
 | Token | Dark | Light |
 |---|---|---|
-| `--bg` | `#181510` | `var(--vellum-whisper)` |
-| `--bg-nav` | `#201C17` | `var(--vellum-light)` |
-
-### Surfaces
-
-| Token | Dark | Light |
-|---|---|---|
-| `--surface-primary` | `var(--vellum-light)` | `var(--vellum-light)` |
-| `--surface-secondary` | `var(--vellum-pale)` | `var(--vellum-pale)` |
-| `--surface-quiet` | `var(--vellum-whisper)` | `var(--vellum-whisper)` |
-| `--surface-raised` | `var(--vellum-white)` | `var(--vellum-white)` |
-| `--surface-darker` | `var(--vellum)` | `var(--vellum)` |
-| `--surface-dark-card` | vellum / 4% | inkwell / 3% |
-| `--surface-dark-label` | vellum / 5% | inkwell / 4% |
-| `--surface-dark-header` | vellum / 6% | inkwell / 5% |
-| `--surface-muted` | vellum / 6% | inkwell / 6% |
+| `--bg` | near-black journal surface | `--vellum-page` |
+| `--bg-nav` | dark raised chrome | `--vellum` |
+| `--bg-marketing` | app background | `--vellum-bright` |
+| `--card-marketing` | dark card surface | `--vellum` |
 
 ### Text
 
-| Token | Dark | Light |
-|---|---|---|
-| `--text-primary` | vellum / 94% | `var(--inkwell)` |
-| `--text-secondary` | vellum / 72% | inkwell / 84% |
-| `--text-tertiary` | vellum / 42% | inkwell / 78% |
-| `--text-muted` | vellum / 38% | inkwell / 55% |
-| `--text-placeholder` | vellum / 38% | inkwell / 52% |
-| `--text-strong` | vellum / 94% | inkwell / 88% |
+Use `--text-primary`, `--text-secondary`, `--text-tertiary`, `--text-muted`, `--text-placeholder`, and `--text-strong`. Their opacity and base color change by theme. Do not simulate disabled text by choosing an unrelated base color.
 
-### Lines and grids
+### Lines And Texture
 
-| Token | Dark | Light |
-|---|---|---|
-| `--line` | vellum / 10% | inkwell / 14% |
-| `--line-subtle` | vellum / 12% | inkwell / 12% |
-| `--line-strong` | vellum / 18% | inkwell / 24% |
-| `--dot` | vellum / 14% | inkwell / 12% |
-| `--gc` | pine / 22% | pine / 18% |
-| `--gcb` | pine / 38% | pine / 32% |
+Use `--line`, `--line-subtle`, and `--line-strong` for hierarchy. `--dot`, `--gc`, and `--gcb` support journal textures and grid marks. Message and content surfaces over a dot grid must be opaque enough that dots do not show through.
 
-### Nav
+### Surfaces
 
-| Token | Dark | Light |
-|---|---|---|
-| `--nav-accent` | `var(--chartreuse)` | `var(--pine)` |
-| `--nav-active-bg` | chartreuse / 10% | chartreuse / 28% |
+`--surface-primary`, `--surface-secondary`, `--surface-quiet`, `--surface-raised`, and `--surface-darker` describe paper hierarchy. The `--surface-dark-*` family supplies low-opacity theme-aware overlays.
 
-### Input
+Light-mode page content uses `--vellum-page`; navigation uses `--vellum`. Inputs use `--input-bg`, while marketing inputs have their own warm mapping.
 
-| Token | Dark | Light |
-|---|---|---|
-| `--input-bg` | vellum / 6% | inkwell / 6% |
+### Navigation
 
-## Four fonts
+`--nav-accent` is chartreuse in dark mode and pine in light mode. Specific active controls may use `--chartreuse-deep` in light mode when contrast requires it. `--nav-active-bg` supplies the active tint.
 
-| Font | Variable | Usage |
-|---|---|---|
-| Shantell Sans | `--font-display` | Display headings, plant names. Always pair with `font-variation-settings: "BNCE" var(--display-bounce); font-weight: var(--display-weight)` |
-| Caveat | `--font-botanical` | Latin names, journal dates, handwritten annotations |
-| Nunito | `--font-body` | All body text, paragraphs, chat messages |
-| Montserrat | `--font-label` | All label/metadata text — always uppercase, letter-spaced |
+## Typography
 
-## Font loading
+| Token/font | Use |
+|---|---|
+| `--font-display` / Shantell Sans | Page and product display headings |
+| `--font-botanical` / Caveat | Botanical names and handwritten annotations |
+| `--font-body` / Nunito | Body, controls, chat, and descriptions |
+| `--font-label` / Montserrat | Uppercase metadata and compact labels |
 
-Load via Google Fonts in `index.html` with `display=swap` to prevent flash of invisible text:
+Display headings use the configured `--display-bounce` and `--display-weight`. Do not use display sizing inside compact controls or operational rows.
 
-```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Montserrat:wght@300;400;500;600&family=Nunito:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Shantell+Sans:BNCE,ital,wght@20,0,400;20,0,700;20,1,400&display=swap" rel="stylesheet">
-```
+## Radius And Depth
 
-### Future improvement — self-hosted fonts
+Available radii are `--radius-tight`, `--radius-soft`, `--radius-journal`, and `--radius-round`. Cards should generally remain at 8px or less unless an established component calls for another token.
 
-Once the core frontend is built, consider migrating to self-hosted font files served from the same domain. Benefits: removes the external Google dependency, eliminates the extra DNS lookup, avoids GDPR concerns around third-party font requests. The `font-display: swap` strategy stays the same — only the source URL changes.
+Avoid box shadows as a default depth device. Prefer surface contrast, borders, and full-width bands. A modal or transient overlay may use depth only when separation cannot be communicated clearly otherwise.
 
-## Theme persistence
+## Theme Persistence
 
-`ThemeProvider` reads `localStorage.getItem('theme')` on mount (default: `'dark'`), sets `document.documentElement.dataset.theme`, and persists on toggle. Theme preference is one of the few things that *should* go in localStorage — it's not sensitive data, and you don't want a flash of the wrong theme on every page load.
+Theme choice is stored in local storage because it is non-sensitive and must survive reloads. The theme provider sets `data-theme` on the document root.
 
-## Styling approach
+## Adding A Token
 
-- CSS modules for component-specific styles
-- Global `tokens.css` + `global.css` (reset, base elements, keyframes) + `utilities.css` (shared layout/component classes)
-- No CSS-in-JS, no Tailwind
-- Never hardcode colour values in components — always reference `var(--token-name)`
-- Alpha composition via `rgb(var(--inkwell-rgb) / 0.84)` — not `rgba()` with hardcoded channels
+1. Confirm an existing semantic token cannot express the role.
+2. Add the base value only if it has a durable palette meaning.
+3. Add dark and light semantic mappings where needed.
+4. Update this document if the token changes the shared design vocabulary.
+5. Verify contrast and both themes in the consuming component.
+
+Never introduce a one-off hex value in a component CSS module to bypass the token system.
