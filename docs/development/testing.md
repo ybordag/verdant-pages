@@ -1,157 +1,114 @@
 # Testing Guide
 
-**Last updated:** 2026-06-21
+**Last verified:** 2026-07-10
 
-## Stack
+## Test Layers
 
-| Tool | Role |
-|---|---|
-| **Vitest** | Unit and component tests. Runs inside Vite's pipeline — shares config, aliases, and transforms with zero extra setup. |
-| **@testing-library/react** | Renders components and queries them by role, label, and visible text — not by class names or internal state. |
-| **@testing-library/user-event** | Simulates real user interactions (click, type, keyboard) more faithfully than `fireEvent`. |
-| **@testing-library/jest-dom** | Custom matchers: `toBeInTheDocument`, `toBeVisible`, `toHaveValue`, etc. Auto-imported via `src/test/setup.ts`. |
-| **Playwright** | End-to-end browser tests against the running app. Chromium only for now. |
+| Layer | Tools/location | Proves |
+|---|---|---|
+| Unit | Vitest, `src/**/*.test.ts` | Pure utilities, stores, parsing, state transitions |
+| Component | Testing Library, colocated `.test.tsx` | Accessible rendering and interaction contracts |
+| API client contract | `src/lib/api/*.test.ts` | Cambium URL, method, query, body, response/error handling |
+| Page behavior | `src/pages/*.test.tsx` | Loading, empty, error, race, mutation, and composition behavior |
+| Mocked browser | Playwright with route fixtures | Deterministic end-user workflows and responsive behavior |
+| Live integration | Opt-in Playwright/full-stack checks | Actual Verdant -> Cambium -> Rhizome compatibility |
 
----
+No single layer replaces another. Mocked browser tests make rare states deterministic; live tests detect cross-repo contract and environment failures.
 
-## Running tests
+## Commands
 
 ```bash
-npm run test        # Vitest watch mode — for development
-npm run test:run    # Vitest single run — for CI
-npm run test:e2e    # Playwright E2E (auto-starts dev server if needed)
+npm run test        # Vitest watch mode
+npm run test:run    # Vitest single run
+npm run test:e2e    # Playwright
+npm run lint
+npm run build
 ```
 
----
+The live quality-gate result belongs in [current status](../status/current.md), not in this guide.
 
-## Where tests live
+## Test Design Rules
 
-- Unit and component tests: `src/**/*.test.{ts,tsx}` — co-located with source files
-- E2E tests: `e2e/*.spec.ts`
+- Test visible behavior and public module contracts, not implementation details.
+- Query elements by role/name, then label, then visible text. Use test IDs only when semantics cannot identify the target.
+- Use `userEvent` for user interaction.
+- Disable TanStack Query retries in focused tests unless retry behavior is the subject.
+- Mock at the domain API module boundary for page/component tests.
+- Test `apiFetch` itself separately; do not repeatedly re-test its internals through every page.
+- Use deterministic clocks for date-sensitive behavior. Never hard-code a calendar date that silently expires.
+- Abort or settle streams/timers in teardown so tests do not leak work.
 
-Vitest is scoped to `src/**` only — it will not accidentally pick up Playwright specs.
+## Required Page States
 
----
+For a real page, cover the states that apply:
 
-## Writing component tests
+- initial loading;
+- empty result;
+- populated result;
+- recoverable HTTP error;
+- network/offline error;
+- invalid local input;
+- mutation pending/success/failure;
+- stale response or route/filter race;
+- keyboard and focus behavior;
+- narrow-width overflow/truncation.
 
-The pattern: render, query by accessible role or text, assert.
+Placeholder routes do not need tests that only assert placeholder text. Add behavior tests when implementation begins.
 
-```tsx
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { TaskRow } from './TaskRow'
+## API Client Tests
 
-describe('TaskRow', () => {
-  it('shows task name', () => {
-    render(<TaskRow task={mockTask} />)
-    expect(screen.getByText('Water tomatoes')).toBeInTheDocument()
-  })
+Each domain operation should verify:
 
-  it('calls onComplete when checkbox is clicked', async () => {
-    const onComplete = vi.fn()
-    render(<TaskRow task={mockTask} onComplete={onComplete} />)
-    await userEvent.click(screen.getByRole('checkbox'))
-    expect(onComplete).toHaveBeenCalledWith(mockTask.id)
-  })
-})
-```
+- exact path and HTTP method;
+- query omission/default behavior;
+- serialized request body;
+- structured return type behavior;
+- unusual status handling when the operation adds special semantics.
 
-**Query priority** (use the highest one that applies):
-1. `getByRole` — most resilient, catches accessibility regressions
-2. `getByLabelText` — for form inputs
-3. `getByText` — for visible text content
-4. `getByTestId` — last resort only, when no semantic query fits
+Backend schema correctness is also verified live when a contract changes. A mocked request test cannot prove that Cambium exposes the route.
 
----
+## Streaming And Rhizome
 
-## Testing components with API dependencies
+Chat coverage should include:
 
-Wrap with `QueryClientProvider` and mock `apiFetch` at the module boundary — never mock `fetch` directly.
+- first-message thread creation and navigation;
+- one optimistic user message and duplicate suppression;
+- token ordering and one final assistant message;
+- thinking state only while pending;
+- abort on thread switch/unmount;
+- malformed/error event handling;
+- retry after a failed connection;
+- session context saved before or with the first turn;
+- interaction event, resolution, and resumed stream;
+- reload/history without empty or duplicated bubbles;
+- Markdown and structured object-reference rendering.
 
-```tsx
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import * as apiClient from '@/lib/api/client'
+At least one seeded live path should prove create -> context -> stream -> review/resume -> switch/reload before Phase 5 closes.
 
-vi.mock('@/lib/api/client')
+## Playwright Modes
 
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-    {children}
-  </QueryClientProvider>
-)
+The default config runs Desktop Chromium and starts or reuses Vite.
 
-it('shows task list from API', async () => {
-  vi.mocked(apiClient.apiFetch).mockResolvedValue([mockTask])
-  render(<TasksPage />, { wrapper })
-  expect(await screen.findByText('Water tomatoes')).toBeInTheDocument()
-})
-```
+Use route fixtures for deterministic UI behavior. Current Activity and Rhizome specs demonstrate this approach. Use unique accounts when a test intentionally talks to a real Cambium instance.
 
-Use `findBy*` (async) when the component fetches data on mount — it waits for the element to appear.
+Live modes must be explicit through a documented environment flag or separate job. They require the [full stack](../getting-started/full-stack.md) and user-scoped data.
 
----
+Do not make Playwright responsible for arbitrarily stopping developers' local services. Service lifecycle testing belongs in a controlled integration environment.
 
-## Testing auth-protected components
+## Accessibility And Visual Checks
 
-Wrap with `AuthProvider` and set the mock token state as needed.
+Automated interaction tests should catch semantic regressions. Before phase closeout, also verify:
 
-```tsx
-import { AuthProvider } from '@/lib/auth/context'
+- keyboard-only operation;
+- visible focus;
+- dialog/panel focus return;
+- light/dark contrast;
+- reduced motion;
+- desktop, tablet, and phone layouts;
+- long labels and empty/error content.
 
-const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <AuthProvider>{children}</AuthProvider>
-)
-```
+Screenshot baselines should be introduced as a deliberate shared policy, not ad hoc snapshots that no one knows how to update.
 
-For components that require an authenticated user, mock `useAuth` to return a user object directly.
+## Regression Rule
 
----
-
-## Writing E2E tests
-
-E2E tests live in `e2e/` and use the Playwright `test` and `expect` from `@playwright/test`. The dev server auto-starts via `webServer` in `playwright.config.ts`.
-
-```ts
-import { test, expect } from '@playwright/test'
-
-test('login flow', async ({ page }) => {
-  await page.goto('/login')
-  await page.getByLabel('Email').fill('test@example.com')
-  await page.getByLabel('Password').fill('password')
-  await page.getByRole('button', { name: 'Log in' }).click()
-  await expect(page).toHaveURL('/app/today')
-})
-```
-
-E2E tests that hit real API endpoints require Cambium and Rhizome to be running. Pure UI E2E tests (forms, navigation, rendering) work without the backend.
-
-For page behavior that depends on structured API data but does not need a live backend, add Playwright route fixtures under `e2e/fixtures/`. The Activity page uses this pattern in `e2e/activity.spec.ts`: it mocks auth/session plus `GET /api/v1/activity`, generates a busy feed, verifies infinite-scroll cursor requests, checks invalid filter ranges do not query, covers reset/filter pagination behavior, checks mobile overflow, and covers a slow initial response racing with a newer filtered request. Its opt-in live backend smoke stays skipped unless `VERDANT_LIVE_ACTIVITY_E2E=1` is set with Cambium/Rhizome running.
-
----
-
-## What to test at each phase
-
-| Phase | Unit / component | E2E |
-|---|---|---|
-| 1 — Scaffold | App renders without crashing ✅ | App loads, text visible ✅ |
-| 2 — Tokens + theme | `ThemeProvider` toggles `data-theme`, reads `localStorage` | Dark/light toggle persists across page reload |
-| 3 — Primitives + shell | Each primitive renders, Modal traps focus, nav items render | All nav items clickable, route stubs resolve |
-| 4 — Auth | `apiFetch` attaches token, 401 triggers refresh + retry, `ProtectedRoute` redirects | Register → login → protected page → logout → login required |
-| 5 — Chat and context | `consumeSSEStream` yields tokens in order, stops on `done`; interaction cards render and resolve | Send message → tokens stream in, interaction card appears; Today/Incidents/Activity load real data |
-| 6 — Tasks and projects | Complete task → optimistic strike-through → reverts on error; project/resource panels render with API data | Today task view loads, complete a task, project Gantt/resources smoke path works |
-| 7a — Garden hub & objects | Lists render with mock data, filters reduce results, care state/activity sections render | Create bed/container → appears in list; click object → detail page |
-| 7b — Plants | Plant list/card/detail render, lifecycle/care sections update, optimistic mutations rollback | Create plant/batch → appears in list; click plant → detail page |
-
-The rule: **every new component gets at least one render test and one interaction test.** E2E tests cover the golden path for each phase before it's considered done.
-
----
-
-## Mocking
-
-- **API calls:** mock `apiFetch` at the module level with `vi.mock('@/lib/api/client')`
-- **SSE streams:** use `ReadableStream` with a test controller that emits events on demand
-- **Timers:** use `vi.useFakeTimers()` for token refresh interval tests
-- **`localStorage`:** use `vi.stubGlobal` or jsdom's built-in implementation (it persists between tests — clear it in `beforeEach`)
-
-Never mock React Router or TanStack Query internals. Wrap components in real providers with test-appropriate config instead.
+Every fixed user-visible bug should receive the lowest-level reliable regression test plus a browser test when the failure crossed page state, routing, streaming, responsive layout, or multiple services.

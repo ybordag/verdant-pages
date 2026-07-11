@@ -1,188 +1,92 @@
-# Setup
+# Frontend Setup
 
-**Last updated:** 2026-06-21
+**Last verified:** 2026-07-10
 
-How to run Verdant Pages locally. For the condensed version, see [quickstart.md](quickstart.md).
-
----
+This guide covers Verdant itself. Use [full-stack development](full-stack.md) for Cambium, Rhizome, Postgres, providers, migrations, and fixture data.
 
 ## Prerequisites
 
-| Tool | Version | Purpose |
+| Tool | Version/source |
+|---|---|
+| Node | `.nvmrc` (currently Node 24) |
+| npm | bundled with the selected Node version |
+| nvm | recommended for switching Node versions |
+
+## Run Modes
+
+| Mode | Services | Suitable work |
 |---|---|---|
-| Node.js | 24+ (LTS "Krypton") | Runtime — see `.nvmrc` |
-| nvm | any | Node version management |
-| npm | 11+ (ships with Node 24) | Package management |
-| Cambium | running on `:8080` | API gateway — needed for all API calls |
+| UI-only | Vite | Styling, routes, mocked tests, primitives |
+| Gateway smoke | Vite + Cambium | Auth and gateway-only behavior; proxied domain calls may return 502 without Rhizome |
+| Structured full stack | Vite + Cambium + Rhizome + Postgres | Domain reads/writes and deterministic fixture flows |
+| Live agent | Full stack + provider configuration | Chat, triage, drafting, and other model-backed flows |
 
-Verdant can be developed for pure UI work without Cambium running. API calls will fail but the dev server and component rendering work independently.
-
----
-
-## Run modes
-
-Pick the lightest mode that matches the work you are doing.
-
-| Mode | Required services | Use when | Verification |
-|---|---|---|---|
-| UI-only | Node/npm/Vite | Styling, routing, shell work, component tests, placeholder pages | `npm run dev` then open `http://localhost:5173` |
-| API smoke | Node/npm/Vite + Cambium on `:8080` | Auth, API client wrappers, pages that read or mutate real data | `curl http://localhost:8080/health` returns `{"status":"ok"}` |
-| Full agent/live model | Node/npm/Vite + Cambium + Rhizome + DB + provider key | Chat streaming, AI triggers, triage/weather/treatment/proposal generation | Cambium health passes, Rhizome is reachable on `:8001`, and provider keys are configured |
-
-Sibling setup docs:
-
-- Cambium: [`../cambium/docs/getting-started/setup.md`](../../../cambium/docs/getting-started/setup.md)
-- Rhizome: [`../rhizome/docs/getting-started/setup.md`](../../../rhizome/docs/getting-started/setup.md)
-
-The Vite dev server proxies `/api` and `/auth` to Cambium. It does not proxy `/health`, so check Cambium health directly at `http://localhost:8080/health`.
-
----
-
-## 1. Install the right Node version
-
-The project requires Node 24 (Node 20 is past EOL as of April 2026). A `.nvmrc` file is included:
+## Install
 
 ```bash
-nvm install   # first time — downloads Node 24
-nvm use       # subsequent runs — switches to .nvmrc version
-```
-
----
-
-## 2. Install dependencies
-
-```bash
-npm install
-```
-
----
-
-## 3. Configure environment
-
-```bash
+nvm install  # only when the .nvmrc version is missing
+nvm use
+npm ci
 cp .env.example .env
 ```
 
-For local development, `.env` can be left empty — the Vite proxy handles routing to Cambium.
+For normal local development, leave `VITE_CAMBIUM_URL` empty. Vite proxies `/api` and `/auth` to `http://localhost:8080`.
 
-```
-# .env.example
-VITE_CAMBIUM_URL=
-```
+Set `VITE_CAMBIUM_URL` only when the frontend must call a separately hosted Cambium origin.
 
-`VITE_CAMBIUM_URL` is only needed for production builds where the app is not served same-origin as Cambium. Leave it empty locally.
-
----
-
-## 4. Start Cambium (for API calls)
-
-If you need real API data, Cambium must be running. See [`../cambium/docs/getting-started/setup.md`](../../../cambium/docs/getting-started/setup.md) for full instructions. The short version:
-
-```bash
-cd ../cambium
-go run ./cmd/server/
-# → listening on :8080
-```
-
-Rhizome must also be running on `:8001` for Cambium to proxy agent and data requests.
-
----
-
-## 5. Start the dev server
+## Run
 
 ```bash
 npm run dev
-# → http://localhost:5173
 ```
 
-The Vite dev server proxies `/api` and `/auth` to `http://localhost:8080` (Cambium). No CORS configuration needed — it's all same-origin from the browser's perspective.
+Open `http://localhost:5173`. Vite hot-reloads React and CSS changes.
 
-HMR is enabled — changes to React components and CSS update the browser without a full reload.
+Cambium health is `http://localhost:8080/health`. Vite does not proxy `/health`, so `http://localhost:5173/health` is not the backend health check.
 
----
+## Commands
 
-## 6. Verify
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Development server |
+| `npm run build` | TypeScript project build plus Vite production bundle |
+| `npm run preview` | Serve the production bundle locally |
+| `npm run lint` | ESLint |
+| `npm run test` | Vitest watch mode |
+| `npm run test:run` | Vitest single run |
+| `npm run test:e2e` | Playwright suite |
 
-Open `http://localhost:5173`. You should see the Verdant landing page.
-
-If Cambium is running, verify it directly from a terminal:
-
-```bash
-curl http://localhost:8080/health
-// → {"status":"ok"}
-```
-
-The Vite dev server proxies `/api` and `/auth`, not `/health`, so checking `/health` from the browser on port `5173` does not prove Cambium is reachable.
-
----
-
-## Running tests
-
-**Unit and component tests (Vitest):**
-
-```bash
-npm run test        # watch mode — for development
-npm run test:run    # single run — for CI
-```
-
-Tests run in jsdom and do not require Cambium. They cover component rendering, hook behaviour, and utility functions.
-
-**E2E tests (Playwright):**
-
-```bash
-npm run test:e2e
-```
-
-Playwright auto-starts the Vite dev server if it isn't already running. Tests run in Chromium headless. Full E2E tests that hit real API endpoints require Cambium and Rhizome to be running.
-
----
-
-## Production build
+## Production Bundle
 
 ```bash
 npm run build
-# → dist/
 ```
 
-TypeScript compiles first (`tsc -b`), then Vite bundles. The `dist/` output is served by Cambium as static files in production — see [`docs/roadmap/overview.md`](../roadmap/overview.md) (Phase 8) for the deploy process.
-
----
+The output is `dist/`. Cambium can serve this directory with SPA fallback when `STATIC_DIR` points to it. Production deployment and hardening remain Phase 9 work.
 
 ## Troubleshooting
 
-| Symptom | Cause | Fix |
-|---|---|---|
-| `nvm use` fails with "no such version" | Node 24 not installed yet | `nvm install` first, then `nvm use` |
-| API calls return connection refused | Cambium isn't running | Start it per step 4 above — the frontend itself runs fine without it, but `/api`/`/auth` calls will fail |
-| `npm run test:e2e` hangs on startup | Port `5173` already in use by another `npm run dev` | Stop the other dev server, or let Playwright reuse it (it detects an already-running server) |
-| Vitest fails with a `node:util` / `styleText` error | Wrong Node version active in this shell | Re-run `nvm use` — Node 18 (the system default in some shells) doesn't support what Vite/Vitest need |
-| Styles look wrong after pulling new changes | Stale Vite cache | `rm -rf node_modules/.vite` and restart `npm run dev` |
+| Symptom | Check |
+|---|---|
+| Vite says Node is unsupported or `CustomEvent` is missing | Run `nvm use`; confirm `node --version` matches `.nvmrc` |
+| API connection refused | Start Cambium and check `curl http://localhost:8080/health` |
+| API returns 502 | Cambium is up but Rhizome is not reachable; use `make stack-health` in Cambium |
+| Domain tables/routes fail | Confirm Rhizome migrations used the same Postgres URL as the running service |
+| Live chat reports missing provider credentials | Configure a supported provider in the backend/user account; see the full-stack guide |
+| Styles remain stale after a branch change | Restart Vite; remove `node_modules/.vite` only if the cache is demonstrably stale |
+| Playwright cannot start | Check whether another process owns port 5173 and whether Playwright can reuse it |
 
----
+## Source Map
 
-## Project layout
-
-This is the short map. For how these pieces connect at runtime, read [codebase-tour.md](../architecture/codebase-tour.md).
-
+```text
+src/components/   reusable UI and shell
+src/lib/api/      typed Cambium clients and request tests
+src/lib/types/    frontend DTOs
+src/pages/        route-level workflows
+src/routes/       router and guards
+src/styles/       tokens and global styles
+e2e/              Playwright tests and fixtures
+docs/             product and engineering documentation
 ```
-verdant-pages/
-├── src/
-│   ├── components/     UI primitives and composed components
-│   ├── lib/
-│   │   ├── api/        API modules + base fetch client
-│   │   ├── auth/       AuthContext, useAuth hook
-│   │   ├── query/      QueryClient setup
-│   │   └── sse/        SSE stream consumer
-│   ├── pages/          Page components (one per route)
-│   ├── routes/         Router definition, ProtectedRoute
-│   ├── styles/         tokens.css, global.css, utilities.css
-│   ├── test/           Vitest setup (setup.ts)
-│   └── App.tsx
-├── e2e/                Playwright E2E tests
-├── docs/               This documentation
-├── public/             Static assets (favicon, icon sprite)
-├── CLAUDE.md           Invariants and build commands for Claude Code
-├── playwright.config.ts
-├── vite.config.ts
-└── .nvmrc              Node 24
-```
+
+Continue with the [codebase tour](../architecture/codebase-tour.md).

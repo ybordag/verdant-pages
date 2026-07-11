@@ -1,35 +1,53 @@
 # Quickstart
 
-**Last updated:** 2026-06-21
+**Last verified:** 2026-07-10
 
-The fastest path to a running dev server. For the full walkthrough — environment variables, running Cambium, troubleshooting, production builds — see [setup.md](setup.md).
+## UI-Only
+
+Use this for styling, routing, mocked browser tests, and component work:
 
 ```bash
-nvm use            # requires Node 24, see .nvmrc
-npm install
+nvm use
+npm ci
 cp .env.example .env
-npm run dev         # → http://localhost:5173
+npm run dev
 ```
 
-That's it for pure UI work — component rendering, styling, routing all work without anything else running.
+Open `http://localhost:5173`. Real API requests will fail unless Cambium is running.
 
-**If you need real data:** Cambium must be running on `:8080` (and Rhizome on `:8001` behind it). In a separate terminal:
+## Full Local Stack
+
+After configuring the sibling repositories, start the backend from Cambium:
 
 ```bash
-cd ../cambium && go run ./cmd/server/
+cd ../cambium
+make dev-stack-db
 ```
 
-Verify Cambium directly from a terminal:
+In another terminal:
 
 ```bash
-curl http://localhost:8080/health
+cd ../verdant-pages
+nvm use
+npm run dev
 ```
 
-**Running tests:**
+Verify both backend services:
 
 ```bash
-npm run test         # Vitest, watch mode — no Cambium needed
-npm run test:e2e     # Playwright — auto-starts the dev server
+cd ../cambium
+make stack-health
 ```
 
-**Something not working?** Setup.md has a troubleshooting section; [CLAUDE.md](../../CLAUDE.md) at the repo root has the invariants and architecture summary if you're trying to understand *why* something is built the way it is, not just how to run it.
+Read [full-stack development](full-stack.md) before first setup, migrations, provider configuration, or fixture seeding. Read [setup](setup.md) for frontend environment details and troubleshooting.
+
+## Checks
+
+```bash
+npm run test:run
+npm run lint
+npm run build
+npm run test:e2e
+```
+
+The default browser suite starts/reuses Vite. Individual specs may use mocked routes, create real accounts, or require an explicitly enabled live backend mode; read [testing](../development/testing.md) before assuming the whole suite is backend-free.
