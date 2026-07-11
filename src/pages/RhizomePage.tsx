@@ -1,16 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import {
   addThreadContext,
-  createThread,
   getThread,
   getThreadMessages,
   getThreadSessionContext,
   listThreads,
   removeThreadContext,
-  streamChat,
-  streamResume,
   updateThreadSessionContext,
 } from '@/lib/api/chat'
 import { getPendingInteraction } from '@/lib/api/interactions'
@@ -28,6 +25,7 @@ import RhizomeComposer from '@/features/rhizome/components/RhizomeComposer'
 import SessionContextStrip from '@/features/rhizome/components/SessionContextStrip'
 import ThreadNavigator from '@/features/rhizome/components/ThreadNavigator'
 import WorkbenchHeader from '@/features/rhizome/components/WorkbenchHeader'
+import useChatTurn from '@/features/rhizome/hooks/useChatTurn'
 import {
   contextFromSearchResult,
   contextKey,
@@ -37,10 +35,7 @@ import {
   parseContextSearchTerm,
   sessionFocusContextRefs,
 } from '@/features/rhizome/lib/context'
-import {
-  appendStreamContent,
-  messageKey,
-} from '@/features/rhizome/lib/messages'
+import { messageKey } from '@/features/rhizome/lib/messages'
 import {
   modelLabel,
   sessionDraftFromContext,
@@ -54,17 +49,13 @@ import {
   EMPTY_START_THREAD_DRAFT,
   type ComposerAutocompletePosition,
   type FocusContext,
-  type OptimisticSessionContext,
   type SessionDraft,
   type StartThreadDraft,
 } from '@/features/rhizome/types'
 import type {
   ContextObject,
-  InteractionActionView,
-  InteractionEnvelopeView,
   SearchResultItemView,
   TaskSummaryView,
-  ThreadMessageView,
   ThreadView,
   UpdateSessionContextRequest,
 } from '@/lib/types/rhizome'
@@ -78,22 +69,12 @@ const EMPTY_SEARCH_RESULTS: SearchResultItemView[] = []
 
 export default function RhizomePage() {
   const { threadId } = useParams()
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useAuth()
   const isNewThread = !threadId
   const [draft, setDraft] = useState('')
   const [threadsPanelOpen, setThreadsPanelOpen] = useState(false)
   const [reviewsPanelOpen, setReviewsPanelOpen] = useState(false)
-  const [streamThreadId, setStreamThreadId] = useState<string | null>(null)
-  const [pendingMessages, setPendingMessages] = useState<ThreadMessageView[]>([])
-  const [streamInteraction, setStreamInteraction] = useState<InteractionEnvelopeView | null>(null)
-  const [streamingText, setStreamingText] = useState('')
-  const [streamError, setStreamError] = useState<string | null>(null)
-  const [retryMessage, setRetryMessage] = useState<string | null>(null)
-  const [isStreaming, setIsStreaming] = useState(false)
-  const [optimisticSessionContext, setOptimisticSessionContext] =
-    useState<OptimisticSessionContext | null>(null)
   const [sessionEditing, setSessionEditing] = useState(false)
   const [sessionDraft, setSessionDraft] = useState<SessionDraft>(EMPTY_SESSION_DRAFT)
   const [sessionError, setSessionError] = useState<string | null>(null)
@@ -119,7 +100,29 @@ export default function RhizomePage() {
     threadId,
     collapsed: false,
   })
-  const streamControllerRef = useRef<AbortController | null>(null)
+  const {
+    isStreaming,
+    optimisticSessionContext,
+    pendingMessages,
+    retryMessage,
+    streamError,
+    streamInteraction,
+    streamThreadId,
+    streamingText,
+    resumeInteraction,
+    submitMessage,
+  } = useChatTurn({
+    threadId,
+    interactionNotes,
+    getStartupLabels: startThreadSessionLabels,
+    getStartupPayload: startThreadSessionPayload,
+    onInteraction: () => setReviewsPanelOpen(true),
+    onInteractionComplete: () => setInteractionNotes(''),
+    onMessageAccepted: () => {
+      setDraft('')
+      setComposerAutocompletePosition(null)
+    },
+  })
 
   const threadsQuery = useQuery({
     queryKey: ['threads', { limit: THREAD_LIMIT }],
@@ -297,10 +300,6 @@ export default function RhizomePage() {
     }
     return Array.from(groups.entries())
   }, [composerContextQuery.data?.results, messageContext, pinnedContext])
-
-  useEffect(() => {
-    return () => streamControllerRef.current?.abort()
-  }, [])
 
   function updateWorkspaceHeaderCollapse(scrollTop: number) {
     setWorkspaceHeaderState((current) => {
@@ -597,165 +596,6 @@ export default function RhizomePage() {
     )
   }
 
-  async function resumeInteraction(action: InteractionActionView) {
-    if (!threadId || isStreaming) return
-    const controller = new AbortController()
-    streamControllerRef.current?.abort()
-    streamControllerRef.current = controller
-    setIsStreaming(true)
-    setStreamError(null)
-    setStreamingText('')
-    setStreamThreadId(threadId)
-
-    try {
-      let responseText = ''
-      let sawDone = false
-      const resolution = interactionNotes.trim()
-        ? `${action.id}\n\nNotes: ${interactionNotes.trim()}`
-        : action.id
-      for await (const event of streamResume(threadId, resolution, controller.signal)) {
-        if (event.type === 'token') {
-          responseText = appendStreamContent(responseText, event.content)
-          setStreamingText(responseText)
-        } else if (event.type === 'interaction') {
-          setStreamInteraction(event.payload)
-          setReviewsPanelOpen(true)
-          queryClient.setQueryData(['interactions', 'pending'], event.payload)
-        } else if (event.type === 'done') {
-          sawDone = true
-          break
-        }
-      }
-
-      if (!sawDone) {
-        setStreamingText(`${responseText}\n\nResponse may be incomplete.`)
-        setStreamError('Connection dropped before Rhizome finished.')
-        return
-      }
-
-      if (responseText.trim()) {
-        setPendingMessages((current) => [
-          ...current,
-          { role: 'assistant', content: responseText, type: 'ai' },
-        ])
-      }
-      setStreamingText('')
-      setStreamInteraction(null)
-      setInteractionNotes('')
-      queryClient.setQueryData(['interactions', 'pending'], null)
-      void queryClient.invalidateQueries({ queryKey: ['interactions', 'pending'] })
-      void queryClient.invalidateQueries({ queryKey: ['threads', threadId, 'messages'] })
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') return
-      setStreamError('Connection failed - try again.')
-    } finally {
-      if (streamControllerRef.current === controller) streamControllerRef.current = null
-      setIsStreaming(false)
-    }
-  }
-
-  async function submitMessage(messageOverride?: string) {
-    const message = (messageOverride ?? draft).trim()
-    if (!message || isStreaming) return
-
-    let targetThreadId = threadId
-    const controller = new AbortController()
-    streamControllerRef.current?.abort()
-    streamControllerRef.current = controller
-    setIsStreaming(true)
-    setStreamError(null)
-    setRetryMessage(message)
-    setStreamingText('')
-
-    try {
-      if (!targetThreadId) {
-        const optimisticLabels = startThreadSessionLabels()
-        const startupSessionPayload = startThreadSessionPayload()
-        const createdThread = await createThread({})
-        targetThreadId = createdThread.thread_id
-        if (
-          optimisticLabels.timeLabel !== 'Not set' ||
-          optimisticLabels.energyLabel !== 'Not set' ||
-          optimisticLabels.focusLabel !== 'Not set'
-        ) {
-          setOptimisticSessionContext({
-            threadId: targetThreadId,
-            ...optimisticLabels,
-          })
-        }
-        if (startupSessionPayload) {
-          const startupContext = await updateThreadSessionContext(targetThreadId, startupSessionPayload)
-          queryClient.setQueryData(['threads', targetThreadId, 'session-context'], startupContext)
-        }
-        navigate(`/app/rhizome/${encodeURIComponent(targetThreadId)}`)
-      }
-
-      const userMessage: ThreadMessageView = { role: 'user', content: message, type: 'human' }
-      setDraft('')
-      setComposerAutocompletePosition(null)
-      setStreamThreadId(targetThreadId)
-      setPendingMessages((current) =>
-        targetThreadId === streamThreadId ? [...current, userMessage] : [userMessage],
-      )
-
-      let responseText = ''
-      let sawDone = false
-      let sawInteraction = false
-      for await (const event of streamChat(targetThreadId, message, controller.signal)) {
-        if (event.type === 'token') {
-          responseText = appendStreamContent(responseText, event.content)
-          setStreamingText(responseText)
-        } else if (event.type === 'interaction') {
-          sawInteraction = true
-          setStreamInteraction(event.payload)
-          setReviewsPanelOpen(true)
-          queryClient.setQueryData(['interactions', 'pending'], event.payload)
-        } else if (event.type === 'done') {
-          sawDone = true
-          break
-        }
-      }
-
-      if (!sawDone) {
-        if (sawInteraction) {
-          if (responseText.trim()) {
-            setPendingMessages((current) => [
-              ...current,
-              { role: 'assistant', content: responseText, type: 'ai' },
-            ])
-          }
-          setStreamingText('')
-          setStreamError(null)
-          setRetryMessage(null)
-          return
-        }
-        const incompleteText = `${responseText}\n\nResponse may be incomplete.`
-        setStreamingText(incompleteText)
-        setStreamError('Connection dropped before Rhizome finished.')
-        return
-      }
-
-      const assistantMessage: ThreadMessageView = {
-        role: 'assistant',
-        content: responseText,
-        type: 'ai',
-      }
-      setPendingMessages((current) => [...current, assistantMessage])
-      setStreamingText('')
-      setStreamError(null)
-      setRetryMessage(null)
-      void queryClient.invalidateQueries({ queryKey: ['threads', { limit: THREAD_LIMIT }] })
-      void queryClient.invalidateQueries({ queryKey: ['threads', targetThreadId, 'messages'] })
-      void queryClient.invalidateQueries({ queryKey: ['threads', targetThreadId, 'session-context'] })
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') return
-      setStreamError('Connection failed - try again.')
-    } finally {
-      if (streamControllerRef.current === controller) streamControllerRef.current = null
-      setIsStreaming(false)
-    }
-  }
-
   return (
     <main className={s.page}>
       <section
@@ -909,7 +749,7 @@ export default function RhizomePage() {
             }}
             onSelectionChange={updateComposerSelection}
             onSelectAutocomplete={addComposerContextFromSearchResult}
-            onSubmit={() => void submitMessage()}
+            onSubmit={() => void submitMessage(draft)}
             onToggleMessageContext={() => openContextTarget("message")}
             onTogglePinnedContext={() => openContextTarget("thread")}
           />
