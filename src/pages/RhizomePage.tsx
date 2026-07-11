@@ -1,17 +1,8 @@
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
-import {
-  addThreadContext,
-  getThread,
-  getThreadMessages,
-  getThreadSessionContext,
-  listThreads,
-  removeThreadContext,
-  updateThreadSessionContext,
-} from '@/lib/api/chat'
+import { getThread, getThreadMessages, listThreads } from '@/lib/api/chat'
 import { getPendingInteraction } from '@/lib/api/interactions'
-import { search } from '@/lib/api/search'
 import { listTasksDaily } from '@/lib/api/tasks'
 import { getLatestTriage } from '@/lib/api/triage'
 import { getLatestWeather } from '@/lib/api/weather'
@@ -26,36 +17,21 @@ import SessionContextStrip from '@/features/rhizome/components/SessionContextStr
 import ThreadNavigator from '@/features/rhizome/components/ThreadNavigator'
 import WorkbenchHeader from '@/features/rhizome/components/WorkbenchHeader'
 import useChatTurn from '@/features/rhizome/hooks/useChatTurn'
-import {
-  contextFromSearchResult,
-  contextKey,
-  contextLabel,
-  groupContextResults,
-  parseComposerContextTrigger,
-  parseContextSearchTerm,
-  sessionFocusContextRefs,
-} from '@/features/rhizome/lib/context'
+import useContextSearch from '@/features/rhizome/hooks/useContextSearch'
+import useSessionContext from '@/features/rhizome/hooks/useSessionContext'
+import { contextLabel, sessionFocusContextRefs } from '@/features/rhizome/lib/context'
 import { messageKey } from '@/features/rhizome/lib/messages'
 import {
   modelLabel,
-  sessionDraftFromContext,
-  sessionFocusLabel,
-  sessionTimeLabel,
   shortlistFromTriage,
 } from '@/features/rhizome/lib/presentation'
-import { measureTextareaIndex } from '@/features/rhizome/lib/textarea'
 import {
-  EMPTY_SESSION_DRAFT,
   EMPTY_START_THREAD_DRAFT,
-  type ComposerAutocompletePosition,
-  type FocusContext,
   type OptimisticSessionContext,
-  type SessionDraft,
   type StartThreadDraft,
 } from '@/features/rhizome/types'
 import type {
   ContextObject,
-  SearchResultItemView,
   TaskSummaryView,
   ThreadView,
   UpdateSessionContextRequest,
@@ -66,37 +42,16 @@ const THREAD_LIMIT = 20
 const RECENT_THREAD_LIMIT = 3
 const EMPTY_THREADS: ThreadView[] = []
 const EMPTY_CONTEXT: ContextObject[] = []
-const EMPTY_SEARCH_RESULTS: SearchResultItemView[] = []
 
 export default function RhizomePage() {
   const { threadId } = useParams()
-  const queryClient = useQueryClient()
   const { user } = useAuth()
   const isNewThread = !threadId
   const [draft, setDraft] = useState('')
   const [threadsPanelOpen, setThreadsPanelOpen] = useState(false)
   const [reviewsPanelOpen, setReviewsPanelOpen] = useState(false)
-  const [sessionEditing, setSessionEditing] = useState(false)
-  const [sessionDraft, setSessionDraft] = useState<SessionDraft>(EMPTY_SESSION_DRAFT)
-  const [sessionError, setSessionError] = useState<string | null>(null)
   const [interactionNotes, setInteractionNotes] = useState('')
-  const [messageContextOpen, setMessageContextOpen] = useState(false)
-  const [pinnedContextOpen, setPinnedContextOpen] = useState(false)
-  const [activeContextTarget, setActiveContextTarget] = useState<'message' | 'thread' | null>(null)
-  const [contextSearchTerm, setContextSearchTerm] = useState('')
-  const [messageContext, setMessageContext] = useState<ContextObject[]>([])
-  const [composerCursor, setComposerCursor] = useState(0)
   const [startThreadDraft, setStartThreadDraft] = useState<StartThreadDraft>(EMPTY_START_THREAD_DRAFT)
-  const [startFocusTerm, setStartFocusTerm] = useState('')
-  const [startFocusContext, setStartFocusContext] = useState<FocusContext>(null)
-  const [sessionFocusTerm, setSessionFocusTerm] = useState('')
-  const [sessionFocusContext, setSessionFocusContext] = useState<FocusContext>(null)
-  const [dismissedContextQuery, setDismissedContextQuery] = useState('')
-  const [dismissedStartFocusQuery, setDismissedStartFocusQuery] = useState('')
-  const [dismissedSessionFocusQuery, setDismissedSessionFocusQuery] = useState('')
-  const [dismissedComposerContextQuery, setDismissedComposerContextQuery] = useState('')
-  const [composerAutocompletePosition, setComposerAutocompletePosition] =
-    useState<ComposerAutocompletePosition | null>(null)
   const [workspaceHeaderState, setWorkspaceHeaderState] = useState({
     threadId,
     collapsed: false,
@@ -121,9 +76,26 @@ export default function RhizomePage() {
     onInteractionComplete: () => setInteractionNotes(''),
     onMessageAccepted: () => {
       setDraft('')
-      setComposerAutocompletePosition(null)
     },
   })
+  const {
+    context: sessionContext,
+    draft: sessionDraft,
+    energyDisplay: sessionEnergyDisplay,
+    error: sessionError,
+    focus: sessionFocus,
+    focusDisplay: sessionFocusDisplay,
+    hasOptimisticContext: hasOptimisticSession,
+    isEditing: sessionEditing,
+    isError: sessionContextIsError,
+    isLoading: sessionContextIsLoading,
+    isSaving: sessionContextIsSaving,
+    timeDisplay: sessionTimeDisplay,
+    cancelEditing: cancelSessionEdit,
+    save: saveSessionContext,
+    setDraft: setSessionDraft,
+    startEditing: startSessionEdit,
+  } = useSessionContext(threadId, optimisticSessionContext)
 
   const threadsQuery = useQuery({
     queryKey: ['threads', { limit: THREAD_LIMIT }],
@@ -145,11 +117,6 @@ export default function RhizomePage() {
     queryFn: () => getThreadMessages(threadId ?? ''),
     enabled: Boolean(threadId),
   })
-  const sessionContextQuery = useQuery({
-    queryKey: ['threads', threadId, 'session-context'],
-    queryFn: () => getThreadSessionContext(threadId ?? ''),
-    enabled: Boolean(threadId),
-  })
   const pendingInteractionQuery = useQuery({
     queryKey: ['interactions', 'pending'],
     queryFn: getPendingInteraction,
@@ -169,89 +136,8 @@ export default function RhizomePage() {
     queryFn: () => listTasksDaily({ limit: 3 }),
     enabled: isNewThread,
   })
-  const parsedContextSearch = parseContextSearchTerm(contextSearchTerm)
-  const contextSearchQuery = useQuery({
-    queryKey: ['search', 'context', parsedContextSearch.types ?? 'all', parsedContextSearch.q],
-    queryFn: () => search({ ...parsedContextSearch, limit: 8 }),
-    enabled: Boolean(activeContextTarget) && parsedContextSearch.q.length >= 2,
-  })
-  const startFocusQuery = useQuery({
-    queryKey: ['search', 'start-focus', startFocusTerm.trim()],
-    queryFn: () => search({ q: startFocusTerm.trim(), limit: 6 }),
-    enabled: isNewThread && !startFocusContext && startFocusTerm.trim().length >= 2,
-  })
-  const sessionFocusQuery = useQuery({
-    queryKey: ['search', 'session-focus', sessionFocusTerm.trim()],
-    queryFn: () => search({ q: sessionFocusTerm.trim(), types: 'project', limit: 6 }),
-    enabled: sessionEditing && !sessionFocusContext && sessionFocusTerm.trim().length >= 2,
-  })
-  const composerContextTrigger = useMemo(
-    () => parseComposerContextTrigger(draft, composerCursor),
-    [composerCursor, draft],
-  )
-  const composerContextQueryKey = composerContextTrigger
-    ? `${composerContextTrigger.types}:${composerContextTrigger.q}:${composerContextTrigger.start}:${composerContextTrigger.end}`
-    : ''
-  const composerContextQuery = useQuery({
-    queryKey: [
-      'search',
-      'composer-context',
-      composerContextTrigger?.types ?? '',
-      composerContextTrigger?.q ?? '',
-    ],
-    queryFn: () =>
-      search({
-        q: composerContextTrigger?.q ?? '',
-        types: composerContextTrigger?.types,
-        limit: 8,
-      }),
-    enabled: Boolean(composerContextTrigger),
-  })
-  const updateSessionMutation = useMutation({
-    mutationFn: (data: UpdateSessionContextRequest) =>
-      updateThreadSessionContext(threadId ?? '', data),
-    onSuccess: (context) => {
-      queryClient.setQueryData(['threads', threadId, 'session-context'], context)
-      setSessionDraft(sessionDraftFromContext(context))
-      setSessionFocusContext(null)
-      setSessionFocusTerm('')
-      setSessionEditing(false)
-      setSessionError(null)
-    },
-    onError: () => {
-      setSessionError('Session context could not be saved.')
-    },
-  })
-  const addContextMutation = useMutation({
-    mutationFn: (context: ContextObject) => addThreadContext(threadId ?? '', context),
-    onSuccess: (_data, context) => {
-      updateThreadContextCache(context, 'add')
-    },
-  })
-  const removeContextMutation = useMutation({
-    mutationFn: (context: ContextObject) =>
-      removeThreadContext(threadId ?? '', context.subject_type, context.subject_id),
-    onSuccess: (_data, context) => {
-      updateThreadContextCache(context, 'remove')
-    },
-  })
 
   const activeThread = activeThreadFromList ?? activeThreadQuery.data
-  const sessionContext = sessionContextQuery.data
-  const activeOptimisticSession =
-    optimisticSessionContext?.threadId === threadId ? optimisticSessionContext : null
-  const sessionTimeDisplay =
-    sessionContext?.time_text?.trim()
-      ? sessionTimeLabel(sessionContext)
-      : activeOptimisticSession?.timeLabel ?? sessionTimeLabel(sessionContext)
-  const sessionEnergyDisplay =
-    sessionContext?.energy_text?.trim()
-      ? sessionContext.energy_text
-      : activeOptimisticSession?.energyLabel ?? 'Not set'
-  const sessionFocusDisplay =
-    sessionContext?.focus_text?.trim() || (sessionContext?.focus_context.length ?? 0) > 0
-      ? sessionFocusLabel(sessionContext)
-      : activeOptimisticSession?.focusLabel ?? sessionFocusLabel(sessionContext)
   const pinnedContext = activeThread?.pinned_context ?? EMPTY_CONTEXT
   const pendingInteraction = streamInteraction ?? pendingInteractionQuery.data ?? null
   const messages = (messagesQuery.data?.messages ?? []).filter((message) => {
@@ -278,29 +164,13 @@ export default function RhizomePage() {
   const blankWeather = blankWeatherQuery.data
   const triageShortlist = shortlistFromTriage(latestTriageQuery.data)
   const todayShortlist = triageShortlist.length > 0 ? triageShortlist : (dailyTasksQuery.data ?? []).slice(0, 3)
-  const activeContextSearchItems = activeContextTarget === 'thread' ? pinnedContext : messageContext
-  const groupedContextResults = useMemo(() => {
-    const existingContext = new Set(activeContextSearchItems.map(contextKey))
-    const groups = new Map<string, SearchResultItemView[]>()
-    for (const result of contextSearchQuery.data?.results ?? EMPTY_SEARCH_RESULTS) {
-      if (existingContext.has(contextKey(result))) continue
-      const items = groups.get(result.subject_type) ?? []
-      items.push(result)
-      groups.set(result.subject_type, items)
-    }
-    return Array.from(groups.entries())
-  }, [activeContextSearchItems, contextSearchQuery.data?.results])
-  const groupedComposerContextResults = useMemo(() => {
-    const existingContext = new Set([...pinnedContext, ...messageContext].map(contextKey))
-    const groups = new Map<string, SearchResultItemView[]>()
-    for (const result of composerContextQuery.data?.results ?? EMPTY_SEARCH_RESULTS) {
-      if (existingContext.has(contextKey(result))) continue
-      const items = groups.get(result.subject_type) ?? []
-      items.push(result)
-      groups.set(result.subject_type, items)
-    }
-    return Array.from(groups.entries())
-  }, [composerContextQuery.data?.results, messageContext, pinnedContext])
+  const contextSearch = useContextSearch({
+    draft,
+    isNewThread,
+    pinnedContext,
+    threadId,
+    setDraft,
+  })
 
   function updateWorkspaceHeaderCollapse(scrollTop: number) {
     setWorkspaceHeaderState((current) => {
@@ -311,40 +181,6 @@ export default function RhizomePage() {
     })
   }
 
-  function updateComposerSelection(textarea: HTMLTextAreaElement) {
-    const cursor = textarea.selectionStart ?? textarea.value.length
-    const trigger = parseComposerContextTrigger(textarea.value, cursor)
-    setComposerCursor(cursor)
-    setComposerAutocompletePosition(trigger ? measureTextareaIndex(textarea, trigger.start) : null)
-  }
-
-  function startSessionEdit() {
-    setSessionDraft(sessionDraftFromContext(sessionContext))
-    setSessionFocusContext(sessionContext?.focus_context[0] ?? null)
-    setSessionFocusTerm(sessionFocusLabel(sessionContext) === 'Not set' ? '' : sessionFocusLabel(sessionContext))
-    setSessionError(null)
-    setSessionEditing(true)
-  }
-
-  function cancelSessionEdit() {
-    setSessionDraft(sessionDraftFromContext(sessionContext))
-    setSessionFocusContext(null)
-    setSessionFocusTerm('')
-    setSessionError(null)
-    setSessionEditing(false)
-  }
-
-  function saveSessionContext() {
-    if (!threadId) return
-    const payload: UpdateSessionContextRequest = {
-      time_text: sessionDraft.time_text.trim() || null,
-      energy_text: sessionDraft.energy_text.trim() || null,
-      focus_text: sessionFocusTerm.trim() || null,
-      focus_context: sessionFocusContextRefs(sessionFocusContext),
-    }
-    updateSessionMutation.mutate(payload)
-  }
-
   function setStarterDraft(kind: 'plan' | 'diagnose' | 'prioritize') {
     const prompts = {
       plan: 'Help me plan the next useful step for my garden today.',
@@ -352,32 +188,30 @@ export default function RhizomePage() {
       prioritize: 'Look at my garden context and help me prioritize what to do next.',
     }
     setDraft(prompts[kind])
-    setComposerCursor(prompts[kind].length)
-    setComposerAutocompletePosition(null)
+    contextSearch.composer.setCursor(prompts[kind].length)
   }
 
   function setTaskStarterDraft(task: TaskSummaryView) {
     const prompt = `Can you help me handle this task today: ${task.title}?`
     setDraft(prompt)
-    setComposerCursor(prompt.length)
-    setComposerAutocompletePosition(null)
+    contextSearch.composer.setCursor(prompt.length)
   }
 
   function startThreadSessionLabels(): Omit<OptimisticSessionContext, 'threadId'> {
     return {
       timeLabel: startThreadDraft.time_today.trim() || 'Not set',
       energyLabel: startThreadDraft.energy.trim() || 'Not set',
-      focusLabel: startFocusContext
-        ? contextLabel(startFocusContext)
-        : startFocusTerm.trim() || 'Not set',
+      focusLabel: contextSearch.startFocus.context
+        ? contextLabel(contextSearch.startFocus.context)
+        : contextSearch.startFocus.term.trim() || 'Not set',
     }
   }
 
   function startThreadSessionPayload(): UpdateSessionContextRequest | null {
     const timeText = startThreadDraft.time_today.trim()
     const energyText = startThreadDraft.energy.trim()
-    const focusText = startFocusTerm.trim()
-    const focusContext = sessionFocusContextRefs(startFocusContext) ?? []
+    const focusText = contextSearch.startFocus.term.trim()
+    const focusContext = sessionFocusContextRefs(contextSearch.startFocus.context) ?? []
     if (!timeText && !energyText && !focusText && focusContext.length === 0) return null
     return {
       time_text: timeText || null,
@@ -387,212 +221,60 @@ export default function RhizomePage() {
     }
   }
 
-  function updateThreadContextCache(context: ContextObject, mode: 'add' | 'remove') {
-    function updateThread(thread: ThreadView): ThreadView {
-      const exists = thread.pinned_context.some(
-        (item) => item.subject_type === context.subject_type && item.subject_id === context.subject_id,
-      )
-      const pinned_context =
-        mode === 'add'
-          ? exists
-            ? thread.pinned_context
-            : [...thread.pinned_context, context]
-          : thread.pinned_context.filter(
-              (item) => item.subject_type !== context.subject_type || item.subject_id !== context.subject_id,
-            )
-      return { ...thread, pinned_context }
-    }
-
-    queryClient.setQueryData<ThreadView[]>(['threads', { limit: THREAD_LIMIT }], (threads) =>
-      threads?.map((thread) => (thread.thread_id === threadId ? updateThread(thread) : thread)),
-    )
-    queryClient.setQueryData<ThreadView>(['threads', threadId], (thread) => (thread ? updateThread(thread) : thread))
-  }
-
-  function addMessageContext(context: ContextObject) {
-    setMessageContext((current) => {
-      const exists = current.some(
-        (item) => item.subject_type === context.subject_type && item.subject_id === context.subject_id,
-      )
-      return exists ? current : [...current, context]
-    })
-    setMessageContextOpen(true)
-  }
-
-  function addContextFromSearchResult(result: SearchResultItemView) {
-    const context = contextFromSearchResult(result)
-    if (activeContextTarget === 'message') {
-      addMessageContext(context)
-      setContextSearchTerm('')
-      setDismissedContextQuery('')
-      return
-    }
-    if (!threadId) return
-    addContextMutation.mutate(context, {
-      onSuccess: () => {
-        setContextSearchTerm('')
-        setDismissedContextQuery('')
-      },
-    })
-  }
-
-  function addComposerContextFromSearchResult(result: SearchResultItemView) {
-    if (!composerContextTrigger) return
-    addMessageContext(contextFromSearchResult(result))
-    setDismissedComposerContextQuery('')
-    setComposerAutocompletePosition(null)
-    setDraft((current) => {
-      const before = current.slice(0, composerContextTrigger.start).trimEnd()
-      const after = current.slice(composerContextTrigger.end).replace(/^\s+/, '')
-      const next = [before, after].filter(Boolean).join(before && after ? ' ' : '')
-      setComposerCursor(before.length)
-      return next
-    })
-  }
-
-  function removeMessageContext(context: ContextObject) {
-    setMessageContext((current) =>
-      current.filter(
-        (item) => item.subject_type !== context.subject_type || item.subject_id !== context.subject_id,
-      ),
-    )
-  }
-
-  function removePinnedContext(context: ContextObject) {
-    if (!threadId) return
-    removeContextMutation.mutate(context)
-  }
-
-  function openContextTarget(target: 'message' | 'thread') {
-    setActiveContextTarget((current) => {
-      const nextTarget = current === target ? null : target
-      setContextSearchTerm('')
-      setDismissedContextQuery('')
-      setMessageContextOpen(nextTarget === 'message')
-      setPinnedContextOpen(nextTarget === 'thread')
-      return nextTarget
-    })
-  }
-
-  function closeContextTarget(target: 'message' | 'thread') {
-    setContextSearchTerm('')
-    setDismissedContextQuery('')
-    setActiveContextTarget((current) => (current === target ? null : current))
-    if (target === 'message') setMessageContextOpen(false)
-    else setPinnedContextOpen(false)
-  }
-
   function renderContextInlineInput({
     target,
     label,
     contexts,
-    onRemove,
   }: {
     target: 'message' | 'thread'
     label: string
     contexts: ContextObject[]
-    onRemove: (context: ContextObject) => void
   }) {
-    const isActive = activeContextTarget === target
-    const contextQueryKey = `${target}:${contextSearchTerm.trim()}`
-    const showAutocomplete =
-      isActive && contextSearchTerm.trim().length > 0 && dismissedContextQuery !== contextQueryKey
-    return (
-      <ContextInlineInput
-        contexts={contexts}
-        disabled={
-          target === 'thread' &&
-          (addContextMutation.isPending || removeContextMutation.isPending)
-        }
-        groups={groupedContextResults}
-        isActive={isActive}
-        isError={contextSearchQuery.isError}
-        isLoading={contextSearchQuery.isLoading}
-        isTooShort={contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2}
-        label={label}
-        searchTerm={contextSearchTerm}
-        showAutocomplete={showAutocomplete}
-        onActivate={() => {
-          if (!isActive) {
-            setActiveContextTarget(target)
-            setContextSearchTerm('')
-          }
-        }}
-        onClose={() => closeContextTarget(target)}
-        onDismiss={() => setDismissedContextQuery(contextQueryKey)}
-        onRemove={onRemove}
-        onSearchTermChange={(term) => {
-          if (!isActive) setActiveContextTarget(target)
-          setDismissedContextQuery('')
-          setContextSearchTerm(term)
-        }}
-        onSelect={addContextFromSearchResult}
-      />
-    )
+    return <ContextInlineInput {...contextSearch.inlineProps(target, contexts)} label={label} />
   }
 
   function renderFocusPicker(mode: 'start' | 'session') {
-    const selected = mode === 'start' ? startFocusContext : sessionFocusContext
-    const term = mode === 'start' ? startFocusTerm : sessionFocusTerm
-    const query = mode === 'start' ? startFocusQuery : sessionFocusQuery
-    const label = mode === 'start' ? 'Thread focus' : 'Project focus'
-    const placeholder =
-      mode === 'start' ? 'Project, task, plant, or open question...' : 'Search projects...'
-    const inputId = mode === 'start' ? 'rhizome-start-focus' : 'rhizome-session-focus'
-    const results = query.data?.results ?? EMPTY_SEARCH_RESULTS
-    const dismissedFocusQuery =
-      mode === 'start' ? dismissedStartFocusQuery : dismissedSessionFocusQuery
-    const focusQueryKey = `${mode}:${term.trim()}`
-    const shouldShowAutocomplete =
-      !selected && term.trim().length > 0 && dismissedFocusQuery !== focusQueryKey
-
-    function setSelected(context: FocusContext) {
-      if (mode === 'start') {
-        setStartFocusContext(context)
-        setStartFocusTerm(context ? contextLabel(context) : '')
-        setDismissedStartFocusQuery('')
-      } else {
-        setSessionFocusContext(context)
-        setSessionFocusTerm(context ? contextLabel(context) : '')
-        setDismissedSessionFocusQuery('')
-      }
-    }
-
-    function setTerm(value: string) {
-      if (mode === 'start') {
-        setStartFocusContext(null)
-        setDismissedStartFocusQuery('')
-        setStartFocusTerm(value)
-      } else {
-        setSessionFocusContext(null)
-        setDismissedSessionFocusQuery('')
-        setSessionFocusTerm(value)
-      }
-    }
-
-    function dismissFocusAutocomplete() {
-      if (mode === 'start') setDismissedStartFocusQuery(focusQueryKey)
-      else setDismissedSessionFocusQuery(focusQueryKey)
+    if (mode === 'session') {
+      return (
+        <FocusPicker
+          emptyLabel="No projects found."
+          errorLabel="Focus search is unavailable."
+          groups={sessionFocus.groups}
+          inputId="rhizome-session-focus"
+          isError={sessionFocus.isError}
+          isLoading={sessionFocus.isLoading}
+          label="Project focus"
+          mode="session"
+          placeholder="Search projects..."
+          selected={sessionFocus.selected}
+          showAutocomplete={sessionFocus.showAutocomplete}
+          term={sessionFocus.term}
+          onDismiss={sessionFocus.dismiss}
+          onSelect={sessionFocus.select}
+          onSelectedClear={sessionFocus.clear}
+          onTermChange={sessionFocus.changeTerm}
+        />
+      )
     }
 
     return (
       <FocusPicker
-        emptyLabel={mode === 'start' ? 'Use this as free-text focus.' : 'No projects found.'}
+        emptyLabel="Use this as free-text focus."
         errorLabel="Focus search is unavailable."
-        groups={groupContextResults(results)}
-        inputId={inputId}
-        isError={query.isError}
-        isLoading={query.isLoading}
-        label={label}
-        mode={mode}
-        placeholder={placeholder}
-        selected={selected}
-        showAutocomplete={shouldShowAutocomplete}
-        term={term}
-        onDismiss={dismissFocusAutocomplete}
-        onSelect={(result) => setSelected(contextFromSearchResult(result))}
-        onSelectedClear={() => setSelected(null)}
-        onTermChange={setTerm}
+        groups={contextSearch.startFocus.groups}
+        inputId="rhizome-start-focus"
+        isError={contextSearch.startFocus.isError}
+        isLoading={contextSearch.startFocus.isLoading}
+        label="Thread focus"
+        mode="start"
+        placeholder="Project, task, plant, or open question..."
+        selected={contextSearch.startFocus.context}
+        showAutocomplete={contextSearch.startFocus.showAutocomplete}
+        term={contextSearch.startFocus.term}
+        onDismiss={contextSearch.startFocus.dismiss}
+        onSelect={contextSearch.startFocus.select}
+        onSelectedClear={contextSearch.startFocus.clear}
+        onTermChange={contextSearch.startFocus.changeTerm}
       />
     )
   }
@@ -649,11 +331,11 @@ export default function RhizomePage() {
               error={sessionError}
               focusDisplay={sessionFocusDisplay}
               focusPicker={renderFocusPicker('session')}
-              hasOptimisticContext={Boolean(activeOptimisticSession)}
+              hasOptimisticContext={hasOptimisticSession}
               isEditing={sessionEditing}
-              isError={sessionContextQuery.isError}
-              isLoading={sessionContextQuery.isLoading}
-              isSaving={updateSessionMutation.isPending}
+              isError={sessionContextIsError}
+              isLoading={sessionContextIsLoading}
+              isSaving={sessionContextIsSaving}
               timeDisplay={sessionTimeDisplay}
               onCancel={cancelSessionEdit}
               onDraftChange={setSessionDraft}
@@ -662,13 +344,12 @@ export default function RhizomePage() {
             />
           ) : null}
 
-          {threadId && (pinnedContextOpen || pinnedContext.length > 0) ? (
+          {threadId && (contextSearch.pinnedContextOpen || pinnedContext.length > 0) ? (
             <div className={s.pinnedContextSection}>
               {renderContextInlineInput({
                 target: 'thread',
                 label: 'Pinned context for this thread',
                 contexts: pinnedContext,
-                onRemove: removePinnedContext,
               })}
             </div>
           ) : null}
@@ -710,14 +391,14 @@ export default function RhizomePage() {
           </div>
 
           <RhizomeComposer
-            autocompleteGroups={groupedComposerContextResults}
-            autocompleteIsError={composerContextQuery.isError}
-            autocompleteIsLoading={composerContextQuery.isLoading}
+            autocompleteGroups={contextSearch.composer.groups}
+            autocompleteIsError={contextSearch.composer.isError}
+            autocompleteIsLoading={contextSearch.composer.isLoading}
             autocompleteStyle={
-              composerAutocompletePosition
+              contextSearch.composer.position
                 ? {
-                    left: `${Math.max(0, composerAutocompletePosition.left - 4)}px`,
-                    top: `${composerAutocompletePosition.top}px`,
+                    left: `${Math.max(0, contextSearch.composer.position.left - 4)}px`,
+                    top: `${contextSearch.composer.position.top}px`,
                   }
                 : undefined
             }
@@ -726,33 +407,30 @@ export default function RhizomePage() {
             draft={draft}
             isStreaming={isStreaming}
             messageContextEditor={
-              messageContextOpen
+              contextSearch.messageContextOpen
                 ? renderContextInlineInput({
                     target: "message",
                     label: "Message context",
-                    contexts: messageContext,
-                    onRemove: removeMessageContext,
+                    contexts: contextSearch.messageContext,
                   })
                 : undefined
             }
-            messageContextOpen={messageContextOpen}
+            messageContextOpen={contextSearch.messageContextOpen}
             modelOptions={currentModelOptions}
             modelValue={currentModelValue}
-            pinnedContextOpen={pinnedContextOpen}
-            showAutocomplete={Boolean(
-              composerContextTrigger && dismissedComposerContextQuery !== composerContextQueryKey,
-            )}
-            onDismissAutocomplete={() => setDismissedComposerContextQuery(composerContextQueryKey)}
+            pinnedContextOpen={contextSearch.pinnedContextOpen}
+            showAutocomplete={contextSearch.composer.showAutocomplete}
+            onDismissAutocomplete={contextSearch.composer.dismiss}
             onDraftChange={(value, textarea) => {
-              setDismissedComposerContextQuery("")
+              contextSearch.composer.resetDismissal()
               setDraft(value)
-              updateComposerSelection(textarea)
+              contextSearch.composer.updateSelection(textarea)
             }}
-            onSelectionChange={updateComposerSelection}
-            onSelectAutocomplete={addComposerContextFromSearchResult}
+            onSelectionChange={contextSearch.composer.updateSelection}
+            onSelectAutocomplete={contextSearch.composer.select}
             onSubmit={() => void submitMessage(draft)}
-            onToggleMessageContext={() => openContextTarget("message")}
-            onTogglePinnedContext={() => openContextTarget("thread")}
+            onToggleMessageContext={() => contextSearch.openTarget("message")}
+            onTogglePinnedContext={() => contextSearch.openTarget("thread")}
           />
         </section>
 
