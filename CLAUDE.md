@@ -1,165 +1,150 @@
-# Verdant Pages — Claude Code Memory
+# Verdant Pages - Coding Agent Guide
 
-**Last updated:** 2026-06-21
+**Last verified:** 2026-07-10
 
-This file is updated continuously as work happens, not just at phase boundaries — the "Currently working on" section below is the live record of what's in flight. There's no separate `docs/current_work/` history folder; `docs/roadmap/overview.md` carries the full per-phase plan and build record, and this file is the fast day-to-day pointer into it.
+This file contains stable repository guidance for coding agents. It intentionally
+does not track active tasks, branches, test counts, or recently completed work.
+Read [docs/status/current.md](docs/status/current.md) for the live checkpoint and
+[docs/roadmap/overview.md](docs/roadmap/overview.md) for the delivery plan.
 
-## What this is
+## Product and system boundary
 
-Verdant Pages is the React frontend for the Gardening Agent system — the only
-surface a user actually lives in. It talks to **Cambium** (the Go API gateway)
-— never directly to Rhizome. Rhizome is an internal ClusterIP service
-unreachable from outside the cluster.
+Verdant Pages is the React frontend for the Gardening Agent system and the
+primary surface a gardener uses day to day.
 
+```text
+Browser -> Verdant Pages -> Cambium (:8080) -> Rhizome (:8001) -> Fairlead
 ```
-Browser → Verdant Pages → Cambium (:8080) → Rhizome (:8001) → Fairlead
-```
 
-This file is the fast-orientation doc — invariants, current status, where
-things live. For *why* things are built this way, see
-[docs/overview/purpose.md](docs/overview/purpose.md) (design principles,
-ownership boundaries) and [docs/README.md](docs/README.md) (full doc index).
+Verdant calls Cambium only. It never calls Rhizome, Fairlead, Postgres, or
+LangGraph directly.
 
-## Related repos
+Sibling repositories:
 
-All siblings under the same parent directory:
+| Repository | Responsibility |
+|---|---|
+| `../cambium` | Authentication, provider keys, public/versioned API, Rhizome proxy, static SPA serving |
+| `../rhizome` | Agent graph, garden domain behavior, persistence, monitoring, structured internal API |
+| `../fairlead` | Inference routing and local/cloud model fallback |
 
-| Repo | Role | Verdant's relationship to it |
-|---|---|---|
-| `../cambium` | Go API gateway — auth, versioned JSON API | Verdant's *only* backend dependency. All calls go through it. |
-| `../rhizome` | Python agent + domain engine, Postgres | Never called directly. Cambium absorbs its API surface. |
-| `../fairlead` | Rust inference router (vLLM) | No awareness of this at all — it's behind Rhizome. |
+## Required reading
 
-## Build + run commands
+Use the shortest path that fits the task:
+
+1. [Current status](docs/status/current.md) - active phase, priorities, blockers, quality gates.
+2. [Roadmap](docs/roadmap/overview.md) - intended delivery order and acceptance criteria.
+3. [Codebase tour](docs/architecture/codebase-tour.md) - where current code lives.
+4. Relevant [page specification](docs/pages/) - intended user experience.
+5. [Visual identity](docs/design/visual-identity.md) - design principles and visual language.
+
+## Commands
+
+Requires Node 24 (`.nvmrc`).
 
 ```bash
-npm install
-npm run dev        # Vite dev server (proxies /api + /auth to Cambium), localhost:5173
-npm run build      # tsc -b + production build to dist/
-npm run lint       # ESLint
-npm run test       # Vitest, watch mode
-npm run test:run   # Vitest, single run (CI)
-npm run test:e2e   # Playwright, Chromium, auto-starts dev server
+nvm use
+npm ci
+npm run dev
+npm run build
+npm run lint
+npm run test:run
+npm run test:e2e
 ```
 
-No other services needed for pure UI work — just Cambium running on `:8080` for real API calls. See [docs/getting-started/quickstart.md](docs/getting-started/quickstart.md) for the fast path or [setup.md](docs/getting-started/setup.md) for the full walkthrough + troubleshooting.
+Pure UI and mocked tests do not require the backend. Live API and agent flows
+require Cambium, Rhizome, Postgres, and at least one configured provider key.
+See [docs/getting-started/full-stack.md](docs/getting-started/full-stack.md).
 
-Requires **Node 24** (`.nvmrc`) — `nvm use` before anything else. A stale Node 18 shell produces a `node:util`/`styleText` error from Vitest, not an obviously-Node-related one.
+## Current source layout
 
-## Environment
-
-```
-VITE_CAMBIUM_URL=  # empty = use Vite proxy; set to full URL for production
-```
-
-## Project layout
-
-```
+```text
 src/
-├── components/
-│   ├── primitives/   Generic UI atoms (Button, Input, Modal, ...) — no domain knowledge
-│   └── shell/        AppShell, AppNav, NotificationDrawer, Toast, Breadcrumb
-├── lib/
-│   ├── api/          client.ts + auth.ts built. 15/16 domain modules built (garden, plants,
-│   │                 tasks, calendar, shopping, search, alerts, notifications, interactions,
-│   │                 chat, triage, weather, incidents, projects, activity) — see docs/development/deferred-work.md
-│   │                 for the remaining media blocker and intentional non-contracts
-│   ├── auth/         AuthContext, useAuth — built, Phase 4
-│   ├── connectivity/ Offline detection (reportNetworkFailure/Success, useConnectivity) — built
-│   ├── query/        createQueryClient() — custom retry (skips ApiError, retries network
-│   │                 failures with a toast per attempt) — built
-│   ├── sse/          consumeSSEStream() + consumeNotificationStream() — built
-│   ├── theme/        ThemeProvider — built, Phase 2
-│   └── toast/        toastStore — generic module-level toast store — built
-├── pages/            One file per route, 27 stubs today — built out per docs/pages/*.md, Phase 5+
-├── routes/           router.tsx, ProtectedRoute.tsx
-├── styles/           tokens.css (single source of truth), global.css, utilities.css
-└── test/             Vitest setup.ts
-e2e/                  Playwright specs
-docs/                 Architecture decisions, page designs, roadmap — see docs/README.md
+|-- components/
+|   |-- activity/       Activity feed and filters
+|   |-- primitives/     Domain-neutral UI controls
+|   |-- rhizome/        Shared Rhizome/context controls
+|   `-- shell/          Navigation, app shell, notifications, connectivity, toasts
+|-- lib/
+|   |-- api/            Typed Cambium client modules and request-shape tests
+|   |-- auth/           Session context and useAuth
+|   |-- connectivity/   Network-state tracking
+|   |-- query/          TanStack Query configuration
+|   |-- sse/            Fetch/ReadableStream SSE consumers
+|   |-- theme/          Theme state
+|   |-- toast/          Global toast store
+|   `-- types/          Cambium and Rhizome DTO types
+|-- pages/              Route components; many future routes remain placeholders
+|-- routes/             Router and auth guards
+|-- styles/             Tokens, global styles, utilities
+`-- test/               Vitest setup
+
+e2e/                    Playwright browser tests
+docs/                   Product, architecture, design, development, and roadmap docs
 ```
 
-See [docs/development/deferred-work.md](docs/development/deferred-work.md)
-for the remaining intentional deferrals and re-enable conditions.
+## Architectural invariants
 
-## Current status
+- **Cambium is the only frontend backend.** Public requests use `/auth` or
+  `/api/v1` and go through the typed client layer.
+- **Keep ordinary requests behind `apiFetch`.** Streaming helpers may use
+  `fetch` through the SSE layer because they need incremental reads.
+- **Never use `EventSource`.** Chat uses POST bodies and authenticated headers;
+  use `fetch` plus `ReadableStream`.
+- **Keep access tokens in memory.** Never place JWTs in localStorage,
+  sessionStorage, query parameters, or JavaScript-readable cookies.
+- **Use TanStack Query for server state.** Page-local UI state is appropriate
+  for transient presentation, not cached backend records.
+- **Use design tokens.** Add reusable values to `tokens.css`; do not scatter
+  literal colors across component CSS.
+- **Routes own durable workflows.** Full creation and complex editing use
+  dedicated URLs. Temporary navigation, review, and context inspection may use
+  workspace drawers when the page specification calls for them.
+- **Backend behavior stays in Rhizome.** Verdant renders structured state and
+  submits user decisions; it does not reproduce triage, planning, or lifecycle
+  logic.
+- **Update documentation with behavior.** A change is incomplete when its page
+  specification, current status, capability matrix, or API reference is left
+  factually wrong.
 
-| Phase | Name | Status |
-|---|---|---|
-| 1 | Scaffold + build tooling | complete |
-| 2 | Tokens + theme + fonts | complete |
-| 3 | Primitives + app shell | complete |
-| 4 | Auth + API client | complete (`birch` branch) — auth core, 15/16 domain modules, SSE, and structured cleanup built; media intentionally deferred |
-| 5 | Chat and context (Agent chat, Today, Incidents, Activity) | not started — no real blockers |
-| 6 | Tasks and projects (Tasks, Calendar, Projects) | not started — no real blockers |
-| 7a–7b | Garden hub & objects, Plants | not started — no blockers |
-| 8 | App polish (Settings, Notifications, deploy) | not started — no blockers |
+## Implementation guidance
 
-Renumbered 2026-06-21 — the old 5a–5e/6a–6c/7/8 split is gone; see [docs/roadmap/overview.md](docs/roadmap/overview.md) for why and the full per-phase detail, including what shipped along the way.
+### Add or change an API call
 
-## Currently working on
+1. Verify the current Cambium Swagger/Rhizome contract.
+2. Update types in `src/lib/types/`.
+3. Add or change the domain wrapper in `src/lib/api/`.
+4. Cover URL, method, query, and body shape in a colocated test.
+5. Use the wrapper through TanStack Query in the page/component.
+6. Update the capability matrix and relevant page documentation.
 
-- Phase 4 API implementation is complete: auth core, SSE, query/connectivity plumbing, and 15/16 domain modules are built and tested. `media.ts` remains intentionally deferred until rhizome#117 lands. `GET /triage/recommendations` is intentionally absent; use `getLatestTriage()`.
-- [rhizome#140](https://github.com/ybordag/rhizome/issues/140) closed (verified — code review, tests, live curl checks) — unblocked almost every previously-omitted function in `garden.ts`/`plants.ts`/`tasks.ts`: `updateGardenProfile`, `updateBed`, `createContainer`, `updateContainer`, `getPlant`, `createPlant`, `updatePlant`, `createPlantBatch`, `batchUpdatePlants`, `updateTask`, plus per-entity activity feeds (`getBedActivity`, `getContainerActivity`, `getPlantActivity`, `getBatchActivity`, `getTaskActivity`) and `updateTaskSeries`. `listTasksBlocked` and `batchRemovePlants` are now also built against structured backend responses, so the small structured endpoint cleanup bucket is closed.
-- [rhizome#141](https://github.com/ybordag/rhizome/issues/141) (streaming chat 200'd with zero bytes for every provider — sync-only LangGraph checkpointer), [rhizome#142](https://github.com/ybordag/rhizome/issues/142) (duplicate/internal chat-stream tokens), and [rhizome#135](https://github.com/ybordag/rhizome/issues/135) (incidents/treatment-plan structured JSON) are fixed and covered. Agent chat streaming is clear for Phase 5.
-- Offline banner + retry-visibility toasts built (2026-06-21): `lib/connectivity`, `lib/toast`, `lib/query` now hold real code. The notification-stream auto-reconnect-with-backoff that `error-handling.md` previously claimed was built actually wasn't (`stream.ts` had no reconnect logic) — corrected; it's spec'd, scheduled for Phase 8 (its only real dependency, rhizome#130, is closed). The chat SSE manual-retry button is also still deferred — documented in `docs/pages/05-agent.md`'s "Connection handling" section, but there's no chat UI yet to attach it to (that's Phase 5).
-- Roadmap re-planned 2026-06-21: most of the structured-JSON backlog (#132's split) closed since the original 5a–5e/6/7/8 phase plan was written, so phases were regrouped around product usability instead of backend-unblock order. See [docs/roadmap/overview.md](docs/roadmap/overview.md).
-- Latest verification: `npm run lint`, `npm run test:run` (323 Vitest tests), `npm run build`, and `npm run test:e2e` (20 Playwright tests) all pass on Node 24.
+### Add or change a page
 
-## Known issues / deferred work
+1. Read the page specification and visual principles.
+2. Keep route-level data ownership in the page or a dedicated feature hook.
+3. Extract reusable controls or repeated domain presentations.
+4. Cover loading, error, empty, populated, and mutation states as applicable.
+5. Add browser coverage for the phase's user-visible acceptance path.
 
-Current intentional deferrals are documented in
-[docs/development/deferred-work.md](docs/development/deferred-work.md). The
-important ones: `media.ts` is blocked on rhizome#117; `NotificationDrawer` real
-content and notification-stream auto-reconnect are scheduled for Phase 8; SSE
-manual retry and 409 invalidation wait for real Phase 5+ UI flows.
+### Work with Rhizome chat
 
-## Architecture
+- Treat stream cancellation, completion, partial responses, retry, optimistic
+  messages, and thread switching as one stateful workflow.
+- Use the dedicated thread session-context endpoint for `time_text`,
+  `energy_text`, `focus_text`, and `focus_context`.
+- Preserve stable object references (`subject_type`, `subject_id`) instead of
+  asking Rhizome to rediscover objects from prose.
+- Keep pinned-thread context distinct from message-only context.
 
-SPA: Vite + React 19 + TypeScript + React Router v6.
-Auth: JWT access token in-memory (module variable), refresh token in httpOnly cookie.
-      On every page load, POST /auth/refresh runs before the app renders.
-Server state: TanStack Query v5.
-Styling: CSS custom properties (src/styles/tokens.css).
-Tables: TanStack Table v8.
-Drag and drop: Pragmatic Drag and Drop (not @dnd-kit).
+## Definition of done
 
-Error handling contract (status codes, network failure, SSE drops →
-UI behavior) is fully specified in
-[docs/development/error-handling.md](docs/development/error-handling.md).
+Before a slice is ready for review:
 
-## Invariants — never violate
+- The requested behavior works in light and dark themes at supported widths.
+- Relevant unit/component and Playwright coverage exists.
+- `npm run build`, `npm run lint`, and affected tests pass.
+- Live backend behavior is smoke-tested when the change crosses the Cambium or
+  Rhizome contract.
+- Documentation and the live status checkpoint are accurate.
+- Unfinished work has an explicit owner, reason, and re-enable condition.
 
-- **The frontend calls Cambium, never Rhizome directly.** All endpoints are under
-  Cambium's /api/v1 or /auth. There is no direct Rhizome URL in this repo.
-- **Never use EventSource for SSE.** Chat streaming uses fetch + ReadableStream
-  because Cambium requires Authorization: Bearer in the header.
-- **Token in Authorization header, never in query params.** JWT in a URL
-  leaks in browser history, server logs, and Referer headers.
-- **apiFetch handles 401.** All API calls go through src/lib/api/client.ts.
-  Never call fetch() directly in page components.
-- **No inline styles for tokens.** Use CSS custom properties. Don't hardcode
-  color values in components — reference var(--chartreuse) etc.
-- **Port the design, don't restyle.** Tokens and font choices come from the
-  prototype. Changes to the visual language need explicit sign-off.
-- **Access token is in-memory only.** Never write it to localStorage,
-  sessionStorage, or any cookie. It lives in a module variable in client.ts.
-- **No drawers.** The notification drawer is the only drawer in the app.
-  All other creation/editing flows use dedicated /new pages or inline interactions.
-
-## Key files
-
-src/styles/tokens.css          — ALL design tokens (both themes). Single source of truth.
-src/lib/api/client.ts          — Base fetch wrapper, in-memory token, 401 handling, refresh retry.
-src/lib/auth/context.tsx       — AuthContext, useAuth hook.
-src/lib/sse/stream.ts          — consumeSSEStream() + consumeNotificationStream() async generators.
-src/routes/router.tsx          — All routes.
-src/routes/ProtectedRoute.tsx  — Auth guard.
-docs/                          — Architecture decisions and page design docs.
-
-## Where to start
-
-Read docs/roadmap/overview.md for the full phased plan.
-The architecture docs in docs/architecture/ cover every decision made.
-The page designs in docs/pages/ cover every page in the app.
-docs/README.md explains how the whole docs/ tree is organized if you're lost.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contribution workflow.
