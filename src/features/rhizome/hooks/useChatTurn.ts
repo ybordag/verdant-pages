@@ -44,6 +44,7 @@ export default function useChatTurn({
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const controllerRef = useRef<AbortController | null>(null)
+  const streamTargetRef = useRef<string | null>(null)
   const [streamThreadId, setStreamThreadId] = useState<string | null>(null)
   const [pendingMessages, setPendingMessages] = useState<ThreadMessageView[]>([])
   const [streamInteraction, setStreamInteraction] = useState<InteractionEnvelopeView | null>(null)
@@ -56,6 +57,16 @@ export default function useChatTurn({
 
   useEffect(() => () => controllerRef.current?.abort(), [])
 
+  useEffect(() => {
+    if (
+      controllerRef.current &&
+      streamTargetRef.current &&
+      threadId !== streamTargetRef.current
+    ) {
+      controllerRef.current.abort()
+    }
+  }, [threadId])
+
   function beginStream(targetThreadId: string) {
     const controller = new AbortController()
     controllerRef.current?.abort()
@@ -64,6 +75,7 @@ export default function useChatTurn({
     setStreamError(null)
     setStreamingText('')
     setStreamThreadId(targetThreadId)
+    streamTargetRef.current = targetThreadId
     return controller
   }
 
@@ -110,7 +122,10 @@ export default function useChatTurn({
       if (error instanceof DOMException && error.name === 'AbortError') return
       setStreamError('Connection failed - try again.')
     } finally {
-      if (controllerRef.current === controller) controllerRef.current = null
+      if (controllerRef.current === controller) {
+        controllerRef.current = null
+        streamTargetRef.current = null
+      }
       setIsStreaming(false)
     }
   }
@@ -126,6 +141,7 @@ export default function useChatTurn({
     setStreamError(null)
     setRetryMessage(message)
     setStreamingText('')
+    if (targetThreadId) streamTargetRef.current = targetThreadId
 
     try {
       if (!targetThreadId) {
@@ -133,6 +149,7 @@ export default function useChatTurn({
         const payload = getStartupPayload()
         const createdThread = await createThread({})
         targetThreadId = createdThread.thread_id
+        streamTargetRef.current = targetThreadId
         if (
           labels.timeLabel !== 'Not set' ||
           labels.energyLabel !== 'Not set' ||
@@ -205,7 +222,10 @@ export default function useChatTurn({
       if (error instanceof DOMException && error.name === 'AbortError') return
       setStreamError('Connection failed - try again.')
     } finally {
-      if (controllerRef.current === controller) controllerRef.current = null
+      if (controllerRef.current === controller) {
+        controllerRef.current = null
+        streamTargetRef.current = null
+      }
       setIsStreaming(false)
     }
   }

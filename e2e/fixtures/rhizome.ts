@@ -34,6 +34,20 @@ export interface RhizomeFixtureState {
   threads: ThreadFixture[]
   messages: Record<string, ThreadMessageFixture[]>
   sessionContexts: Record<string, SessionContextFixture>
+  pendingInteraction: InteractionFixture | null
+}
+
+export interface InteractionFixture {
+  id: string
+  interaction_type: string
+  status: string
+  title: string
+  summary: string
+  body: string | null
+  sections: Array<Record<string, unknown>>
+  actions: Array<{ id: string; label: string; kind: string; style_hint: string }>
+  context: Record<string, unknown>
+  created_at: string
 }
 
 export interface SessionContextFixture {
@@ -52,6 +66,7 @@ export async function mockAuthenticatedRhizomeApi(
     initialMessages?: Record<string, ThreadMessageFixture[]>
     streamDelayMs?: number
     threads?: ThreadFixture[]
+    pendingInteraction?: InteractionFixture
   } = {},
 ): Promise<RhizomeFixtureState> {
   const state: RhizomeFixtureState = {
@@ -80,6 +95,7 @@ export async function mockAuthenticatedRhizomeApi(
         focus_context: [],
       }),
     },
+    pendingInteraction: options.pendingInteraction ?? null,
   }
   let streamCount = 0
 
@@ -255,6 +271,7 @@ export async function mockAuthenticatedRhizomeApi(
     const threadId = body.thread_id ?? ''
     const message = body.resolution ?? ''
     state.resumeRequests.push({ threadId, message })
+    state.pendingInteraction = null
     const response = 'Decision recorded.'
     state.messages[threadId] = [
       ...(state.messages[threadId] ?? []),
@@ -268,7 +285,7 @@ export async function mockAuthenticatedRhizomeApi(
   })
 
   await page.route('**/api/v1/interactions/pending', async (route) => {
-    await json(route, null)
+    await json(route, state.pendingInteraction)
   })
 
   await page.route('**/api/v1/search**', async (route) => {

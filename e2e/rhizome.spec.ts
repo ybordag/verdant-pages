@@ -151,6 +151,57 @@ test('Rhizome pinned context can be searched, added, and removed', async ({ page
   await expect.poll(() => state.threads[0].pinned_context).toEqual([])
 })
 
+test('Rhizome review panel submits a decision and resumes the conversation', async ({ page }) => {
+  const state = await mockAuthenticatedRhizomeApi(page, {
+    pendingInteraction: {
+      id: 'interaction-1',
+      interaction_type: 'weather_change_review',
+      status: 'pending',
+      title: 'Review watering changes',
+      summary: 'Rain is expected tonight.',
+      body: 'Approve the proposed watering update.',
+      sections: [{ title: 'Rain window', summary: '9 PM to 2 AM' }],
+      actions: [
+        { id: 'confirm', label: 'Approve', kind: 'confirm', style_hint: 'primary' },
+        { id: 'reject', label: 'Reject', kind: 'reject', style_hint: 'danger' },
+      ],
+      context: {},
+      created_at: '2026-06-22T05:00:00Z',
+    },
+  })
+
+  await page.goto('/app/rhizome/thread-1')
+  await page.getByRole('button', { name: 'Open pending reviews' }).click()
+  await expect(page.getByRole('heading', { name: 'Review watering changes' })).toBeVisible()
+  await expect(page.getByText('Rain is expected tonight.')).toBeVisible()
+
+  await page.getByPlaceholder('Add a note for Rhizome...').fill('Keep seedlings covered')
+  await page.getByRole('button', { name: 'Approve' }).click()
+
+  await expect.poll(() => state.resumeRequests).toEqual([
+    { threadId: 'thread-1', message: 'confirm\n\nNotes: Keep seedlings covered' },
+  ])
+  await expect(page.getByLabel('Thread messages').getByText('Decision recorded.')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Review watering changes' })).not.toBeVisible()
+})
+
+test('Rhizome workbench remains contained and operable at phone width', async ({ page }) => {
+  await mockAuthenticatedRhizomeApi(page)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/app/rhizome/thread-1')
+
+  await expect(page.getByLabel('Message Rhizome')).toBeVisible()
+  await page.getByRole('button', { name: 'Autumn flower bed' }).click()
+  await expect(page.getByRole('heading', { name: 'Threads' })).toBeVisible()
+  await page.getByRole('button', { name: 'Collapse threads panel' }).click()
+  await expect(page.getByRole('heading', { name: 'Threads' })).not.toBeVisible()
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth),
+    )
+    .toBe(true)
+})
+
 test('Rhizome chat shell remains usable in light and dark themes', async ({ page }) => {
   await mockAuthenticatedRhizomeApi(page)
 
