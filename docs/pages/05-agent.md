@@ -1,6 +1,12 @@
 # Agent — Rhizome Chat
 
-**Last updated:** 2026-06-23
+| Status | Partial - Phase 5b closeout in progress; richer context/review work in Phase 5d |
+|---|---|
+| Frontend | Thread home, streaming, session context, pinned context, and first-pass review are built |
+| Cambium | Core chat/thread/session/search/interaction/profile routes are available |
+| Rhizome | Core streaming, deterministic session focus, context rendering, and interactions are available |
+| Blockers | True message-only context needs a stream contract; media remains post-V1 |
+| Last verified | 2026-07-10 |
 
 ## Pages in this group
 
@@ -64,7 +70,7 @@ The blank-thread intro cards live inside the conversation scroll area. They sit 
 
 **Weather** — a compact current-weather card: title, observation time, large weather icon plus current temperature, then small precipitation/wind/location facts along the bottom. Forecast highs/lows do not belong in the primary temperature slot.
 
-**Focus / today context** — a thread focus card. Focus is durable intent for this conversation, not just another pinned context chip. It can be free text or a selected task/project/plant/etc. Durable non-project focus refs require a future API expansion; until then, Verdant should keep selected non-project focus as first-turn context rather than pretending it is persisted.
+**Focus / today context** — a thread focus card. Focus is durable intent for this conversation, not just another pinned context chip. It consists of a natural-language statement plus zero-to-many anchored tasks, projects, plants, batches, beds, containers, or incidents. Verdant sends stable `{ subject_type, subject_id }` references through the dedicated session-context endpoint.
 
 **Today shortlist** — optional compact list of up to three urgent/routine tasks from triage or tasks. This should help the user start a useful conversation without turning Rhizome into a second Today dashboard. Each row can seed the composer or open the context drawer.
 
@@ -112,9 +118,9 @@ Search supports two modes:
 
 Source: `GET /api/v1/search?q=X&types=Y`
 
-Future polish:
+Current and future polish:
 
-- Inline object references in the message body. Typing `plant:` or `task:` opens an autocomplete popover. Selecting a result inserts a chip/token instead of raw text.
+- **Built:** typing `plant:`, `task:`, and other supported entity prefixes opens the shared context autocomplete. Selecting a result adds the stable object to message context.
 - Action suggestions. Typing an action Rhizome can perform, such as create/log/run/plan, can show a small intent popover similar to plan affordances in Codex.
 - Agent-authored object links. When Rhizome references a plant/task/project/incident, the message can render a clickable object reference. Clicking opens the right inspection panel with `Add to message context`, `Pin to thread`, and `Open full page`.
 
@@ -144,7 +150,7 @@ A `<textarea>` anchored at the bottom of the workspace. Enter sends (Shift+Enter
 
 Placeholder: *"Ask Rhizome about tasks, plants, projects, weather, or incidents…"*
 
-**Model selector:** A compact selector belongs in the persistent controls, currently in the composer control row so it stays available when the large header scrolls/collapses. It shows provider + model from `GET /auth/session` (`preferred_provider`, `preferred_model`) and saves changes through `PATCH /auth/profile` when cambium#20 lands. Until that endpoint exists, render the current provider/model as read-only with a disabled selector affordance and a tooltip.
+**Model selector:** A compact selector belongs in the persistent controls, currently in the composer control row so it stays available when the large header scrolls/collapses. It shows provider + model from `GET /auth/session` (`preferred_provider`, `preferred_model`) and saves changes through `PATCH /auth/profile`. Cambium now implements this endpoint; editable Verdant behavior remains frontend work.
 
 **Context controls:** The composer control row owns two context controls: `+` for message context and pin for thread context. The old standalone context strip/modal is deprecated.
 
@@ -157,7 +163,7 @@ SSE is the only transport for chat (`streamChat`/`streamResume` — see [sse-str
 - **Connection never opens / drops before any token arrives:** no auto-retry. Show "Connection failed — try again" in the composer area with a manual retry button. Resubmitting a half-sent message automatically would be worse than asking the user to re-trigger it.
 - **Connection drops mid-stream** (after some tokens, before a `{ type: "done" }` event): the consuming component must track a local `sawDone` flag. If the generator returns without it ever being set, treat the response as incomplete — append "⚠ response may be incomplete" rather than presenting partial tokens as the full answer.
 
-Phase 5b now implements the first-pass workbench path: the Send button enables when the draft has text, Enter submits and Shift+Enter inserts a newline, `/app/rhizome` creates a thread only when the first message is sent, uses Cambium's returned thread id, and streams the assistant response into an in-progress Rhizome bubble. Stream failures render an attention banner under the thread title row with retry. The active-thread view also renders the dedicated session-context display/edit controls, project-backed focus editing, the themed read-only model selector, the first-pass pending interaction review panel with resume streaming, the local message-context input, and fully wired pinned thread context search/add/remove.
+Phase 5b implements the first-pass workbench path: the Send button enables when the draft has text, Enter submits and Shift+Enter inserts a newline, `/app/rhizome` creates a thread only when the first message is sent, uses Cambium's returned thread id, and streams the assistant response into an in-progress Rhizome bubble. Stream failures render an attention banner under the thread title row with retry. The active-thread view also renders dedicated session-context display/edit controls, first-pass focus editing, the themed model display, pending interaction review with resume streaming, local message-context UI, and fully wired pinned thread context search/add/remove. Multi-reference focus editing and editable provider/model selection remain closeout work.
 
 ---
 
@@ -243,11 +249,11 @@ Rhizome can reference these directly without the user re-describing them. The su
 | `GET /api/v1/interactions/pending` | Populate interaction panel |
 | `POST /api/v1/threads/{id}/context` | Pin context object |
 | `DELETE /api/v1/threads/{id}/context/{type}/{id}` | Remove context chip |
-| `GET /api/v1/search?q=X&types=Y` | Context search modal |
+| `GET /api/v1/search?q=X&types=Y` | Inline context/focus autocomplete |
 | `POST /api/v1/triage/run` | "Run Triage" button in topbar |
 | `POST /api/v1/incidents` | "New Incident" button in topbar |
 | `GET /auth/session` | Current provider/model display |
-| `PATCH /auth/profile` | Save provider/model selection once cambium#20 lands |
+| `PATCH /auth/profile` | Save provider/model selection |
 
 ---
 

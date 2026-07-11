@@ -1,6 +1,12 @@
 # Garden Hub — `/app/garden`
 
-**Last updated:** 2026-06-21
+| Status | Planned - Phase 7a |
+|---|---|
+| Frontend | Route exists as a placeholder |
+| Cambium | Profile, bed, container, plant, location, care, and activity routes are available |
+| Rhizome | Core garden model is available |
+| Blockers | Advanced spatial layout only; the list/profile-first hub is unblocked |
+| Last verified | 2026-07-10 |
 
 ## Purpose
 
@@ -18,7 +24,7 @@ The garden hub is a portfolio-style overview page for the entire garden. It is t
 │  Profile stats         │  Constraints            │
 │  Zone · Soil · Water   │  Hard: organic only,    │
 │  Trays · Frost dates   │  no toxic plants        │
-│  Lat/Lng               │  Soft: cottage, seeds   │
+│  Location              │  Soft: cottage, seeds   │
 ├────────────────────────┴────────────────────────┤
 │  [Areas/Beds] [Containers] [Plants] [Activity]  │
 ├─────────────────────────────────────────────────┤

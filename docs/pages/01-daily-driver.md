@@ -1,6 +1,12 @@
 # Daily Driver — Today, Tasks, Calendar
 
-**Last updated:** 2026-06-21
+| Status | Planned - Today in Phase 5c; Tasks and Calendar in Phase 6 |
+|---|---|
+| Frontend | Routes exist as placeholders |
+| Cambium | Required structured routes are available |
+| Rhizome | Weather, triage, tasks, projects, interactions, calendar, and activity are available |
+| Blockers | None for the thin Today page or core Tasks/Calendar work |
+| Last verified | 2026-07-10 |
 
 ## Overview
 
@@ -139,7 +145,7 @@ Four summary cards shown across the top of the ledger area on the Today view:
 
 **Skip** — same hover/long-press menu. Requires a short reason text that appears inline. Calls `POST /api/v1/tasks/:id/skip`.
 
-**Edit title inline** — click the task title text → makes it editable in place. Blur or Enter saves. Tab moves to the next editable field. Calls `PUT /api/v1/tasks/:id`.
+**Edit title inline** — click the task title text → makes it editable in place. Blur or Enter saves. Tab moves to the next editable field. Calls `PATCH /api/v1/tasks/:id`.
 
 **Reprioritize** — a small coloured priority badge (critical/high/normal/low) is visible on each row. Clicking it opens a dropdown to change it. This is a user-settable field.
 
@@ -191,7 +197,7 @@ Uses `GET /api/v1/activity/stats`.
 | `POST /api/v1/tasks/:id/defer` | Defer action |
 | `POST /api/v1/tasks/:id/skip` | Skip action |
 | `POST /api/v1/tasks/:id/start` | Start action |
-| `PUT /api/v1/tasks/:id` | Inline edit / reprioritize |
+| `PATCH /api/v1/tasks/:id` | Inline edit / reprioritize |
 | `DELETE /api/v1/tasks/:id` | Delete |
 | `POST /api/v1/tasks` | Create task |
 | `POST /api/v1/tasks/series` | Create series |
@@ -258,7 +264,7 @@ Each cell contains:
 
 ### Interactions
 
-**Drag a task chip** — Pragmatic DnD. Drag from one day cell, drop on another. Calls `PUT /api/v1/tasks/:id` with new `scheduled_date`. Optimistic — task moves immediately, reverts on error.
+**Drag a task chip** — use the selected drag-and-drop library to move a task between day cells. Calls `PATCH /api/v1/tasks/:id` with the new `scheduled_date`. The move is optimistic and reverts on error. Pragmatic Drag and Drop is the planned library but is not installed yet.
 
 **Click a day cell** — opens a **day detail panel** alongside the calendar (no navigation). Shows: full task list for that day (with complete checkboxes), the annotation with an inline edit field, weather detail, and a "List view →" link to Tasks page filtered to that date.
 
@@ -291,7 +297,7 @@ Month (default) / Week toggle (segmented control in the topbar). Week view shows
 | `POST /api/v1/calendar/annotations` | Create annotation |
 | `PATCH /api/v1/calendar/annotations/:id` | Edit annotation |
 | `DELETE /api/v1/calendar/annotations/:id` | Delete annotation |
-| `PUT /api/v1/tasks/:id` | Drag-to-reschedule |
+| `PATCH /api/v1/tasks/:id` | Drag-to-reschedule |
 
 ---
 

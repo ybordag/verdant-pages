@@ -1,6 +1,12 @@
 # Account & Settings
 
-**Last updated:** 2026-06-21
+| Status | Planned - Phase 9, with provider/model editing available earlier for Rhizome closeout |
+|---|---|
+| Frontend | Route exists as a placeholder; theme control already exists in the shell |
+| Cambium | Session, profile, password, and provider-key routes are available |
+| Rhizome | Consumes provider/model/key context through Cambium |
+| Blockers | None for the documented account settings |
+| Last verified | 2026-07-10 |
 
 ## Purpose
 
@@ -65,4 +71,4 @@ Source: `GET /api/v1/auth/keys`. Set via `PUT /api/v1/auth/keys`. Remove via `DE
 | `PUT /api/v1/auth/keys` | Set/update provider key |
 | `DELETE /api/v1/auth/keys/{provider}` | Remove provider key |
 
-**Blocked capability:** profile preference updates and password changes depend on cambium#20.
+Profile preference updates and password changes are implemented in Cambium. The remaining work is the Verdant settings UI and client wrappers.

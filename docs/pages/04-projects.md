@@ -1,6 +1,12 @@
 # Projects — `/app/projects`
 
-**Last updated:** 2026-06-21
+| Status | Planned - Phase 8 |
+|---|---|
+| Frontend | Routes exist as placeholders |
+| Cambium | Project, brief, proposal, task, resource, expense, shopping, and activity routes are available |
+| Rhizome | Structured planning and execution capabilities are available |
+| Blockers | Media-backed mood boards only; core project work is unblocked |
+| Last verified | 2026-07-10 |
 
 ## Purpose
 

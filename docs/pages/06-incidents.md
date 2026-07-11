@@ -1,6 +1,12 @@
 # Incidents & Treatment Plans
 
-**Last updated:** 2026-06-21
+| Status | Planned - Phase 5e |
+|---|---|
+| Frontend | Routes exist as placeholders |
+| Cambium | Incident, treatment-plan, interaction, task, search, and activity routes are available |
+| Rhizome | Structured incident/treatment workflows are available |
+| Blockers | Media galleries only; core incident workflows are unblocked |
+| Last verified | 2026-07-10 |
 
 ## Purpose
 

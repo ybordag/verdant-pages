@@ -1,6 +1,12 @@
 # Activity — Global Feed
 
-**Last updated:** 2026-06-22
+| Status | Implemented - Phase 5a |
+|---|---|
+| Frontend | Real global feed, filters, validation, infinite scroll, and states are built |
+| Cambium | Activity feed and stats routes are available |
+| Rhizome | Global and object activity are available |
+| Blockers | None; visual baselines and broader browser/live coverage belong to Phase 5f |
+| Last verified | 2026-07-10 |
 
 ## Purpose
 
@@ -12,7 +18,7 @@ Per-object history is surfaced on each object's detail page using the same `Obje
 
 ## Page (`/app/activity`)
 
-**Status:** Phase 5a implemented on `sugar-maple`. The page is wired to real `GET /api/v1/activity` data, custom Verdant-themed filters/date pickers, lazy infinite scroll, loading/error/empty states, mobile overflow coverage, and focused unit/component/E2E tests.
+The page is wired to real `GET /api/v1/activity` data, custom Verdant-themed filters/date pickers, lazy infinite scroll, loading/error/empty states, mobile overflow coverage, and focused unit/component/E2E tests.
 
 ### Layout
 

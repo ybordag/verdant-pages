@@ -1,6 +1,12 @@
 # Garden Objects — Plants, Beds, Containers
 
-**Last updated:** 2026-06-21
+| Status | Planned - Phase 7a beds/containers and Phase 7b plants/batches |
+|---|---|
+| Frontend | Routes exist as placeholders |
+| Cambium | Core CRUD, care, assignment, task-link, and activity routes are available |
+| Rhizome | Core garden-object model is available |
+| Blockers | Media galleries only; core object workflows are unblocked |
+| Last verified | 2026-07-10 |
 
 ## Overview
 
