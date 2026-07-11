@@ -41,8 +41,10 @@ contribution guidance, glossary, and documentation ownership are aligned.
 
 Next:
 
-1. Break the large `RhizomePage` and stylesheet into bounded feature components
-   and hooks without changing accepted behavior.
+1. Finish the Rhizome structural stabilization: the workbench regions, context
+   controls, composer, and chat-turn controller now live in `src/features/rhizome/`;
+   move the remaining session/context query coordination and shared feature CSS
+   behind their owning boundaries without changing accepted behavior.
 2. Represent session focus as natural-language intent plus zero-to-many stable
    object references, matching the current Rhizome/Cambium contract.
 3. Recheck model/provider editing now that Cambium profile updates are built.

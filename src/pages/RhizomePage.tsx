@@ -49,6 +49,7 @@ import {
   EMPTY_START_THREAD_DRAFT,
   type ComposerAutocompletePosition,
   type FocusContext,
+  type OptimisticSessionContext,
   type SessionDraft,
   type StartThreadDraft,
 } from '@/features/rhizome/types'
