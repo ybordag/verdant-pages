@@ -65,7 +65,7 @@ The global notification drawer is not the same as a feature workspace panel. A p
 
 ### Rhizome
 
-`src/components/rhizome/ContextAutocomplete/` is the shared context-result surface used by thread focus, message context, pinned context, and composer token completion. It owns shared result rows, type colors, loading/empty/error states, dismissal, and single- versus multi-select behavior.
+`src/components/rhizome/ContextAutocomplete.tsx` is the shared context-result surface used by thread focus, message context, pinned context, and composer token completion. It owns shared result rows, type colors, loading/empty/error states, dismissal, and single- versus multi-select behavior.
 
 `src/features/rhizome/` now owns the workbench header, thread navigator, new-thread dashboard, session strip, conversation timeline, composer, context controls, review panel, pure helpers, and chat-turn lifecycle. `src/pages/RhizomePage.tsx` remains the route composition and query-coordination root.
 

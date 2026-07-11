@@ -58,8 +58,8 @@ Next:
 |---|---|---|
 | `npm run build` | Pass | Production bundle builds successfully on Node 24 |
 | `npm run lint` | Pass | Rhizome collapse/autocomplete state no longer mutates synchronously in effects |
-| `npm run test:run` | 389/389 pass | Nav badge expectation and date-relative Activity coverage corrected |
-| `npm run test:e2e` | Pass: 32 run, 1 opt-in skipped | Desktop Chromium; live Activity smoke remains opt-in |
+| `npm run test:run` | 408/408 pass | Rhizome helpers, feature components, and chat-turn lifecycle now have direct coverage |
+| `npm run test:e2e` | Pass: 34 run, 1 opt-in skipped | Review/resume and phone-width Rhizome paths added; live Activity smoke remains opt-in |
 
 Do not copy these counts into other documents. Replace this table when the
 stabilization pass changes the result.

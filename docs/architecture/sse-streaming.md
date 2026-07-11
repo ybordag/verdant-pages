@@ -58,4 +58,12 @@ Chat does not automatically reconnect because replaying a turn may duplicate age
 
 ## Testing
 
-Unit tests cover framing across chunks, event ordering, errors, auth headers, and abort. Page/browser tests cover optimistic deduplication, thinking state, thread races, retry, interaction/resume, history reload, and Markdown rendering. A seeded live flow verifies actual Cambium/Rhizome compatibility.
+Transport unit tests cover framing across chunks, event ordering, errors, auth
+headers, and abort. Rhizome hook/page tests cover optimistic deduplication,
+partial failure, cancellation, thread switching, retry, interaction/resume, and
+history rendering. Mocked browser tests cover the primary create/context/stream,
+retry, navigation, review/resume, responsive shell, and Markdown paths.
+
+A seeded live create -> context -> stream -> review/resume -> switch/reload flow
+is still required before Phase 5 closes; mocked browser coverage does not prove
+Cambium/Rhizome compatibility.

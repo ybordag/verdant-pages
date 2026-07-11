@@ -83,6 +83,11 @@ Chat coverage should include:
 - reload/history without empty or duplicated bubbles;
 - Markdown and structured object-reference rendering.
 
+Place parsing and normalization assertions in feature helper tests, semantic UI
+contracts in component tests, and cancellation/retry/interaction transitions in
+the chat-turn hook suite. Keep route tests focused on query coordination and
+region integration, then use Playwright for user-visible workflow composition.
+
 At least one seeded live path should prove create -> context -> stream -> review/resume -> switch/reload before Phase 5 closes.
 
 ## Playwright Modes

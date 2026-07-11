@@ -54,8 +54,12 @@ Use [current status](../status/current.md) for readiness, page specs for intende
 | `src/components/shell/` | Global application frame and feedback |
 | `src/components/activity/` | Activity history workflow |
 | `src/components/rhizome/` | Shared Rhizome controls such as context autocomplete |
+| `src/features/rhizome/` | Rhizome workbench components, workflow hooks, helpers, and feature-local types |
 
-Complex product workflows will migrate into `src/features/<domain>/`, beginning with Rhizome. This target may contain domain components, hooks/controllers, pure helpers, and feature-local types while the route page remains the composition root.
+Complex product workflows belong in `src/features/<domain>/` when they combine
+domain components, hooks/controllers, pure helpers, and feature-local types.
+Rhizome is the first implemented example; its route page remains the composition
+and cross-workflow coordination root.
 
 See [component architecture](components.md) for the current inventory and [frontend structure](frontend-structure.md) for the accepted target. Do not treat proposed entries in [design patterns](../design/patterns.md) as existing components.
 

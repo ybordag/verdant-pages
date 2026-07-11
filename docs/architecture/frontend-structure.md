@@ -6,7 +6,13 @@
 
 This document defines how Verdant Pages should organize complex route-level workflows. It supplements the current [component inventory](components.md): that document says what exists today, while this one defines the structure new features and deliberate refactors should follow.
 
-Rhizome is the first migration target. Its current route page contains thread data, streaming, session context, search, reviews, layout, and presentation in one file. The refactor should preserve accepted behavior while making this architecture concrete for Today, Tasks, Calendar, Garden, Incidents, and Projects.
+Rhizome is the first implementation of this structure. Its workbench regions,
+context controls, pure helpers, and chat-turn lifecycle now live in
+`src/features/rhizome/`; `RhizomePage.tsx` remains the route composition and
+query-coordination root. The remaining incremental work is to extract focused
+session/context query hooks and divide the shared feature stylesheet by owner.
+This implementation should make the architecture concrete for Today, Tasks,
+Calendar, Garden, Incidents, and Projects.
 
 ## Structural Model
 
