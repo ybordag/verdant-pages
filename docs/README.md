@@ -1,103 +1,112 @@
-# Verdant Pages — Documentation
+# Verdant Pages Documentation
 
-**Last updated:** 2026-06-21
+**Last reviewed:** 2026-07-10
 
-Frontend for the Gardening Agent system. Talks to **Cambium** (Go gateway) — never directly to Rhizome. This file is both the index and the explanation of how this `docs/` tree is organized — read the "How these docs are organized" section once, then use the tables below as a reference.
+Verdant Pages is the React frontend for the Gardening Agent system. It calls Cambium and never calls Rhizome directly.
 
-Read in order if you're new here: [overview/purpose.md](overview/purpose.md) → [getting-started/quickstart.md](getting-started/quickstart.md) → [architecture/codebase-tour.md](architecture/codebase-tour.md) for where things live → [pages/](pages/) for what each screen does → [roadmap/overview.md](roadmap/overview.md) for what's done and what's next. By the end of that path you should understand the whole repo without reading code.
+## Start Here
 
----
+### New developer
 
-## How these docs are organized
+1. [Purpose and boundaries](overview/purpose.md)
+2. [Quickstart](getting-started/quickstart.md)
+3. [Codebase tour](architecture/codebase-tour.md)
+4. [Current status](status/current.md)
+5. The relevant [page spec](pages/) and [capability matrix](capabilities.md)
+6. [Contributing](../CONTRIBUTING.md)
 
-**Folders, by what they answer:**
+### Coding agent or returning contributor
 
-| Folder | Answers | Lifecycle |
-|---|---|---|
-| `overview/` | What is this thing and why does it exist? | Written once, rarely changes |
-| `getting-started/` | How do I run this locally? | Updated when commands/setup steps change |
-| `architecture/` | How is it built, and why this way and not another way? | Living — updated as decisions are made or revised |
-| `pages/` | What does each page do, look like, and call? | Living — written ahead of implementation, refined as each page actually ships |
-| `design/` | What does it look like, and why? | Living for principles/aesthetic; mockups are throwaway prototypes for layouts not yet built |
-| `development/` | How do I work on it day-to-day — test it, debug it, know what's intentionally unfinished? | Living |
-| `roadmap/` | What's the phase plan, and what's done vs. not? | Updated continuously as work lands, not just at phase boundaries |
+1. [Current status](status/current.md)
+2. [Roadmap](roadmap/overview.md)
+3. Root [coding-agent guide](../CLAUDE.md)
+4. Relevant page, architecture, and test docs
 
-There is deliberately no `current_work/` or per-phase history folder. `roadmap/overview.md` carries both the plan *and* the record of what actually shipped (including bugs found and fixed along the way) — one place, kept current, rather than a status table that drifts from a separate frozen history. The root [`/CLAUDE.md`](../CLAUDE.md) is the other living document: it tracks what's being worked on *right now*, in-session, and gets updated continuously rather than only at milestones.
+### First full-stack run
 
-**Conventions used across these docs:**
+1. [Frontend setup](getting-started/setup.md)
+2. [Full-stack development](getting-started/full-stack.md)
+3. [Testing](development/testing.md)
 
-- **`**Last updated:**` tag** under the H1 on every doc — a quick staleness check. If a doc you're reading is months old and contradicts the code, trust the code and fix the doc.
-- **Rationale, not just specification.** Architecture docs explain *why*, not just *what* — e.g. [architecture/tech-stack.md](architecture/tech-stack.md)'s "why not Next.js" section. A doc that only says what to build without why is incomplete.
-- **Deferred work is documented, not silent.** Anything intentionally unbuilt or untested — not a bug, a conscious choice — goes in [development/deferred-work.md](development/deferred-work.md) with a re-enable condition. If something looks unfinished and isn't in that doc, it's a real gap worth flagging.
-- **GitHub issue links for backend blockers.** Where a frontend feature is blocked on Rhizome or Cambium work, the doc links the issue directly (for example, `rhizome#117`) rather than describing the blocker in prose that can drift out of sync.
-- **No frozen, point-in-time docs living in a "living" folder.** If a doc only made sense before some milestone (a design question, a gap list), it gets resolved into the relevant living doc and deleted once that milestone passes — not left behind to go stale.
+## Source Of Truth
 
----
-
-## Overview
-
-| Document | Contents |
+| Question | Source |
 |---|---|
-| [Purpose and Design](overview/purpose.md) | What Verdant is, where it fits in the system, design principles, what it owns vs. doesn't |
+| What is being worked on now? | [Current status](status/current.md) |
+| What comes next? | [Roadmap](roadmap/overview.md) |
+| What already shipped? | [Roadmap history](roadmap/history.md) |
+| What should a page ultimately do? | [Page specs](pages/) |
+| Is the frontend/backend capability ready? | [Capability matrix](capabilities.md) |
+| How does current code work? | [Architecture](architecture/) plus source/tests |
+| What is intentionally postponed? | [Deferred work](development/deferred-work.md) |
+| What does a product term mean? | [Glossary](glossary.md) |
 
-## Getting Started
+Do not duplicate live branch names, test counts, or blocker status outside `status/current.md`. Page specs describe intended UX and include only a small readiness block. Architecture docs describe current implementation; proposed patterns identify themselves as proposals.
 
-| Document | Contents |
-|---|---|
-| [Quickstart](getting-started/quickstart.md) | Fastest path to a running dev server — four commands |
-| [Setup](getting-started/setup.md) | Full walkthrough — prerequisites, environment, running Cambium, tests, troubleshooting |
+## Documentation Map
 
-## Architecture
+### Overview
 
-Technical decisions, constraints, and implementation guides — how the codebase is built and why.
+- [Purpose and product boundaries](overview/purpose.md)
+- [Capability matrix](capabilities.md)
+- [Glossary](glossary.md)
 
-| Document | Contents |
-|---|---|
-| [Codebase Tour](architecture/codebase-tour.md) | How the source tree is wired: entry points, providers, routes, shell, API modules, auth, SSE, tests |
-| [Tech Stack](architecture/tech-stack.md) | Vite, React, TypeScript, React Router, TanStack Query — decisions and rationale |
-| [Design Tokens & Theming](architecture/design-tokens.md) | CSS custom properties, light/dark system, font loading — the technical reference (exact values) |
-| [Component Library](architecture/components.md) | Directory layout, primitives vs composed vs pages, styling approach, DnD, tables |
-| [API Client & Types](architecture/api-client.md) | Base fetch wrapper, auth/error rules, SSE, TypeScript type conventions |
-| [API Modules](architecture/api-modules.md) | Exported function catalog for `src/lib/api/` modules |
-| [Auth & Session](architecture/auth.md) | In-memory token, httpOnly refresh cookie, login/register screens |
-| [SSE & Agent Chat](architecture/sse-streaming.md) | fetch + ReadableStream, async generator, component implications |
-| [Routes](architecture/routes.md) | Full route structure including task sub-routes |
-| [Notifications](architecture/notifications.md) | Real-time notification SSE stream, bell icon, job progress, alert/interaction push |
+### Getting Started
 
-## Page Design
+- [Quickstart](getting-started/quickstart.md)
+- [Frontend setup](getting-started/setup.md)
+- [Full-stack local development](getting-started/full-stack.md)
 
-UX decisions, layouts, interactions, and navigation for each page group — what every page in the app does, looks like, and calls.
+### Architecture
 
-| Document | Pages |
-|---|---|
-| [Daily Driver](pages/01-daily-driver.md) | Today, Tasks, Calendar |
-| [Garden Hub](pages/02-garden.md) | Garden overview page — map, profile, constraints, object tabs |
-| [Garden Objects](pages/03-garden-objects.md) | Plants list, Plant detail, Bed detail, Container detail — shared pattern |
-| [Projects](pages/04-projects.md) | Projects, Proposals, Project tasks |
-| [Agent](pages/05-agent.md) | Rhizome chat, Interactions & Approvals |
-| [Incidents](pages/06-incidents.md) | Incidents, Treatment Plans |
-| [Activity](pages/07-activity.md) | Global activity feed, per-object history |
-| [Account](pages/08-account.md) | Settings, Provider keys |
+- [Codebase tour](architecture/codebase-tour.md)
+- [Tech stack](architecture/tech-stack.md)
+- [Route structure](architecture/routes.md)
+- [Component architecture](architecture/components.md)
+- [Design tokens and theming](architecture/design-tokens.md)
+- [API client architecture](architecture/api-client.md)
+- [API module catalog](architecture/api-modules.md)
+- [Authentication and session](architecture/auth.md)
+- [SSE and agent streaming](architecture/sse-streaming.md)
+- [Notifications](architecture/notifications.md)
 
-## Design
+### Product And Page Specs
 
-What the app looks like, and why — principles, aesthetic, and where future layouts get prototyped.
+- [Onboarding](pages/00-onboarding.md)
+- [Today, Tasks, Calendar](pages/01-daily-driver.md)
+- [Garden hub](pages/02-garden.md)
+- [Plants, beds, containers](pages/03-garden-objects.md)
+- [Projects](pages/04-projects.md)
+- [Rhizome](pages/05-agent.md)
+- [Incidents](pages/06-incidents.md)
+- [Activity](pages/07-activity.md)
+- [Account and settings](pages/08-account.md)
 
-| Document | Contents |
-|---|---|
-| [Visual Identity & Design Principles](design/visual-identity.md) | Design principles, aesthetic, typography/color rules, and the rationale behind the locked tokens |
-| [Mockups](design/mockups/README.md) | Where future layouts are prototyped as static HTML — status, what's next, lessons from completed sets |
+### Design
 
-## Development
+- [Visual identity](design/visual-identity.md)
+- [Product UI patterns](design/patterns.md)
+- [Static mockup reference](design/mockups/README.md)
 
-| Document | Contents |
-|---|---|
-| [Testing Guide](development/testing.md) | Vitest + Playwright, patterns, what to test per phase |
-| [Error Handling](development/error-handling.md) | Every API error status, network failure, and SSE-drop scenario → exact UI behavior |
-| [Deferred Work](development/deferred-work.md) | What's intentionally unbuilt or untested right now, why, and when to revisit |
+### Development
 
-## Roadmap
+- [Testing](development/testing.md)
+- [Error handling](development/error-handling.md)
+- [Deferred work](development/deferred-work.md)
+- [Contribution workflow](../CONTRIBUTING.md)
 
-| Document | Contents |
-|---|---|
-| [Roadmap Overview](roadmap/overview.md) | Phase status, what shipped (and what broke along the way), what's next, full build plan per phase |
+### Planning
+
+- [Current status](status/current.md)
+- [Roadmap](roadmap/overview.md)
+- [Completed history](roadmap/history.md)
+
+## Maintenance Rules
+
+- Use `Last verified` for factual implementation/runbook references and recheck them against source.
+- Use `Last reviewed` for product/design guidance that was reconsidered but is not mechanically verifiable.
+- Update behavior docs in the same change as behavior.
+- Remove resolved deferrals and stale blocker prose rather than appending a correction.
+- Link backend issues only while they remain useful active dependencies; the capability matrix should explain the product impact.
+- Keep docs readable: split a file when it answers multiple unrelated questions, not merely because it passes an arbitrary line count.
+- Run the local-link check or otherwise verify changed Markdown links before committing.

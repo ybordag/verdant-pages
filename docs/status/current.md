@@ -13,8 +13,7 @@ the [roadmap](../roadmap/overview.md).
 |---|---|
 | Active phase | Phase 5b - Rhizome foundation stabilization and closeout |
 | Branch | `red-maple` |
-| Remote state | Synchronized with `origin/red-maple` at audit time |
-| Latest audited commit | `95fc763` - Stabilize Rhizome focus E2E assertion |
+| Remote state | Local documentation commits are ahead of the last audited remote state |
 | Previous phase | Phase 5a Activity foundation - implemented and merged |
 
 ## What is implemented
@@ -36,7 +35,13 @@ Most other product routes are registered but still render placeholders.
 
 ## Phase 5b closeout priorities
 
-1. Restore green lint, unit, and browser quality gates.
+The documentation truth pass is complete: current status, roadmap/history,
+capability readiness, page-spec status, architecture references, setup modes,
+contribution guidance, glossary, and documentation ownership are aligned.
+
+Next:
+
+1. Re-run and restore green lint, unit, and browser quality gates.
 2. Break the large `RhizomePage` and stylesheet into bounded feature components
    and hooks without changing accepted behavior.
 3. Represent session focus as natural-language intent plus zero-to-many stable
@@ -44,7 +49,7 @@ Most other product routes are registered but still render placeholders.
 4. Recheck model/provider editing now that Cambium profile updates are built.
 5. Complete a focused live-stack smoke for create thread -> set context ->
    stream -> review/resume -> switch/reload.
-6. Finish Phase 5b documentation and merge readiness.
+6. Re-audit the quality table below after stabilization and prepare merge readiness.
 
 ## Quality gates at the latest audit
 

@@ -161,7 +161,7 @@ Garden hub
 | `POST /api/v1/garden/plants` | Add plant |
 | `GET /api/v1/activity?category=care` | Activity tab |
 
-**Blocked capability:** advanced spatial layout/map rendering depends on rhizome#118.
+**Deferred capability:** advanced spatial layout/map rendering needs a backend layout model and structured routes. The V1 garden hub remains profile/list-first; track readiness in the [capability matrix](../capabilities.md).
 
 ---
 

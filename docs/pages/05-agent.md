@@ -74,7 +74,7 @@ The blank-thread intro cards live inside the conversation scroll area. They sit 
 
 **Today shortlist** — optional compact list of up to three urgent/routine tasks from triage or tasks. This should help the user start a useful conversation without turning Rhizome into a second Today dashboard. Each row can seed the composer or open the context drawer.
 
-Current backend note: rhizome#146 is complete and Cambium now proxies `GET/PATCH /api/v1/threads/{id}/session-context`. Verdant should use the dedicated `SessionContextView` endpoint for active-thread display/edit flows. `ThreadView.session_context`, when present on thread metadata, is Rhizome's raw stored JSON and is not the frontend display/edit contract.
+Cambium proxies `GET/PATCH /api/v1/threads/{id}/session-context`. Verdant uses the dedicated `SessionContextView` endpoint for active-thread display/edit flows. `ThreadView.session_context`, when present on thread metadata, is Rhizome's raw stored JSON and is not the frontend display/edit contract.
 
 ---
 

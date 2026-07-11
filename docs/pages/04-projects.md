@@ -205,7 +205,7 @@ This board depends on the same media attachment support tracked in the blocked c
 | `POST /api/v1/projects/{id}/proposals/{id}/accept` | Accept proposal |
 | `POST /api/v1/projects/{id}/tasks/generate` | AI task generation |
 
-**Blocked capability:** project mood boards depend on media attachment endpoints from rhizome#117.
+**Deferred capability:** project mood boards require the post-V1 structured media contract. Track readiness in the [capability matrix](../capabilities.md).
 | `GET /api/v1/projects/{id}/tasks?include_dependencies=true` | Gantt data |
 | `POST /api/v1/tasks/{id}/dependencies` | Create dependency (Gantt drag) |
 | `DELETE /api/v1/tasks/{id}/dependencies/{id}` | Remove dependency |

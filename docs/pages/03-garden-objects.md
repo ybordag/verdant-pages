@@ -269,7 +269,7 @@ Source: `GET /api/v1/garden/{type}/{id}/activity?before_timestamp=X&limit=20`
 | `GET /api/v1/tasks?subject_type=container&subject_id=X` | Linked tasks |
 | `GET /api/v1/garden/containers/{id}/media` | Media gallery |
 
-**Blocked capability:** media gallery/upload endpoints depend on rhizome#117.
+**Deferred capability:** media galleries/uploads require the post-V1 structured media contract. Track readiness in the [capability matrix](../capabilities.md).
 
 ---
 

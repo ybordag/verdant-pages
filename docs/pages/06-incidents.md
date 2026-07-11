@@ -96,4 +96,4 @@ Full event feed for this incident: creation, subject additions, treatment plan s
 | `DELETE /api/v1/treatment-plans/{id}` | Delete draft |
 | `GET /api/v1/incidents/{id}/activity` | Activity history |
 
-**Blocked capability:** incident media galleries depend on media attachment endpoints from rhizome#117.
+**Deferred capability:** incident media galleries require the post-V1 structured media contract. Track readiness in the [capability matrix](../capabilities.md).

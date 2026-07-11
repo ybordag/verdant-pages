@@ -1,116 +1,61 @@
-# SSE & Agent Chat Streaming
+# SSE And Agent Streaming
 
-**Last updated:** 2026-06-21
+**Last verified:** 2026-07-10
 
-## The EventSource problem
+## Why Fetch Streams
 
-The native `EventSource` API cannot be used for Cambium's streaming endpoints because:
-1. It only supports `GET` — chat endpoints require `POST` (to carry a message body)
-2. It cannot send custom headers — our endpoints require `Authorization: Bearer <token>`
+Cambium chat streams use POST bodies and authorization headers. Native `EventSource` supports neither requirement safely. Verdant uses `fetch`, `ReadableStream`, and an async generator in `src/lib/sse/stream.ts`.
 
-**Query param token is not an alternative.** JWT in a URL leaks in browser history, server logs, and Referer headers.
+Tokens remain in the `Authorization` header. Never put access tokens in stream URLs.
 
-## Solution: fetch + ReadableStream
+## Ownership
 
-```typescript
-// src/lib/sse/stream.ts
+| Layer | Responsibility |
+|---|---|
+| `src/lib/sse/stream.ts` | Request, byte decoding, SSE frame parsing, abort behavior, normalized stream errors |
+| `src/lib/api/chat.ts` | Thread-oriented chat and resume stream operations |
+| `src/lib/api/notifications.ts` | Long-lived notification stream operation |
+| Rhizome page/workbench | Optimistic messages, partial assistant state, interaction state, retry, and thread switching |
 
-export async function* consumeSSEStream(
-  url: string,
-  body: unknown,
-  signal?: AbortSignal,
-): AsyncGenerator<SSEEvent> {
-  const token = getAccessToken();
-  const res = await fetch(BASE + url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(body),
-    signal,
-  });
+Event types are defined in `src/lib/types/cambium.ts`. Source and stream tests are authoritative; do not duplicate full event unions here.
 
-  if (!res.ok || !res.body) throw new ApiError(res.status, null);
+## Chat Turn Lifecycle
 
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() ?? '';
-    for (const line of lines) {
-      if (line.startsWith('data: ')) {
-        try {
-          const event = JSON.parse(line.slice(6)) as SSEEvent;
-          yield event;
-          if (event.type === 'done') return;
-        } catch {
-          // malformed line — skip
-        }
-      }
-    }
-  }
-}
+```text
+first send from /app/rhizome
+  -> create thread
+  -> save initial session context
+  -> navigate to /app/rhizome/:threadId
+  -> add one optimistic user message
+  -> consume chat stream
+  -> append tokens to one in-progress assistant message
+  -> capture a structured interaction if emitted
+  -> finalize on done
+  -> reconcile with persisted history
 ```
 
-Fully supported in all modern browsers. Token stays in the Authorization header where it belongs.
+Existing threads skip creation and stream directly after any required context update.
 
-## SSE event types (from Cambium)
+## Required Invariants
 
-```typescript
-export type SSEEvent =
-  | { type: 'token'; content: string }
-  | { type: 'interaction'; payload: InteractionPayload }
-  | { type: 'done' };
-```
+- Visiting `/app/rhizome` does not create a thread.
+- One send produces one user message and at most one finalized assistant response.
+- Thread/session context is persisted through the dedicated contract, not injected as fake user prose.
+- Stream cancellation occurs on thread switch, unmount, or superseding work.
+- A stale stream cannot append into the newly selected thread.
+- Interaction resolution uses the resume stream rather than starting an unrelated chat turn.
+- Reloaded history contains no empty bubbles, raw tool events, or `[object Object]` content.
 
-## RhizomePage stream flow
+## Failure Behavior
 
-```
-User types message → hits Enter/Send
-  └─ POST /api/v1/threads (create if no current thread)
-  └─ consumeSSEStream('/api/v1/chat/stream?thread_id=X', { message })
-       ├─ { type: 'token', content } → append to StreamingMessage bubble
-       ├─ { type: 'interaction', payload } → add ProposalCard to proposals panel
-       └─ { type: 'done' } → finalize message, stop streaming indicator
+- Failure before useful output: show the attention row with explicit Retry.
+- Failure after partial output: preserve the partial response, mark it incomplete, and offer retry/recovery without silently sending twice.
+- Abort caused by navigation/unmount: do not show a user-facing connection error.
+- Non-2xx response: surface a normalized API/stream error.
+- Malformed protocol data: fail or skip according to the parser contract, but never render raw data as a message.
 
-User clicks Accept on ProposalCard
-  └─ consumeSSEStream('/api/v1/chat/resume/stream', { thread_id, resolution: 'confirm' })
-       └─ same token/interaction/done flow
-```
+Chat does not automatically reconnect because replaying a turn may duplicate agent work. Notification streams may reconnect because they are read-only event subscriptions and reconcile from a snapshot.
 
-## Component implications
+## Testing
 
-Two distinct rendering modes for a message:
-
-**In-progress (`StreamingMessage`)** — mounted while the stream is live. Holds `streamingText` in local state, appends each `token` event, shows a blinking cursor. Unmounted when `done` arrives.
-
-**Completed (`MessageBubble`)** — a static component rendering a finished string from history. No stream involvement.
-
-RhizomePage manages the handoff:
-
-```
-streaming state:
-  isStreaming: true
-  streamingText: "Your cherry tomatoes haven't been wa..."
-  proposals: []  ← populates on interaction event
-
-on { type: 'done' }:
-  isStreaming → false
-  append { role: 'assistant', content: streamingText } to messages array
-  StreamingMessage unmounts, MessageBubble renders in its place
-```
-
-**Error handling is required.** If the stream drops — network blip, 401, Cambium restart — the `for await` loop throws. Wrap the loop in a `try/catch` and set an error state with a retry button. Without this the UI silently freezes mid-sentence with no recovery path.
-
-## Thread management
-
-- Do not auto-create a thread on first visit to `/app/rhizome`
-- On first send from the blank state, Verdant calls `POST /api/v1/threads`, uses Cambium's returned botanical `thread_id`, navigates to `/app/rhizome/:threadId`, then streams the message
-- Thread title auto-populates from Rhizome-side metadata when available
-- Thread list at `GET /api/v1/threads?limit=20` — shown in the thread navigator and blank-state shortcuts
+Unit tests cover framing across chunks, event ordering, errors, auth headers, and abort. Page/browser tests cover optimistic deduplication, thinking state, thread races, retry, interaction/resume, history reload, and Markdown rendering. A seeded live flow verifies actual Cambium/Rhizome compatibility.

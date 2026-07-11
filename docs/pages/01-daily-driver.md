@@ -264,7 +264,7 @@ Each cell contains:
 
 ### Interactions
 
-**Drag a task chip** — use the selected drag-and-drop library to move a task between day cells. Calls `PATCH /api/v1/tasks/:id` with the new `scheduled_date`. The move is optimistic and reverts on error. Pragmatic Drag and Drop is the planned library but is not installed yet.
+**Drag a task chip** — use the maintained drag-and-drop library selected during Calendar implementation to move a task between day cells. Calls `PATCH /api/v1/tasks/:id` with the new `scheduled_date`. The move is optimistic and reverts on error. No drag-and-drop dependency is installed yet.
 
 **Click a day cell** — opens a **day detail panel** alongside the calendar (no navigation). Shows: full task list for that day (with complete checkboxes), the annotation with an inline edit field, weather detail, and a "List view →" link to Tasks page filtered to that date.
 
