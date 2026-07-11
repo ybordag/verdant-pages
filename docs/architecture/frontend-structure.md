@@ -250,13 +250,15 @@ The exact names may evolve during extraction, but the intended boundaries are:
 ```text
 features/rhizome/
   components/
-    WorkbenchHeader/
-    ThreadNavigator/
-    NewThreadDashboard/
-    SessionContextStrip/
-    ConversationTimeline/
-    RhizomeComposer/
-    ReviewPanel/
+    WorkbenchHeader.tsx
+    ThreadNavigator.tsx
+    NewThreadDashboard.tsx
+    SessionContextStrip.tsx
+    ConversationTimeline.tsx
+    RhizomeComposer.tsx
+    ReviewPanel.tsx
+    ContextChip.tsx
+    ContextInlineInput.tsx
   hooks/
     useChatTurn.ts
     useSessionContext.ts
@@ -267,9 +269,16 @@ features/rhizome/
     composerTokens.ts
     weather.ts
   types.ts
+  RhizomeLayout.module.css
+  WorkbenchHeader.module.css
+  WorkbenchRails.module.css
+  StartSession.module.css
+  ConversationTimeline.module.css
+  RhizomeComposer.module.css
+  ContextControls.module.css
 ```
 
-`RhizomePage.tsx` should ultimately read as route identity plus composition, while the feature module owns Rhizome-specific workflow behavior.
+`RhizomePage.tsx` reads as route identity, top-level resource loading, and composition. The feature module owns Rhizome-specific workflow behavior and component styling.
 
 ## Definition Of Done For A Complex Page
 

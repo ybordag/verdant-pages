@@ -13,7 +13,7 @@ the [roadmap](../roadmap/overview.md).
 |---|---|
 | Active phase | Phase 5b - Rhizome foundation stabilization and closeout |
 | Branch | `red-maple` |
-| Remote state | Local documentation commits are ahead of the last audited remote state |
+| Remote state | `red-maple` includes the current stabilization commits and is pushed to origin |
 | Previous phase | Phase 5a Activity foundation - implemented and merged |
 
 ## What is implemented
@@ -41,16 +41,16 @@ contribution guidance, glossary, and documentation ownership are aligned.
 
 Next:
 
-1. Finish the Rhizome structural stabilization: the workbench regions, context
-   controls, composer, and chat-turn controller now live in `src/features/rhizome/`;
-   move the remaining session/context query coordination and shared feature CSS
-   behind their owning boundaries without changing accepted behavior.
-2. Represent session focus as natural-language intent plus zero-to-many stable
+1. Represent session focus as natural-language intent plus zero-to-many stable
    object references, matching the current Rhizome/Cambium contract.
-3. Recheck model/provider editing now that Cambium profile updates are built.
-4. Complete a focused live-stack smoke for create thread -> set context ->
+2. Recheck model/provider editing now that Cambium profile updates are built.
+3. Complete a focused live-stack smoke for create thread -> set context ->
    stream -> review/resume -> switch/reload.
-5. Prepare merge readiness after the structural and live-stack stabilization.
+4. Prepare merge readiness after the structural and live-stack stabilization.
+
+Completed in this stabilization pass: `RhizomePage` delegates chat-turn,
+session-context, and context-search ownership to focused hooks, and the former
+page-wide Rhizome stylesheet is split by component/surface ownership.
 
 ## Quality gates at the latest audit
 
@@ -58,8 +58,8 @@ Next:
 |---|---|---|
 | `npm run build` | Pass | Production bundle builds successfully on Node 24 |
 | `npm run lint` | Pass | Rhizome collapse/autocomplete state no longer mutates synchronously in effects |
-| `npm run test:run` | 408/408 pass | Rhizome helpers, feature components, and chat-turn lifecycle now have direct coverage |
-| `npm run test:e2e` | Pass: 34 run, 1 opt-in skipped | Review/resume and phone-width Rhizome paths added; live Activity smoke remains opt-in |
+| `npm run test:run` | 412/412 pass | Rhizome chat-turn, session-context, and context-search hooks have direct coverage |
+| `npm run test:e2e` | Pass: 34 run, 1 opt-in skipped | Review/resume, context, themes, and phone-width Rhizome paths pass; live Activity smoke remains opt-in |
 
 Do not copy these counts into other documents. Replace this table when the
 stabilization pass changes the result.

@@ -36,7 +36,7 @@ import type {
   ThreadView,
   UpdateSessionContextRequest,
 } from '@/lib/types/rhizome'
-import s from '@/features/rhizome/RhizomeWorkbench.module.css'
+import s from '@/features/rhizome/RhizomeLayout.module.css'
 
 const THREAD_LIMIT = 20
 const RECENT_THREAD_LIMIT = 3

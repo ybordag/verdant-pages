@@ -2,7 +2,7 @@ import { PanelRightClose } from 'lucide-react'
 import MarkdownMessage from '@/components/primitives/MarkdownMessage/MarkdownMessage'
 import type { InteractionActionView, InteractionEnvelopeView } from '@/lib/types/rhizome'
 import { titleCase } from '../lib/context'
-import s from '../RhizomeWorkbench.module.css'
+import s from '../WorkbenchRails.module.css'
 
 interface ReviewPanelProps {
   interaction: InteractionEnvelopeView

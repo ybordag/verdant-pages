@@ -1,4 +1,4 @@
-import s from '../RhizomeWorkbench.module.css'
+import s from '../ContextControls.module.css'
 
 export function contextTypeClass(type: string): string {
   const classes: Record<string, string> = {

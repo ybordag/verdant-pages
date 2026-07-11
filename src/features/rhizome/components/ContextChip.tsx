@@ -2,7 +2,7 @@ import { X } from 'lucide-react'
 import type { ContextObject } from '@/lib/types/rhizome'
 import { contextLabel } from '../lib/context'
 import { contextTypeClass } from './contextStyles'
-import s from '../RhizomeWorkbench.module.css'
+import s from '../ContextControls.module.css'
 
 interface ContextChipProps {
   context: ContextObject

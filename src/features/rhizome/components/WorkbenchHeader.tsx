@@ -1,6 +1,6 @@
 import type { ThreadView } from '@/lib/types/rhizome'
 import { threadTitle } from '../lib/presentation'
-import s from '../RhizomeWorkbench.module.css'
+import s from '../WorkbenchHeader.module.css'
 
 interface WorkbenchHeaderProps {
   activeThread?: ThreadView

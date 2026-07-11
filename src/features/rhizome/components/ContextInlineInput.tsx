@@ -2,7 +2,7 @@ import { Search, X } from 'lucide-react'
 import ContextAutocomplete from '@/components/rhizome/ContextAutocomplete'
 import type { ContextObject, SearchResultItemView } from '@/lib/types/rhizome'
 import ContextChip from './ContextChip'
-import s from '../RhizomeWorkbench.module.css'
+import s from '../ContextControls.module.css'
 
 interface ContextInlineInputProps {
   contexts: ContextObject[]

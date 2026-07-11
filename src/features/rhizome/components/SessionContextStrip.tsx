@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import type { SessionContextView } from '@/lib/types/rhizome'
 import type { SessionDraft } from '../types'
 import { sessionSourceLabel } from '../lib/presentation'
-import s from '../RhizomeWorkbench.module.css'
+import s from '../StartSession.module.css'
 
 interface SessionContextStripProps {
   context?: SessionContextView

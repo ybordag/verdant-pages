@@ -5,7 +5,7 @@ import Button from '@/components/primitives/Button/Button'
 import Textarea from '@/components/primitives/Textarea/Textarea'
 import ContextAutocomplete from '@/components/rhizome/ContextAutocomplete'
 import type { SearchResultItemView } from '@/lib/types/rhizome'
-import s from '../RhizomeWorkbench.module.css'
+import s from '../RhizomeComposer.module.css'
 
 interface RhizomeComposerProps {
   autocompleteGroups: Array<[string, SearchResultItemView[]]>

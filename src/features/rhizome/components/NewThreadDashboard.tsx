@@ -21,7 +21,7 @@ import {
   weatherTemperatureLabel,
   type WeatherIconKind,
 } from '../lib/weather'
-import s from '../RhizomeWorkbench.module.css'
+import s from '../StartSession.module.css'
 
 interface NewThreadDashboardProps {
   draft: StartThreadDraft
@@ -193,7 +193,7 @@ export default function NewThreadDashboard({
           ) : null}
         </section>
 
-        <section className={`${s.startListSection} ${s.todayShortlist}`} aria-label="Today's task shortlist">
+        <section className={s.startListSection} aria-label="Today's task shortlist">
           <div className={s.startListHeader}>
             <span>Today shortlist</span>
             <small>{tasksAreLoading ? 'Loading' : shortlistSource === 'triage' ? 'From latest triage' : 'From daily tasks'}</small>

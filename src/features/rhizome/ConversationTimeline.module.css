@@ -1,0 +1,95 @@
+.emptyChat {
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  text-align: center;
+}
+
+.messageList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.messageList > li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.daySeparator {
+  align-self: center;
+  color: var(--text-muted);
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.messageBubble {
+  max-width: min(72ch, 78%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-journal);
+  background: var(--bg-nav);
+  padding: 10px 12px;
+  text-align: left;
+}
+
+[data-theme='light'] .messageBubble {
+  background: var(--vellum-page);
+}
+
+.messageMeta {
+  color: var(--text-muted);
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.rhizomeMessage {
+  align-self: flex-start;
+  border-left: 3px solid var(--pine-light);
+}
+
+.rhizomeMessage .messageMeta {
+  color: var(--chartreuse);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+[data-theme='light'] .rhizomeMessage .messageMeta {
+  color: var(--chartreuse-deep);
+}
+
+.userMessage {
+  align-self: flex-end;
+  border-left: 3px solid var(--clay);
+}
+
+.userMessage .messageMeta {
+  color: var(--clay);
+}
+
+.streamingMessage > div:last-child::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 1em;
+  margin-left: 3px;
+  border-bottom: 2px solid var(--pine-light);
+  animation: pIn 0.8s ease infinite alternate;
+  vertical-align: -0.1em;
+}
+
+.emptyChat span,
+.reviewEmpty span,
+.noThreads span {
+  color: var(--text-muted);
+}
+

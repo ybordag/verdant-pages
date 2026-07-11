@@ -2,7 +2,7 @@ import { MessageSquare } from 'lucide-react'
 import MarkdownMessage from '@/components/primitives/MarkdownMessage/MarkdownMessage'
 import type { ThreadMessageView } from '@/lib/types/rhizome'
 import { dateLabel, displayMessageContent, messageLabel } from '../lib/messages'
-import s from '../RhizomeWorkbench.module.css'
+import s from '../ConversationTimeline.module.css'
 
 interface ConversationTimelineProps {
   isError: boolean

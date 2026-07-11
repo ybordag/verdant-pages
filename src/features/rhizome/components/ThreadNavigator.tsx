@@ -2,7 +2,7 @@ import { PanelLeftClose, Search, Sprout } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { ThreadView } from '@/lib/types/rhizome'
 import { formatDate, threadPreview, threadTitle } from '../lib/presentation'
-import s from '../RhizomeWorkbench.module.css'
+import s from '../WorkbenchRails.module.css'
 
 interface ThreadNavigatorProps {
   activeThreadId?: string

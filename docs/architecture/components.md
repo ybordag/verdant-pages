@@ -67,9 +67,9 @@ The global notification drawer is not the same as a feature workspace panel. A p
 
 `src/components/rhizome/ContextAutocomplete.tsx` is the shared context-result surface used by thread focus, message context, pinned context, and composer token completion. It owns shared result rows, type colors, loading/empty/error states, dismissal, and single- versus multi-select behavior.
 
-`src/features/rhizome/` now owns the workbench header, thread navigator, new-thread dashboard, session strip, conversation timeline, composer, context controls, review panel, pure helpers, and chat-turn lifecycle. `src/pages/RhizomePage.tsx` remains the route composition and query-coordination root.
+`src/features/rhizome/` owns the workbench header, thread navigator, new-thread dashboard, session strip, conversation timeline, composer, context controls, review panel, pure helpers, chat-turn lifecycle, session-context queries, and context-search state. `src/pages/RhizomePage.tsx` remains the route composition and top-level data-loading root.
 
-The remaining stabilization work is narrower: move session-context and context-search query coordination into focused hooks, then divide the shared feature stylesheet along the established component ownership boundaries. Do not replace the prior page concentration with a single all-purpose hook or generic workbench component.
+Rhizome styles are divided by ownership into layout, header, rails, startup/session, timeline, composer, and context-control modules. Components that form one semantic surface may share a module; unrelated workbench regions must not return to a page-wide stylesheet. Do not replace the prior page concentration with a single all-purpose hook, stylesheet, or generic workbench component.
 
 See [current status](../status/current.md) for the active stabilization priority.
 

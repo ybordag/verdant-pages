@@ -3,7 +3,7 @@ import ContextAutocomplete from '@/components/rhizome/ContextAutocomplete'
 import type { SearchResultItemView } from '@/lib/types/rhizome'
 import type { FocusContext } from '../types'
 import ContextChip from './ContextChip'
-import s from '../RhizomeWorkbench.module.css'
+import s from '../StartSession.module.css'
 
 interface FocusPickerProps {
   emptyLabel: string

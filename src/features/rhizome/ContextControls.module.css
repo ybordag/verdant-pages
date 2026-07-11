@@ -1,0 +1,168 @@
+.contextChip {
+  --context-color: var(--pine-light);
+
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--context-color);
+  border-radius: var(--radius-soft);
+  background: color-mix(in srgb, var(--context-color) 12%, transparent);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 5px 3px 7px;
+}
+
+.contextChip em {
+  color: var(--context-color);
+  font-family: var(--font-label);
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.contextChip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-tight);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.contextChip button {
+  width: 16px;
+  height: 16px;
+  border-color: transparent;
+  padding: 0;
+}
+
+.contextChip button:hover {
+  color: var(--context-color);
+}
+
+.contextTypePlant {
+  --context-color: var(--pine-light);
+}
+
+.contextTypeBatch {
+  --context-color: var(--buttercup);
+}
+
+.contextTypeBed {
+  --context-color: var(--chartreuse);
+}
+
+.contextTypeContainer {
+  --context-color: var(--pine-light);
+}
+
+.contextTypeTask {
+  --context-color: var(--clay);
+}
+
+.contextTypeProject {
+  --context-color: var(--chartreuse);
+}
+
+.contextTypeIncident {
+  --context-color: var(--dark-clay);
+}
+
+[data-theme='light'] .contextTypeBed,
+[data-theme='light'] .contextTypeProject {
+  --context-color: var(--chartreuse-deep);
+}
+
+.contextEmpty {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.contextInlineBox {
+  position: relative;
+  display: grid;
+  gap: 4px;
+}
+
+.contextInlineTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.contextInlineTitle span {
+  color: var(--text-muted);
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.contextInlineTitle button {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-tight);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.contextInlineTitle button:hover {
+  color: var(--nav-accent);
+}
+
+.contextInlineInput {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  min-height: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 1px 0 0;
+}
+
+.contextInlineInput > svg {
+  flex: 0 0 auto;
+  margin-top: 5px;
+}
+
+.contextInlineChips {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.contextSearchAnchor {
+  position: relative;
+  display: inline-flex;
+  min-width: 160px;
+  flex: 1 1 180px;
+}
+
+.contextSearchAnchor input {
+  min-width: 160px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 12px;
+  outline: 0;
+  padding: 4px 0;
+}
+
