@@ -1,26 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  AlertTriangle,
-  Cloud,
-  CloudRain,
-  CloudSun,
-  Droplets,
-  MessageSquare,
-  Pin,
-  Plus,
-  Search,
-  Send,
-  Sun,
-  Sprout,
-  Thermometer,
-  Wind,
-  X,
-} from 'lucide-react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Pin, Plus, Search, Send, X } from 'lucide-react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { FilterSelect } from '@/components/activity/FilterControls'
 import Button from '@/components/primitives/Button/Button'
-import MarkdownMessage from '@/components/primitives/MarkdownMessage/MarkdownMessage'
 import Textarea from '@/components/primitives/Textarea/Textarea'
 import ContextAutocomplete from '@/components/rhizome/ContextAutocomplete'
 import {
@@ -41,7 +24,10 @@ import { listTasksDaily } from '@/lib/api/tasks'
 import { getLatestTriage } from '@/lib/api/triage'
 import { getLatestWeather } from '@/lib/api/weather'
 import { useAuth } from '@/lib/auth/context'
+import ConversationTimeline from '@/features/rhizome/components/ConversationTimeline'
+import NewThreadDashboard from '@/features/rhizome/components/NewThreadDashboard'
 import ReviewPanel from '@/features/rhizome/components/ReviewPanel'
+import SessionContextStrip from '@/features/rhizome/components/SessionContextStrip'
 import ThreadNavigator from '@/features/rhizome/components/ThreadNavigator'
 import WorkbenchHeader from '@/features/rhizome/components/WorkbenchHeader'
 import {
@@ -52,33 +38,19 @@ import {
   parseComposerContextTrigger,
   parseContextSearchTerm,
   sessionFocusContextRefs,
-  titleCase,
 } from '@/features/rhizome/lib/context'
 import {
   appendStreamContent,
-  dateLabel,
-  displayMessageContent,
   messageKey,
-  messageLabel,
 } from '@/features/rhizome/lib/messages'
 import {
   modelLabel,
   sessionDraftFromContext,
   sessionFocusLabel,
-  sessionSourceLabel,
   sessionTimeLabel,
   shortlistFromTriage,
-  taskMeta,
-  threadPreview,
-  threadTitle,
 } from '@/features/rhizome/lib/presentation'
 import { measureTextareaIndex } from '@/features/rhizome/lib/textarea'
-import {
-  firstWeatherMetric,
-  weatherIconKind,
-  weatherObservedLabel,
-  weatherTemperatureLabel,
-} from '@/features/rhizome/lib/weather'
 import {
   EMPTY_SESSION_DRAFT,
   EMPTY_START_THREAD_DRAFT,
@@ -106,27 +78,6 @@ const EMPTY_THREADS: ThreadView[] = []
 const EMPTY_CONTEXT: ContextObject[] = []
 const EMPTY_SEARCH_RESULTS: SearchResultItemView[] = []
 
-function WeatherIcon({ kind }: { kind: ReturnType<typeof weatherIconKind> }) {
-  const className = [s.weatherIcon, s[`weatherIcon${titleCase(kind)}`]].join(' ')
-
-  switch (kind) {
-    case 'rain':
-      return <CloudRain className={className} aria-hidden="true" />
-    case 'heat':
-    case 'smoke':
-    case 'alert':
-      return <AlertTriangle className={className} aria-hidden="true" />
-    case 'wind':
-      return <Wind className={className} aria-hidden="true" />
-    case 'cloud':
-      return <Cloud className={className} aria-hidden="true" />
-    case 'clear':
-      return <Sun className={className} aria-hidden="true" />
-    default:
-      return <CloudSun className={className} aria-hidden="true" />
-  }
-}
-
 function contextTypeClass(type: string): string {
   switch (type) {
     case 'plant':
@@ -146,10 +97,6 @@ function contextTypeClass(type: string): string {
     default:
       return ''
   }
-}
-
-function messageClass(message: ThreadMessageView): string {
-  return message.role === 'user' ? s.userMessage : s.rhizomeMessage
 }
 
 export default function RhizomePage() {
@@ -350,9 +297,6 @@ export default function RhizomePage() {
   const blankWeather = blankWeatherQuery.data
   const triageShortlist = shortlistFromTriage(latestTriageQuery.data)
   const todayShortlist = triageShortlist.length > 0 ? triageShortlist : (dailyTasksQuery.data ?? []).slice(0, 3)
-  const weatherKind = weatherIconKind(blankWeather?.conditions_summary, blankWeather?.alerts_summary)
-  const weatherRain = firstWeatherMetric(blankWeather?.conditions_summary, /rain\s+([0-9]+(?:\.[0-9]+)?mm)/i)
-  const weatherWind = firstWeatherMetric(blankWeather?.conditions_summary, /wind\s+([0-9]+(?:\.[0-9]+)?)/i)
   const activeContextSearchItems = activeContextTarget === 'thread' ? pinnedContext : messageContext
   const groupedContextResults = useMemo(() => {
     const existingContext = new Set(activeContextSearchItems.map(contextKey))
@@ -948,101 +892,25 @@ export default function RhizomePage() {
             </div>
           ) : null}
 
-          {!isNewThread && sessionEditing ? (
-            <form
-              className={[s.sessionStrip, s.sessionEditing].join(' ')}
-              aria-label="Session context"
-              onSubmit={(event) => {
-                event.preventDefault()
-                saveSessionContext()
-              }}
-            >
-              <label className={s.sessionCard}>
-                <span>Time today</span>
-                <input
-                  aria-label="Time today"
-                  type="text"
-                  value={sessionDraft.time_text}
-                  onChange={(event) =>
-                    setSessionDraft((current) => ({
-                      ...current,
-                      time_text: event.target.value,
-                    }))
-                  }
-                />
-              </label>
-              <label className={s.sessionCard}>
-                <span>Energy</span>
-                <input
-                  aria-label="Energy"
-                  type="text"
-                  value={sessionDraft.energy_text}
-                  onChange={(event) =>
-                    setSessionDraft((current) => ({
-                      ...current,
-                      energy_text: event.target.value,
-                    }))
-                  }
-                />
-              </label>
-              <div className={s.sessionCard}>{renderFocusPicker('session')}</div>
-              <div className={s.sessionActions}>
-                {sessionError ? <span role="alert">{sessionError}</span> : null}
-                <button
-                  type="submit"
-                  disabled={updateSessionMutation.isPending}
-                >
-                  {updateSessionMutation.isPending ? 'Saving' : 'Save'}
-                </button>
-                <button type="button" onClick={cancelSessionEdit}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          ) : !isNewThread ? (
-            <div className={s.sessionStrip} aria-label="Session context">
-              <button
-                aria-label="Edit time today"
-                className={s.sessionCard}
-                type="button"
-                disabled={sessionContextQuery.isLoading || sessionContextQuery.isError}
-                onClick={startSessionEdit}
-              >
-                <span>Time</span>
-                <strong>
-                  {sessionContextQuery.isLoading && !activeOptimisticSession ? 'Loading' : sessionTimeDisplay}
-                </strong>
-                {activeOptimisticSession && !sessionContext?.time_text?.trim() ? (
-                  <small>Pending</small>
-                ) : sessionSourceLabel(sessionContext) ? (
-                  <small>{sessionSourceLabel(sessionContext)}</small>
-                ) : null}
-              </button>
-              <button
-                aria-label="Edit energy"
-                className={s.sessionCard}
-                type="button"
-                disabled={sessionContextQuery.isLoading || sessionContextQuery.isError}
-                onClick={startSessionEdit}
-              >
-                <span>Energy</span>
-                <strong>
-                  {sessionContextQuery.isLoading && !activeOptimisticSession ? 'Loading' : sessionEnergyDisplay}
-                </strong>
-              </button>
-              <button
-                aria-label="Edit focus"
-                className={s.sessionCard}
-                type="button"
-                disabled={sessionContextQuery.isLoading || sessionContextQuery.isError}
-                onClick={startSessionEdit}
-              >
-                <span>Focus</span>
-                <strong>
-                  {sessionContextQuery.isLoading && !activeOptimisticSession ? 'Loading' : sessionFocusDisplay}
-                </strong>
-              </button>
-            </div>
+          {!isNewThread ? (
+            <SessionContextStrip
+              context={sessionContext}
+              draft={sessionDraft}
+              energyDisplay={sessionEnergyDisplay}
+              error={sessionError}
+              focusDisplay={sessionFocusDisplay}
+              focusPicker={renderFocusPicker('session')}
+              hasOptimisticContext={Boolean(activeOptimisticSession)}
+              isEditing={sessionEditing}
+              isError={sessionContextQuery.isError}
+              isLoading={sessionContextQuery.isLoading}
+              isSaving={updateSessionMutation.isPending}
+              timeDisplay={sessionTimeDisplay}
+              onCancel={cancelSessionEdit}
+              onDraftChange={setSessionDraft}
+              onEdit={startSessionEdit}
+              onSave={saveSessionContext}
+            />
           ) : null}
 
           {threadId && (pinnedContextOpen || pinnedContext.length > 0) ? (
@@ -1065,234 +933,30 @@ export default function RhizomePage() {
             ) : threadId && activeThreadQuery.isError ? (
               <div className={s.emptyChat}>This thread could not load.</div>
             ) : isNewThread ? (
-              <div className={s.startThreadState}>
-                <section className={s.startPanel} aria-label="Start a Rhizome thread">
-                  <div className={s.startCardGrid}>
-                    <article className={s.startContextCard}>
-                      <p className={s.eyebrow}>Before we start</p>
-                      <label>
-                        <span>Time today</span>
-                        <input
-                          aria-label="Start time today"
-                          placeholder="45 minutes, all afternoon..."
-                          type="text"
-                          value={startThreadDraft.time_today}
-                          onChange={(event) =>
-                            setStartThreadDraft((current) => ({
-                              ...current,
-                              time_today: event.target.value,
-                            }))
-                          }
-                        />
-                      </label>
-                      <label>
-                        <span>Energy</span>
-                        <input
-                          aria-label="Start energy"
-                          placeholder="low, focused, tired but can water..."
-                          type="text"
-                          value={startThreadDraft.energy}
-                          onChange={(event) =>
-                            setStartThreadDraft((current) => ({
-                              ...current,
-                              energy: event.target.value,
-                            }))
-                          }
-                        />
-                      </label>
-                    </article>
-
-                    <article className={s.weatherStartCard}>
-                      <div className={s.weatherCardTop}>
-                        <p className={s.eyebrow}>Weather</p>
-                        <span>{weatherObservedLabel(blankWeather?.created_at)}</span>
-                      </div>
-                      <div className={s.weatherHero}>
-                        <WeatherIcon kind={weatherKind} />
-                        <span
-                          className={s.weatherTemp}
-                          aria-label={
-                            blankWeatherQuery.isLoading
-                              ? 'Weather loading'
-                              : `${weatherTemperatureLabel(blankWeather?.conditions_summary)} degrees Fahrenheit`
-                          }
-                        >
-                          <strong>
-                            {blankWeatherQuery.isLoading
-                              ? 'Loading'
-                              : weatherTemperatureLabel(blankWeather?.conditions_summary)}
-                          </strong>
-                          {!blankWeatherQuery.isLoading && <span>°F</span>}
-                        </span>
-                      </div>
-                      <div className={s.weatherMetrics} aria-label="Weather details">
-                        <span>
-                          <Droplets size={12} />
-                          {weatherRain ?? '--'}
-                        </span>
-                        <span>
-                          <Wind size={12} />
-                          {weatherWind ? `${weatherWind} mph` : '--'}
-                        </span>
-                        <span>
-                          <Thermometer size={12} />
-                          {blankWeather?.location_label ?? '--'}
-                        </span>
-                      </div>
-                    </article>
-
-                    <article className={s.startFocusCard}>
-                      <p className={s.eyebrow}>Focus</p>
-                      {renderFocusPicker('start')}
-                    </article>
-                  </div>
-                </section>
-
-                <div className={s.startThreadIntro}>
-                  <Sprout size={26} />
-                  <strong>Start a thread when you are ready.</strong>
-                  <span>Rhizome will wait until you send the first message.</span>
-                  <div className={s.startChips}>
-                    <button type="button" onClick={() => setStarterDraft('plan')}>
-                      Plan
-                    </button>
-                    <button type="button" onClick={() => setStarterDraft('diagnose')}>
-                      Diagnose
-                    </button>
-                    <button type="button" onClick={() => setStarterDraft('prioritize')}>
-                      Prioritize
-                    </button>
-                  </div>
-                </div>
-                <div className={s.startListsGrid}>
-                  <section
-                    className={`${s.startListSection} ${s.recentThreads}`}
-                    aria-label="Recent thread shortcuts"
-                  >
-                    <div className={s.startListHeader}>
-                      <span>Previous threads</span>
-                      <small>{recentThreads.length > 0 ? 'Recent conversations' : 'Navigator'}</small>
-                    </div>
-                    {recentThreads.length > 0 ? (
-                      <div className={s.threadListRows}>
-                        {recentThreads.map((thread) => (
-                          <Link
-                            className={s.threadListRow}
-                            key={thread.thread_id}
-                            to={`/app/rhizome/${encodeURIComponent(thread.thread_id)}`}
-                          >
-                            <span>
-                              <strong>{threadTitle(thread)}</strong>
-                              <small>{threadPreview(thread)}</small>
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                    ) : (
-                      <button type="button" onClick={() => setThreadsPanelOpen(true)}>
-                        Browse threads
-                      </button>
-                    )}
-                    {recentThreads.length > 0 && threads.length > RECENT_THREAD_LIMIT ? (
-                      <button type="button" onClick={() => setThreadsPanelOpen(true)}>
-                        Look through more threads
-                      </button>
-                    ) : null}
-                  </section>
-                  {todayShortlist.length > 0 ? (
-                    <section
-                      className={`${s.startListSection} ${s.todayShortlist}`}
-                      aria-label="Today's task shortlist"
-                    >
-                      <div className={s.startListHeader}>
-                        <span>Today shortlist</span>
-                        <small>
-                          {triageShortlist.length > 0 ? 'From latest triage' : 'From daily tasks'}
-                        </small>
-                      </div>
-                      <div className={s.taskListRows}>
-                        {todayShortlist.map((task) => (
-                          <button
-                            className={s.taskListRow}
-                            key={task.id}
-                            type="button"
-                            onClick={() => setTaskStarterDraft(task)}
-                          >
-                            <span>
-                              <strong>{task.title}</strong>
-                              <small>{taskMeta(task)}</small>
-                            </span>
-                            <em>Task</em>
-                          </button>
-                        ))}
-                      </div>
-                    </section>
-                  ) : latestTriageQuery.isLoading || dailyTasksQuery.isLoading ? (
-                    <section
-                      className={`${s.startListSection} ${s.todayShortlist}`}
-                      aria-label="Today's task shortlist"
-                    >
-                      <div className={s.startListHeader}>
-                        <span>Today shortlist</span>
-                        <small>Loading</small>
-                      </div>
-                    </section>
-                  ) : (
-                    <section className={s.startListSection} aria-label="Today's task shortlist">
-                      <div className={s.startListHeader}>
-                        <span>Today shortlist</span>
-                        <small>From daily tasks</small>
-                      </div>
-                    </section>
-                  )}
-                </div>
-              </div>
+              <NewThreadDashboard
+                draft={startThreadDraft}
+                focusPicker={renderFocusPicker("start")}
+                recentThreads={recentThreads}
+                shortlistSource={triageShortlist.length > 0 ? "triage" : "daily"}
+                tasksAreLoading={latestTriageQuery.isLoading || dailyTasksQuery.isLoading}
+                threadsCount={threads.length}
+                todayShortlist={todayShortlist}
+                weather={blankWeather}
+                weatherIsLoading={blankWeatherQuery.isLoading}
+                onBrowseThreads={() => setThreadsPanelOpen(true)}
+                onDraftChange={setStartThreadDraft}
+                onSelectStarter={setStarterDraft}
+                onSelectTask={setTaskStarterDraft}
+              />
             ) : (
-              <>
-                {messagesQuery.isLoading ? (
-                  <div className={s.emptyChat}>Loading messages</div>
-                ) : messagesQuery.isError ? (
-                  <div className={s.emptyChat}>
-                    <MessageSquare size={26} />
-                    <strong>Message history could not load.</strong>
-                    <span>Try again or choose another thread.</span>
-                    <button type="button" onClick={() => void messagesQuery.refetch()}>
-                      Retry
-                    </button>
-                  </div>
-                ) : visibleMessages.length === 0 && !visibleStreamingText ? (
-                  <div className={s.emptyChat}>
-                    <MessageSquare size={26} />
-                    <strong>No messages in this thread yet.</strong>
-                    <span>Use the composer below to send the first message.</span>
-                  </div>
-                ) : (
-                  <ol className={s.messageList} aria-label="Thread messages">
-                    {visibleMessages.map((message, index) => {
-                      const label = dateLabel(message.created_at)
-                      const previousLabel = dateLabel(visibleMessages[index - 1]?.created_at)
-                      const showDaySeparator = label && label !== previousLabel
-                      return (
-                        <li key={`${message.role}-${message.type ?? 'message'}-${index}`}>
-                          {showDaySeparator ? <div className={s.daySeparator}>{label}</div> : null}
-                          <article className={[s.messageBubble, messageClass(message)].join(' ')}>
-                            <div className={s.messageMeta}>{messageLabel(message)}</div>
-                            <MarkdownMessage content={displayMessageContent(message)} />
-                          </article>
-                        </li>
-                      )
-                    })}
-                    {visibleStreamingText || isStreaming ? (
-                      <li>
-                        <article className={[s.messageBubble, s.rhizomeMessage, s.streamingMessage].join(' ')}>
-                          <div className={s.messageMeta}>Rhizome</div>
-                          <MarkdownMessage content={visibleStreamingText || 'Rhizome is thinking...'} />
-                        </article>
-                      </li>
-                    ) : null}
-                  </ol>
-                )}
-              </>
+              <ConversationTimeline
+                isError={messagesQuery.isError}
+                isLoading={messagesQuery.isLoading}
+                isStreaming={isStreaming}
+                messages={visibleMessages}
+                streamingText={visibleStreamingText}
+                onRetry={() => void messagesQuery.refetch()}
+              />
             )}
           </div>
 
