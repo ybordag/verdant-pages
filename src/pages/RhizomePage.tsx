@@ -1,11 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Pin, Plus, Search, Send, X } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { FilterSelect } from '@/components/activity/FilterControls'
-import Button from '@/components/primitives/Button/Button'
-import Textarea from '@/components/primitives/Textarea/Textarea'
-import ContextAutocomplete from '@/components/rhizome/ContextAutocomplete'
 import {
   addThreadContext,
   createThread,
@@ -25,8 +20,11 @@ import { getLatestTriage } from '@/lib/api/triage'
 import { getLatestWeather } from '@/lib/api/weather'
 import { useAuth } from '@/lib/auth/context'
 import ConversationTimeline from '@/features/rhizome/components/ConversationTimeline'
+import ContextInlineInput from '@/features/rhizome/components/ContextInlineInput'
+import FocusPicker from '@/features/rhizome/components/FocusPicker'
 import NewThreadDashboard from '@/features/rhizome/components/NewThreadDashboard'
 import ReviewPanel from '@/features/rhizome/components/ReviewPanel'
+import RhizomeComposer from '@/features/rhizome/components/RhizomeComposer'
 import SessionContextStrip from '@/features/rhizome/components/SessionContextStrip'
 import ThreadNavigator from '@/features/rhizome/components/ThreadNavigator'
 import WorkbenchHeader from '@/features/rhizome/components/WorkbenchHeader'
@@ -77,27 +75,6 @@ const RECENT_THREAD_LIMIT = 3
 const EMPTY_THREADS: ThreadView[] = []
 const EMPTY_CONTEXT: ContextObject[] = []
 const EMPTY_SEARCH_RESULTS: SearchResultItemView[] = []
-
-function contextTypeClass(type: string): string {
-  switch (type) {
-    case 'plant':
-      return s.contextTypePlant
-    case 'batch':
-      return s.contextTypeBatch
-    case 'bed':
-      return s.contextTypeBed
-    case 'container':
-      return s.contextTypeContainer
-    case 'task':
-      return s.contextTypeTask
-    case 'project':
-      return s.contextTypeProject
-    case 'incident':
-      return s.contextTypeIncident
-    default:
-      return ''
-  }
-}
 
 export default function RhizomePage() {
   const { threadId } = useParams()
@@ -518,78 +495,39 @@ export default function RhizomePage() {
   }) {
     const isActive = activeContextTarget === target
     const contextQueryKey = `${target}:${contextSearchTerm.trim()}`
-    const shouldShowAutocomplete =
+    const showAutocomplete =
       isActive && contextSearchTerm.trim().length > 0 && dismissedContextQuery !== contextQueryKey
     return (
-      <div className={s.contextInlineBox} aria-label={label}>
-        <div className={s.contextInlineTitle}>
-          <span>{label}</span>
-          <button
-            aria-label={`Close ${label}`}
-            type="button"
-            onClick={() => closeContextTarget(target)}
-          >
-            <X size={13} />
-          </button>
-        </div>
-        <div className={s.contextInlineInput}>
-          <Search size={14} />
-          <span className={s.contextInlineChips}>
-            {contexts.map((context) => (
-              <span
-                className={`${s.contextChip} ${contextTypeClass(context.subject_type)}`}
-                key={`${target}-${context.subject_type}-${context.subject_id}`}
-              >
-                <em>{context.subject_type}</em>
-                <span>{contextLabel(context)}</span>
-                <button
-                  type="button"
-                  aria-label={`Remove ${contextLabel(context)} context`}
-                  disabled={target === 'thread' && removeContextMutation.isPending}
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    onRemove(context)
-                  }}
-                >
-                  <X size={12} />
-                </button>
-              </span>
-            ))}
-            <span className={s.contextSearchAnchor}>
-              <input
-                aria-label={`Search ${label}`}
-                placeholder={contexts.length > 0 ? 'Add another...' : 'Search context...'}
-                value={isActive ? contextSearchTerm : ''}
-                onFocus={() => {
-                  if (!isActive) {
-                    setActiveContextTarget(target)
-                    setContextSearchTerm('')
-                  }
-                }}
-                onChange={(event) => {
-                  if (!isActive) setActiveContextTarget(target)
-                  setDismissedContextQuery('')
-                  setContextSearchTerm(event.target.value)
-                }}
-              />
-              {shouldShowAutocomplete ? (
-                <ContextAutocomplete
-                  anchorMode="inline-below-input"
-                  selectionMode="multi"
-                  groups={groupedContextResults}
-                  isTooShort={contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2}
-                  isLoading={contextSearchQuery.isLoading}
-                  isError={contextSearchQuery.isError}
-                  shortLabel="Type at least two characters after the prefix."
-                  disabled={target === 'thread' && addContextMutation.isPending}
-                  onDismiss={() => setDismissedContextQuery(contextQueryKey)}
-                  onSelect={addContextFromSearchResult}
-                />
-              ) : null}
-            </span>
-          </span>
-        </div>
-      </div>
+      <ContextInlineInput
+        contexts={contexts}
+        disabled={
+          target === 'thread' &&
+          (addContextMutation.isPending || removeContextMutation.isPending)
+        }
+        groups={groupedContextResults}
+        isActive={isActive}
+        isError={contextSearchQuery.isError}
+        isLoading={contextSearchQuery.isLoading}
+        isTooShort={contextSearchTerm.trim().length > 0 && parsedContextSearch.q.length < 2}
+        label={label}
+        searchTerm={contextSearchTerm}
+        showAutocomplete={showAutocomplete}
+        onActivate={() => {
+          if (!isActive) {
+            setActiveContextTarget(target)
+            setContextSearchTerm('')
+          }
+        }}
+        onClose={() => closeContextTarget(target)}
+        onDismiss={() => setDismissedContextQuery(contextQueryKey)}
+        onRemove={onRemove}
+        onSearchTermChange={(term) => {
+          if (!isActive) setActiveContextTarget(target)
+          setDismissedContextQuery('')
+          setContextSearchTerm(term)
+        }}
+        onSelect={addContextFromSearchResult}
+      />
     )
   }
 
@@ -638,54 +576,24 @@ export default function RhizomePage() {
     }
 
     return (
-      <div className={[s.focusPicker, mode === 'start' ? s.startFocusPicker : s.sessionFocusPicker].join(' ')}>
-        <div className={s.focusPickerBody}>
-          <label className={s.focusInputLabel} htmlFor={inputId}>
-            {label}
-          </label>
-          <div className={s.focusInputWrap}>
-            <span className={s.focusSearchAnchor}>
-              <Pin className={s.focusInputIcon} size={15} aria-hidden="true" />
-              {selected ? (
-                <span className={`${s.contextChip} ${contextTypeClass(selected.subject_type)}`}>
-                  <em>{selected.subject_type}</em>
-                  <span>{contextLabel(selected)}</span>
-                  <button
-                    aria-label={`Clear ${label}`}
-                    type="button"
-                    onClick={() => setSelected(null)}
-                  >
-                    <X size={12} />
-                  </button>
-                </span>
-              ) : null}
-              <input
-                aria-label={label}
-                id={inputId}
-                placeholder={selected ? 'Selected' : placeholder}
-                type="text"
-                value={selected ? '' : term}
-                onChange={(event) => setTerm(event.target.value)}
-              />
-              {shouldShowAutocomplete ? (
-                <ContextAutocomplete
-                  anchorMode="inline-below-input"
-                  selectionMode="single"
-                  groups={groupContextResults(results)}
-                  isTooShort={term.trim().length < 2}
-                  isLoading={query.isLoading}
-                  isError={query.isError}
-                  loadingLabel="Searching focus"
-                  errorLabel="Focus search is unavailable."
-                  emptyLabel={mode === 'start' ? 'Use this as free-text focus.' : 'No projects found.'}
-                  onDismiss={dismissFocusAutocomplete}
-                  onSelect={(result) => setSelected(contextFromSearchResult(result))}
-                />
-              ) : null}
-            </span>
-          </div>
-        </div>
-      </div>
+      <FocusPicker
+        emptyLabel={mode === 'start' ? 'Use this as free-text focus.' : 'No projects found.'}
+        errorLabel="Focus search is unavailable."
+        groups={groupContextResults(results)}
+        inputId={inputId}
+        isError={query.isError}
+        isLoading={query.isLoading}
+        label={label}
+        mode={mode}
+        placeholder={placeholder}
+        selected={selected}
+        showAutocomplete={shouldShowAutocomplete}
+        term={term}
+        onDismiss={dismissFocusAutocomplete}
+        onSelect={(result) => setSelected(contextFromSearchResult(result))}
+        onSelectedClear={() => setSelected(null)}
+        onTermChange={setTerm}
+      />
     )
   }
 
@@ -960,109 +868,51 @@ export default function RhizomePage() {
             )}
           </div>
 
-          <form
-            className={s.composer}
-            onSubmit={(event) => {
-              event.preventDefault()
-              void submitMessage()
-            }}
-          >
-            <div className={s.composerBox}>
-              {messageContextOpen ? (
-                <div className={s.messageContextSection}>
-                  {renderContextInlineInput({
-                    target: 'message',
-                    label: 'Message context',
+          <RhizomeComposer
+            autocompleteGroups={groupedComposerContextResults}
+            autocompleteIsError={composerContextQuery.isError}
+            autocompleteIsLoading={composerContextQuery.isLoading}
+            autocompleteStyle={
+              composerAutocompletePosition
+                ? {
+                    left: `${Math.max(0, composerAutocompletePosition.left - 4)}px`,
+                    top: `${composerAutocompletePosition.top}px`,
+                  }
+                : undefined
+            }
+            canPin={Boolean(threadId)}
+            canSend={canSend}
+            draft={draft}
+            isStreaming={isStreaming}
+            messageContextEditor={
+              messageContextOpen
+                ? renderContextInlineInput({
+                    target: "message",
+                    label: "Message context",
                     contexts: messageContext,
                     onRemove: removeMessageContext,
-                  })}
-                </div>
-              ) : null}
-
-              <div className={s.composerTextAreaWrap}>
-                <Textarea
-                  aria-label="Message Rhizome"
-                  placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
-                  value={draft}
-                  onChange={(event) => {
-                    setDismissedComposerContextQuery('')
-                    setDraft(event.currentTarget.value)
-                    updateComposerSelection(event.currentTarget)
-                  }}
-                  onClick={(event) => updateComposerSelection(event.currentTarget)}
-                  onKeyUp={(event) => updateComposerSelection(event.currentTarget)}
-                  onSelect={(event) => updateComposerSelection(event.currentTarget)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' && !event.shiftKey) {
-                      event.preventDefault()
-                      void submitMessage()
-                    }
-                  }}
-                />
-                {composerContextTrigger && dismissedComposerContextQuery !== composerContextQueryKey ? (
-                  <ContextAutocomplete
-                    anchorMode="textarea-token"
-                    selectionMode="multi"
-                    groups={groupedComposerContextResults}
-                    isLoading={composerContextQuery.isLoading}
-                    isError={composerContextQuery.isError}
-                    style={
-                      composerAutocompletePosition
-                        ? {
-                            left: `${Math.max(0, composerAutocompletePosition.left - 4)}px`,
-                            top: `${composerAutocompletePosition.top}px`,
-                          }
-                        : undefined
-                    }
-                    onDismiss={() => setDismissedComposerContextQuery(composerContextQueryKey)}
-                    onSelect={addComposerContextFromSearchResult}
-                  />
-                ) : null}
-              </div>
-              <div className={s.composerControlRow}>
-                <div className={s.composerContextButtons}>
-                  <button
-                    aria-expanded={messageContextOpen}
-                    aria-label={messageContextOpen ? 'Close message context' : 'Add message context'}
-                    className={s.composerAddContext}
-                    type="button"
-                    onClick={() => openContextTarget('message')}
-                  >
-                    <Plus size={14} />
-                  </button>
-                  <button
-                    aria-expanded={pinnedContextOpen}
-                    aria-label={pinnedContextOpen ? 'Close pinned context' : 'Add pinned context'}
-                    className={s.composerPinContext}
-                    type="button"
-                    disabled={!threadId}
-                    onClick={() => openContextTarget('thread')}
-                  >
-                    <Pin size={13} />
-                  </button>
-                </div>
-                <div className={s.composerRightControls}>
-                  <div
-                    className={s.composerModelSelector}
-                    title="Model switching will be editable after Cambium supports profile updates."
-                  >
-                    <FilterSelect
-                      label="Model"
-                      value={currentModelValue}
-                      placeholder="Model not set"
-                      options={currentModelOptions}
-                      disabled
-                      onChange={() => {}}
-                    />
-                  </div>
-                  <Button className={s.composerSend} size="sm" type="submit" disabled={!canSend}>
-                    <Send size={15} />
-                    {isStreaming ? 'Sending' : 'Send'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </form>
+                  })
+                : undefined
+            }
+            messageContextOpen={messageContextOpen}
+            modelOptions={currentModelOptions}
+            modelValue={currentModelValue}
+            pinnedContextOpen={pinnedContextOpen}
+            showAutocomplete={Boolean(
+              composerContextTrigger && dismissedComposerContextQuery !== composerContextQueryKey,
+            )}
+            onDismissAutocomplete={() => setDismissedComposerContextQuery(composerContextQueryKey)}
+            onDraftChange={(value, textarea) => {
+              setDismissedComposerContextQuery("")
+              setDraft(value)
+              updateComposerSelection(textarea)
+            }}
+            onSelectionChange={updateComposerSelection}
+            onSelectAutocomplete={addComposerContextFromSearchResult}
+            onSubmit={() => void submitMessage()}
+            onToggleMessageContext={() => openContextTarget("message")}
+            onTogglePinnedContext={() => openContextTarget("thread")}
+          />
         </section>
 
         {pendingInteraction && reviewsPanelOpen ? (
