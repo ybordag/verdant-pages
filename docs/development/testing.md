@@ -85,8 +85,12 @@ Chat coverage should include:
 
 Place parsing and normalization assertions in feature helper tests, semantic UI
 contracts in component tests, and cancellation/retry/interaction transitions in
-the chat-turn hook suite. Keep route tests focused on query coordination and
-region integration, then use Playwright for user-visible workflow composition.
+the chat-turn hook suite. Session-context hook tests own load, optimistic display,
+edit/save/cancel, focus search, and failure recovery. Context-search hook tests
+own target switching, selection/removal, duplicate suppression, composer-token
+replacement, query errors, and thread-cache synchronization. Keep route tests
+focused on top-level resource loading and region integration, then use Playwright
+for user-visible workflow composition.
 
 At least one seeded live path should prove create -> context -> stream -> review/resume -> switch/reload before Phase 5 closes.
 

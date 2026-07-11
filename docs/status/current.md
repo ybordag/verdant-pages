@@ -1,6 +1,6 @@
 # Current Status
 
-**Last verified:** 2026-07-10
+**Last verified:** 2026-07-11
 
 This is the live checkpoint for Verdant Pages. Update it whenever the active
 slice, branch, blocker state, or quality-gate result changes. Stable repository
@@ -58,7 +58,7 @@ page-wide Rhizome stylesheet is split by component/surface ownership.
 |---|---|---|
 | `npm run build` | Pass | Production bundle builds successfully on Node 24 |
 | `npm run lint` | Pass | Rhizome collapse/autocomplete state no longer mutates synchronously in effects |
-| `npm run test:run` | 412/412 pass | Rhizome chat-turn, session-context, and context-search hooks have direct coverage |
+| `npm run test:run` | 415/415 pass | Rhizome chat-turn, session-context, and context-search hooks have direct success/failure coverage |
 | `npm run test:e2e` | Pass: 34 run, 1 opt-in skipped | Review/resume, context, themes, and phone-width Rhizome paths pass; live Activity smoke remains opt-in |
 
 Do not copy these counts into other documents. Replace this table when the

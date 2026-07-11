@@ -2,17 +2,17 @@
 
 **Status:** Accepted target architecture; existing complex pages migrate incrementally.
 
-**Last reviewed:** 2026-07-10
+**Last reviewed:** 2026-07-11
 
 This document defines how Verdant Pages should organize complex route-level workflows. It supplements the current [component inventory](components.md): that document says what exists today, while this one defines the structure new features and deliberate refactors should follow.
 
 Rhizome is the first implementation of this structure. Its workbench regions,
-context controls, pure helpers, and chat-turn lifecycle now live in
-`src/features/rhizome/`; `RhizomePage.tsx` remains the route composition and
-query-coordination root. The remaining incremental work is to extract focused
-session/context query hooks and divide the shared feature stylesheet by owner.
-This implementation should make the architecture concrete for Today, Tasks,
-Calendar, Garden, Incidents, and Projects.
+context controls, pure helpers, chat-turn lifecycle, session-context queries,
+and context-search state live in `src/features/rhizome/`. Component/surface CSS
+is feature-owned rather than collected in a route-wide stylesheet.
+`RhizomePage.tsx` remains the route composition and top-level data-loading root.
+This implementation makes the architecture concrete for Today, Tasks, Calendar,
+Garden, Incidents, and Projects.
 
 ## Structural Model
 

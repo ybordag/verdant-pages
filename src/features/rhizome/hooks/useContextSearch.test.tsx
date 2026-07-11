@@ -56,6 +56,7 @@ function renderContextSearch({
 
 describe('useContextSearch', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
     mocks.search.mockResolvedValue({ results: [tomatoResult], by_type: { plant: 1 } })
     mocks.addThreadContext.mockResolvedValue(undefined)
     mocks.removeThreadContext.mockResolvedValue(undefined)
@@ -91,6 +92,12 @@ describe('useContextSearch', () => {
     expect(result.current.search.messageContext).toEqual([
       { subject_type: 'plant', subject_id: 'plant-1', label: 'Cherry tomato' },
     ])
+    act(() => {
+      result.current.search
+        .inlineProps('message', result.current.search.messageContext)
+        .onRemove(result.current.search.messageContext[0])
+    })
+    expect(result.current.search.messageContext).toEqual([])
     textarea.remove()
   })
 
@@ -120,5 +127,32 @@ describe('useContextSearch', () => {
       const cached = client.getQueryData<ThreadView>(['threads', 'thread-1'])
       expect(cached?.pinned_context).toHaveLength(1)
     })
+
+    const context = { subject_type: 'plant', subject_id: 'plant-1', label: 'Cherry tomato' }
+    act(() => result.current.search.inlineProps('thread', [context]).onRemove(context))
+    await waitFor(() => expect(mocks.removeThreadContext).toHaveBeenCalledOnce())
+    expect(mocks.removeThreadContext).toHaveBeenCalledWith('thread-1', 'plant', 'plant-1')
+    await waitFor(() => {
+      const cached = client.getQueryData<ThreadView>(['threads', 'thread-1'])
+      expect(cached?.pinned_context).toEqual([])
+    })
+  })
+
+  it('filters already selected context and exposes search failures to its owner', async () => {
+    const selected = { subject_type: 'plant', subject_id: 'plant-1', label: 'Cherry tomato' }
+    const { result } = renderContextSearch({
+      isNewThread: false,
+      pinnedContext: [selected],
+      threadId: 'thread-1',
+    })
+
+    act(() => result.current.search.openTarget('thread'))
+    act(() => result.current.search.inlineProps('thread', [selected]).onSearchTermChange('tomato'))
+    await waitFor(() => expect(mocks.search).toHaveBeenCalled())
+    await waitFor(() => expect(result.current.search.inlineProps('thread', [selected]).groups).toEqual([]))
+
+    mocks.search.mockRejectedValue(new Error('search unavailable'))
+    act(() => result.current.search.inlineProps('thread', [selected]).onSearchTermChange('pepper'))
+    await waitFor(() => expect(result.current.search.inlineProps('thread', [selected]).isError).toBe(true))
   })
 })

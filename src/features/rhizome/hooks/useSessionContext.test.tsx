@@ -33,6 +33,7 @@ function wrapper({ children }: PropsWithChildren) {
 
 describe('useSessionContext', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
     mocks.getThreadSessionContext.mockResolvedValue(initialContext)
     mocks.search.mockResolvedValue({
       results: [
@@ -73,5 +74,45 @@ describe('useSessionContext', () => {
       focus_context: [{ subject_type: 'project', subject_id: 'project-1' }],
     })
     await waitFor(() => expect(result.current.isEditing).toBe(false))
+  })
+
+  it('uses optimistic startup labels only for their matching thread', async () => {
+    mocks.getThreadSessionContext.mockResolvedValue({
+      ...initialContext,
+      time_text: null,
+      energy_text: null,
+      focus_text: null,
+    })
+    const optimistic = {
+      threadId: 'thread-1',
+      timeLabel: '45 minutes',
+      energyLabel: 'low but focused',
+      focusLabel: 'Tomato care',
+    }
+    const { result } = renderHook(() => useSessionContext('thread-1', optimistic), { wrapper })
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    expect(result.current.hasOptimisticContext).toBe(true)
+    expect(result.current.timeDisplay).toBe('45 minutes')
+    expect(result.current.energyDisplay).toBe('low but focused')
+    expect(result.current.focusDisplay).toBe('Tomato care')
+  })
+
+  it('keeps failed edits recoverable and restores persisted values on cancel', async () => {
+    mocks.updateThreadSessionContext.mockRejectedValue(new Error('offline'))
+    const { result } = renderHook(() => useSessionContext('thread-1', null), { wrapper })
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+    act(() => result.current.startEditing())
+    act(() => result.current.setDraft({ time_text: '5 minutes', energy_text: 'exhausted' }))
+    act(() => result.current.save())
+
+    await waitFor(() => expect(result.current.error).toBe('Session context could not be saved.'))
+    expect(result.current.isEditing).toBe(true)
+
+    act(() => result.current.cancelEditing())
+    expect(result.current.isEditing).toBe(false)
+    expect(result.current.error).toBeNull()
+    expect(result.current.draft).toEqual({ time_text: '30 minutes', energy_text: 'steady' })
   })
 })

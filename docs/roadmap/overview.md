@@ -89,8 +89,9 @@ and a required seeded live integration environment.
 
 ### Closeout work
 
-1. Restore green lint, unit, and Playwright gates.
-2. Extract bounded components/hooks from the Rhizome page.
+1. Keep lint, unit, build, and Playwright gates green through closeout.
+2. **Complete:** extract bounded components/hooks from the Rhizome page and
+   split feature CSS by component/surface ownership.
 3. Support natural-language focus with zero-to-many anchored objects throughout
    initial and active-thread editing.
 4. Reconcile model selection with Cambium's now-available profile endpoint.
