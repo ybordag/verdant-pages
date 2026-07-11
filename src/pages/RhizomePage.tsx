@@ -7,8 +7,6 @@ import {
   CloudSun,
   Droplets,
   MessageSquare,
-  PanelLeftClose,
-  PanelRightClose,
   Pin,
   Plus,
   Search,
@@ -43,6 +41,9 @@ import { listTasksDaily } from '@/lib/api/tasks'
 import { getLatestTriage } from '@/lib/api/triage'
 import { getLatestWeather } from '@/lib/api/weather'
 import { useAuth } from '@/lib/auth/context'
+import ReviewPanel from '@/features/rhizome/components/ReviewPanel'
+import ThreadNavigator from '@/features/rhizome/components/ThreadNavigator'
+import WorkbenchHeader from '@/features/rhizome/components/WorkbenchHeader'
 import {
   contextFromSearchResult,
   contextKey,
@@ -61,7 +62,6 @@ import {
   messageLabel,
 } from '@/features/rhizome/lib/messages'
 import {
-  formatDate,
   modelLabel,
   sessionDraftFromContext,
   sessionFocusLabel,
@@ -98,7 +98,7 @@ import type {
   ThreadView,
   UpdateSessionContextRequest,
 } from '@/lib/types/rhizome'
-import s from './RhizomePage.module.css'
+import s from '@/features/rhizome/RhizomeWorkbench.module.css'
 
 const THREAD_LIMIT = 20
 const RECENT_THREAD_LIMIT = 3
@@ -146,20 +146,6 @@ function contextTypeClass(type: string): string {
     default:
       return ''
   }
-}
-
-function interactionTypeLabel(type: string): string {
-  return type.replaceAll('_', ' ')
-}
-
-function actionButtonLabel(action: InteractionActionView): string {
-  return action.label || titleCase(action.id.replaceAll('_', ' '))
-}
-
-function actionButtonClass(action: InteractionActionView): string {
-  if (action.style_hint === 'primary' || action.kind === 'confirm' || action.id === 'confirm') return s.primaryAction
-  if (action.style_hint === 'danger' || action.kind === 'reject' || action.id === 'reject') return s.dangerAction
-  return s.secondaryAction
 }
 
 function messageClass(message: ThreadMessageView): string {
@@ -353,7 +339,6 @@ export default function RhizomePage() {
   const visibleStreamingText = threadId && threadId === streamThreadId ? streamingText : ''
   const workspaceHeaderCollapsed =
     workspaceHeaderState.threadId === threadId ? workspaceHeaderState.collapsed : false
-  const hasThreads = threads.length > 0
   const recentThreads = threads.slice(0, RECENT_THREAD_LIMIT)
   const pendingReviewCount = pendingInteraction ? 1 : 0
   const hasPendingReviews = pendingReviewCount > 0
@@ -932,123 +917,25 @@ export default function RhizomePage() {
         aria-label="Rhizome workbench"
       >
         {threadsPanelOpen ? (
-          <aside className={s.threadRail} aria-label="Rhizome threads">
-            <div className={s.railContent}>
-              <div className={s.railHeader}>
-                <div>
-                  <p className={s.eyebrow}>Navigator</p>
-                  <h2>Threads</h2>
-                </div>
-                <div className={s.railActions}>
-                  <button
-                    aria-label="Collapse threads panel"
-                    className={s.iconButton}
-                    type="button"
-                    onClick={() => setThreadsPanelOpen(false)}
-                  >
-                    <PanelLeftClose size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <div className={s.searchBox} aria-hidden="true">
-                <Search size={14} />
-                <span>Search threads</span>
-              </div>
-
-              {threadsQuery.isLoading ? (
-                <div className={s.railState}>Loading threads</div>
-              ) : threadsQuery.isError ? (
-                <div className={s.railState}>Threads are unavailable right now.</div>
-              ) : hasThreads ? (
-                <nav className={s.threadList} aria-label="Recent threads">
-                  <Link
-                    className={[s.threadRow, isNewThread ? s.activeThread : '']
-                      .filter(Boolean)
-                      .join(' ')}
-                    to="/app/rhizome"
-                  >
-                    <span>
-                      <strong>New thread</strong>
-                      <small>Start with a blank composer</small>
-                    </span>
-                  </Link>
-                  {threads.map((thread) => (
-                    <Link
-                      className={[s.threadRow, thread.thread_id === threadId ? s.activeThread : '']
-                        .filter(Boolean)
-                        .join(' ')}
-                      key={thread.thread_id}
-                      to={`/app/rhizome/${encodeURIComponent(thread.thread_id)}`}
-                    >
-                      <span>
-                        <strong>{threadTitle(thread)}</strong>
-                        <small>{threadPreview(thread)}</small>
-                      </span>
-                      <time>{formatDate(thread.last_active_at)}</time>
-                    </Link>
-                  ))}
-                </nav>
-              ) : (
-                <div className={s.noThreads}>
-                  <Sprout size={22} />
-                  <strong>No threads yet</strong>
-                  <span>
-                    Start with a question, a plan, or a garden object you want Rhizome to reason
-                    about.
-                  </span>
-                </div>
-              )}
-            </div>
-          </aside>
+          <ThreadNavigator
+            activeThreadId={threadId}
+            isError={threadsQuery.isError}
+            isLoading={threadsQuery.isLoading}
+            isNewThread={isNewThread}
+            threads={threads}
+            onClose={() => setThreadsPanelOpen(false)}
+          />
         ) : null}
 
         <section className={s.conversationWorkspace} aria-label="Conversation with Rhizome">
-          <header
-            className={[
-              s.topbar,
-              workspaceHeaderCollapsed ? s.topbarCollapsed : '',
-            ].join(' ')}
-          >
-            <div className={s.workspaceHeaderRow}>
-              <div className={s.workspaceIdentity}>
-                <p className={s.eyebrow}>Agent workbench</p>
-                <h1 className={s.title}>
-                  Ask <span>Rhizome</span>
-                </h1>
-                <p className={s.workspaceSubtitle}>
-                  Garden planning, triage, approvals, and day-to-day care decisions.
-                </p>
-              </div>
-            </div>
-            <div className={s.threadHeaderRow}>
-              <div className={s.threadHeaderText}>
-                <p className={s.eyebrow}>{isNewThread ? 'New conversation' : 'Active thread'}</p>
-                {isNewThread ? (
-                  <h2>Blank thread</h2>
-                ) : (
-                  <button
-                    className={s.threadTitleButton}
-                    type="button"
-                    onClick={() => setThreadsPanelOpen(true)}
-                  >
-                    {threadTitle(activeThread)}
-                  </button>
-                )}
-              </div>
-              {hasPendingReviews ? (
-                <button
-                  aria-label="Open pending reviews"
-                  className={s.compactReviewButton}
-                  type="button"
-                  onClick={() => setReviewsPanelOpen(true)}
-                >
-                  <span>Review</span>
-                  <strong>{pendingReviewCount}</strong>
-                </button>
-              ) : null}
-            </div>
-          </header>
+          <WorkbenchHeader
+            activeThread={activeThread}
+            collapsed={workspaceHeaderCollapsed}
+            isNewThread={isNewThread}
+            pendingReviewCount={pendingReviewCount}
+            onOpenReviews={() => setReviewsPanelOpen(true)}
+            onOpenThreads={() => setThreadsPanelOpen(true)}
+          />
 
           {streamError ? (
             <div className={s.streamError} role="alert">
@@ -1514,72 +1401,16 @@ export default function RhizomePage() {
           </form>
         </section>
 
-        {hasPendingReviews && reviewsPanelOpen ? (
-          <aside className={s.reviewPanel} aria-label="Pending Rhizome reviews">
-            <div className={s.railContent}>
-              <div className={s.railHeader}>
-                <div>
-                  <p className={s.eyebrow}>Current interaction</p>
-                  <h2>{pendingInteraction?.title ?? 'Pending review'}</h2>
-                </div>
-                <button
-                  aria-label="Collapse reviews panel"
-                  className={s.iconButton}
-                  type="button"
-                  onClick={() => setReviewsPanelOpen(false)}
-                >
-                  <PanelRightClose size={16} />
-                </button>
-              </div>
-              {pendingInteraction ? (
-                <div className={s.interactionCard}>
-                  <div className={s.interactionType}>
-                    {interactionTypeLabel(pendingInteraction.interaction_type)}
-                  </div>
-                  <p>{pendingInteraction.summary}</p>
-                  {pendingInteraction.body ? <MarkdownMessage content={pendingInteraction.body} /> : null}
-                  {pendingInteraction.sections.length > 0 ? (
-                    <dl className={s.interactionSections}>
-                      {pendingInteraction.sections.map((section, index) => (
-                        <div key={index}>
-                          <dt>{String(section.title ?? section.label ?? `Detail ${index + 1}`)}</dt>
-                          <dd>
-                            {String(
-                              section.summary ??
-                                section.body ??
-                                section.value ??
-                                JSON.stringify(section),
-                            )}
-                          </dd>
-                        </div>
-                      ))}
-                    </dl>
-                  ) : null}
-                  <label className={s.notesField}>
-                    <span>Decision notes</span>
-                    <textarea
-                      value={interactionNotes}
-                      placeholder="Add a note for Rhizome..."
-                      onChange={(event) => setInteractionNotes(event.target.value)}
-                    />
-                  </label>
-                  <div className={s.interactionActions}>
-                    {pendingInteraction.actions.map((action) => (
-                      <button
-                        key={action.id}
-                        className={actionButtonClass(action)}
-                        type="button"
-                        disabled={isStreaming || !threadId}
-                        onClick={() => void resumeInteraction(action)}
-                      >
-                        {actionButtonLabel(action)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          </aside>
+        {pendingInteraction && reviewsPanelOpen ? (
+          <ReviewPanel
+            interaction={pendingInteraction}
+            isStreaming={isStreaming}
+            notes={interactionNotes}
+            threadId={threadId}
+            onAction={(action) => void resumeInteraction(action)}
+            onClose={() => setReviewsPanelOpen(false)}
+            onNotesChange={setInteractionNotes}
+          />
         ) : null}
       </section>
 
