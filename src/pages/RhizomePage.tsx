@@ -43,12 +43,56 @@ import { listTasksDaily } from '@/lib/api/tasks'
 import { getLatestTriage } from '@/lib/api/triage'
 import { getLatestWeather } from '@/lib/api/weather'
 import { useAuth } from '@/lib/auth/context'
+import {
+  contextFromSearchResult,
+  contextKey,
+  contextLabel,
+  groupContextResults,
+  parseComposerContextTrigger,
+  parseContextSearchTerm,
+  sessionFocusContextRefs,
+  titleCase,
+} from '@/features/rhizome/lib/context'
+import {
+  appendStreamContent,
+  dateLabel,
+  displayMessageContent,
+  messageKey,
+  messageLabel,
+} from '@/features/rhizome/lib/messages'
+import {
+  formatDate,
+  modelLabel,
+  sessionDraftFromContext,
+  sessionFocusLabel,
+  sessionSourceLabel,
+  sessionTimeLabel,
+  shortlistFromTriage,
+  taskMeta,
+  threadPreview,
+  threadTitle,
+} from '@/features/rhizome/lib/presentation'
+import { measureTextareaIndex } from '@/features/rhizome/lib/textarea'
+import {
+  firstWeatherMetric,
+  weatherIconKind,
+  weatherObservedLabel,
+  weatherTemperatureLabel,
+} from '@/features/rhizome/lib/weather'
+import {
+  EMPTY_SESSION_DRAFT,
+  EMPTY_START_THREAD_DRAFT,
+  type ComposerAutocompletePosition,
+  type FocusContext,
+  type OptimisticSessionContext,
+  type SessionDraft,
+  type StartThreadDraft,
+} from '@/features/rhizome/types'
 import type {
   ContextObject,
   InteractionActionView,
   InteractionEnvelopeView,
   SearchResultItemView,
-  SessionContextView,
   TaskSummaryView,
   ThreadMessageView,
   ThreadView,
@@ -61,167 +105,6 @@ const RECENT_THREAD_LIMIT = 3
 const EMPTY_THREADS: ThreadView[] = []
 const EMPTY_CONTEXT: ContextObject[] = []
 const EMPTY_SEARCH_RESULTS: SearchResultItemView[] = []
-const CONTEXT_TYPE_ALIASES = new Map([
-  ['plant', 'plant'],
-  ['plants', 'plant'],
-  ['batch', 'batch'],
-  ['batches', 'batch'],
-  ['bed', 'bed'],
-  ['beds', 'bed'],
-  ['container', 'container'],
-  ['containers', 'container'],
-  ['task', 'task'],
-  ['tasks', 'task'],
-  ['project', 'project'],
-  ['projects', 'project'],
-  ['incident', 'incident'],
-  ['incidents', 'incident'],
-])
-
-interface SessionDraft {
-  time_text: string
-  energy_text: string
-}
-
-interface StartThreadDraft {
-  time_today: string
-  energy: string
-}
-
-interface OptimisticSessionContext {
-  threadId: string
-  timeLabel: string
-  energyLabel: string
-  focusLabel: string
-}
-
-type FocusContext = ContextObject | null
-
-interface ComposerContextTrigger {
-  start: number
-  end: number
-  q: string
-  types: string
-}
-
-interface ComposerAutocompletePosition {
-  left: number
-  top: number
-}
-
-const EMPTY_SESSION_DRAFT: SessionDraft = {
-  time_text: '',
-  energy_text: '',
-}
-
-const EMPTY_START_THREAD_DRAFT: StartThreadDraft = {
-  time_today: '',
-  energy: '',
-}
-
-function formatDate(value?: string): string {
-  if (!value) return 'No activity yet'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return 'No activity yet'
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(date)
-}
-
-function threadTitle(thread?: ThreadView): string {
-  return thread?.title?.trim() || 'Untitled thread'
-}
-
-function threadPreview(thread: ThreadView): string {
-  return thread.last_message_preview?.trim() || 'No messages yet'
-}
-
-function modelLabel(provider?: string | null, model?: string | null): string {
-  if (!provider && !model) return 'Model not set'
-  if (!provider) return model ?? 'Model not set'
-  if (!model) return provider
-  return `${provider} · ${model}`
-}
-
-function titleCase(value?: string | null): string {
-  if (!value) return 'Not set'
-  return value.slice(0, 1).toUpperCase() + value.slice(1)
-}
-
-function sessionDraftFromContext(context?: SessionContextView): SessionDraft {
-  if (!context) return EMPTY_SESSION_DRAFT
-  return {
-    time_text: context.time_text ?? '',
-    energy_text: context.energy_text ?? '',
-  }
-}
-
-function sessionSourceLabel(context?: SessionContextView): string | null {
-  if (!context || context.source === 'unset') return null
-  return context.source === 'user' ? 'User set' : 'Inferred'
-}
-
-function sessionTimeLabel(context?: SessionContextView): string {
-  return context?.time_text?.trim() || 'Not set'
-}
-
-function sessionFocusLabel(context?: SessionContextView): string {
-  const focusText = context?.focus_text?.trim()
-  if (focusText) return focusText
-  const labels = context?.focus_context.map((item) => contextLabel(item)).filter(Boolean) ?? []
-  return labels.length > 0 ? labels.join(', ') : 'Not set'
-}
-
-function sessionFocusContextRefs(context: FocusContext): UpdateSessionContextRequest['focus_context'] {
-  return context
-    ? [
-        {
-          subject_type: context.subject_type,
-          subject_id: context.subject_id,
-        },
-      ]
-    : []
-}
-
-function weatherObservedLabel(value?: string): string {
-  if (!value) return 'Latest weather'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return 'Latest weather'
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(date)
-}
-
-function firstWeatherMetric(summary: string | undefined, pattern: RegExp): string | null {
-  const match = summary?.match(pattern)
-  return match?.[1] ?? null
-}
-
-function weatherTemperatureLabel(summary?: string): string {
-  const high = firstWeatherMetric(summary, /high\s+([0-9.]+)F-equivalent/i)
-  if (high) return `${Math.round(Number(high))}`
-  return '--'
-}
-
-function weatherIconKind(
-  summary?: string,
-  alerts?: string,
-): 'rain' | 'heat' | 'smoke' | 'wind' | 'cloud' | 'alert' | 'clear' {
-  const text = `${summary ?? ''} ${alerts ?? ''}`.toLowerCase()
-  if (text.includes('smoke') || text.includes('air quality')) return 'smoke'
-  if (text.includes('heat')) return 'heat'
-  if (text.includes('rain')) return 'rain'
-  if (text.includes('wind') || text.includes('breezy')) return 'wind'
-  if (text.includes('cloud') || text.includes('overcast')) return 'cloud'
-  if (text.includes('storm') || text.includes('alert') || text.includes('warning')) return 'alert'
-  return 'clear'
-}
 
 function WeatherIcon({ kind }: { kind: ReturnType<typeof weatherIconKind> }) {
   const className = [s.weatherIcon, s[`weatherIcon${titleCase(kind)}`]].join(' ')
@@ -242,15 +125,6 @@ function WeatherIcon({ kind }: { kind: ReturnType<typeof weatherIconKind> }) {
     default:
       return <CloudSun className={className} aria-hidden="true" />
   }
-}
-
-function contextLabel(context: ContextObject): string {
-  if (context.label?.trim()) return context.label
-  return `${titleCase(context.subject_type)} ${context.subject_id}`
-}
-
-function contextKey(context: Pick<ContextObject, 'subject_type' | 'subject_id'>): string {
-  return `${context.subject_type}:${context.subject_id}`
 }
 
 function contextTypeClass(type: string): string {
@@ -274,81 +148,6 @@ function contextTypeClass(type: string): string {
   }
 }
 
-function parseContextSearchTerm(term: string): { q: string; types?: string } {
-  const trimmed = term.trim()
-  const typedMatch = trimmed.match(/^([a-z_]+):(.*)$/i)
-  if (!typedMatch) return { q: trimmed }
-  const type = CONTEXT_TYPE_ALIASES.get(typedMatch[1].toLowerCase())
-  if (!type) return { q: trimmed }
-  return { q: typedMatch[2].trim() || type, types: type }
-}
-
-function parseComposerContextTrigger(text: string, cursor: number): ComposerContextTrigger | null {
-  const beforeCursor = text.slice(0, cursor)
-  const match = beforeCursor.match(/(?:^|\s)([a-z_]+):([^\s:]*)$/i)
-  if (!match) return null
-  const type = CONTEXT_TYPE_ALIASES.get(match[1].toLowerCase())
-  if (!type) return null
-  const token = `${match[1]}:${match[2]}`
-  return {
-    start: beforeCursor.length - token.length,
-    end: cursor,
-    q: match[2].trim() || type,
-    types: type,
-  }
-}
-
-function measureTextareaIndex(textarea: HTMLTextAreaElement, index: number): ComposerAutocompletePosition {
-  const style = window.getComputedStyle(textarea)
-  const mirror = document.createElement('div')
-  const marker = document.createElement('span')
-  const properties = [
-    'borderBottomWidth',
-    'borderLeftWidth',
-    'borderRightWidth',
-    'borderTopWidth',
-    'boxSizing',
-    'fontFamily',
-    'fontSize',
-    'fontStyle',
-    'fontWeight',
-    'letterSpacing',
-    'lineHeight',
-    'paddingBottom',
-    'paddingLeft',
-    'paddingRight',
-    'paddingTop',
-    'textIndent',
-    'textTransform',
-    'width',
-  ] as const
-
-  mirror.style.position = 'absolute'
-  mirror.style.visibility = 'hidden'
-  mirror.style.whiteSpace = 'pre-wrap'
-  mirror.style.overflowWrap = 'break-word'
-  mirror.style.top = '0'
-  mirror.style.left = '-9999px'
-  for (const property of properties) {
-    mirror.style[property] = style[property]
-  }
-
-  marker.textContent = '\u200b'
-  mirror.textContent = textarea.value.slice(0, index) || '\u200b'
-  mirror.append(marker)
-  document.body.append(mirror)
-
-  const mirrorRect = mirror.getBoundingClientRect()
-  const markerRect = marker.getBoundingClientRect()
-  const position = {
-    left: markerRect.left - mirrorRect.left + textarea.offsetLeft - textarea.scrollLeft,
-    top: markerRect.top - mirrorRect.top + textarea.offsetTop - textarea.scrollTop,
-  }
-
-  mirror.remove()
-  return position
-}
-
 function interactionTypeLabel(type: string): string {
   return type.replaceAll('_', ' ')
 }
@@ -363,77 +162,8 @@ function actionButtonClass(action: InteractionActionView): string {
   return s.secondaryAction
 }
 
-function groupContextResults(results: SearchResultItemView[]): Array<[string, SearchResultItemView[]]> {
-  const groups = new Map<string, SearchResultItemView[]>()
-  for (const result of results) {
-    const items = groups.get(result.subject_type) ?? []
-    items.push(result)
-    groups.set(result.subject_type, items)
-  }
-  return Array.from(groups.entries())
-}
-
-function messageLabel(message: ThreadMessageView): string {
-  return message.role === 'user' ? 'You' : 'Rhizome'
-}
-
 function messageClass(message: ThreadMessageView): string {
   return message.role === 'user' ? s.userMessage : s.rhizomeMessage
-}
-
-function stripTransportStartContext(content: string): string {
-  if (!content.startsWith('For this thread, ')) return content
-  const [, visible] = content.split(/\n\n(.+)/s)
-  return visible?.trim() || content
-}
-
-function displayMessageContent(message: ThreadMessageView): string {
-  return message.role === 'user' ? stripTransportStartContext(message.content) : message.content
-}
-
-function appendStreamContent(current: string, next: string): string {
-  if (!next) return current
-  if (!current) return next
-  if (next === current || next.startsWith(current)) return next
-  return current + next
-}
-
-function messageKey(message: ThreadMessageView): string {
-  return `${message.role}:${displayMessageContent(message)}`
-}
-
-function dateLabel(value?: string): string | null {
-  if (!value) return null
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return null
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(date)
-}
-
-function taskMeta(task: TaskSummaryView): string {
-  return [task.urgency ?? task.priority, task.status, task.estimated_minutes ? `${task.estimated_minutes} min` : null]
-    .filter(Boolean)
-    .join(' · ')
-}
-
-function shortlistFromTriage(tasks?: {
-  urgent_tasks: TaskSummaryView[]
-  routine_tasks: TaskSummaryView[]
-  project_tasks: TaskSummaryView[]
-} | null): TaskSummaryView[] {
-  if (!tasks) return []
-  const seen = new Set<string>()
-  const shortlist: TaskSummaryView[] = []
-  for (const task of [...tasks.urgent_tasks, ...tasks.routine_tasks, ...tasks.project_tasks]) {
-    if (seen.has(task.id)) continue
-    seen.add(task.id)
-    shortlist.push(task)
-    if (shortlist.length === 3) break
-  }
-  return shortlist
 }
 
 export default function RhizomePage() {
@@ -771,14 +501,6 @@ export default function RhizomePage() {
       threads?.map((thread) => (thread.thread_id === threadId ? updateThread(thread) : thread)),
     )
     queryClient.setQueryData<ThreadView>(['threads', threadId], (thread) => (thread ? updateThread(thread) : thread))
-  }
-
-  function contextFromSearchResult(result: SearchResultItemView): ContextObject {
-    return {
-      subject_type: result.subject_type,
-      subject_id: result.subject_id,
-      label: result.label,
-    }
   }
 
   function addMessageContext(context: ContextObject) {
