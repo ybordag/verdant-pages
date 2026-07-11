@@ -41,24 +41,23 @@ contribution guidance, glossary, and documentation ownership are aligned.
 
 Next:
 
-1. Re-run and restore green lint, unit, and browser quality gates.
-2. Break the large `RhizomePage` and stylesheet into bounded feature components
+1. Break the large `RhizomePage` and stylesheet into bounded feature components
    and hooks without changing accepted behavior.
-3. Represent session focus as natural-language intent plus zero-to-many stable
+2. Represent session focus as natural-language intent plus zero-to-many stable
    object references, matching the current Rhizome/Cambium contract.
-4. Recheck model/provider editing now that Cambium profile updates are built.
-5. Complete a focused live-stack smoke for create thread -> set context ->
+3. Recheck model/provider editing now that Cambium profile updates are built.
+4. Complete a focused live-stack smoke for create thread -> set context ->
    stream -> review/resume -> switch/reload.
-6. Re-audit the quality table below after stabilization and prepare merge readiness.
+5. Prepare merge readiness after the structural and live-stack stabilization.
 
 ## Quality gates at the latest audit
 
 | Check | Result | Follow-up |
 |---|---|---|
-| `npm run build` | Pass | Production bundle builds successfully |
-| `npm run lint` | Fail: 2 errors | State updates inside effects in `RhizomePage.tsx` |
-| `npm run test:run` | 386/389 pass | One stale nav-badge assertion; two date-dependent Activity tests |
-| `npm run test:e2e` | 31 pass, 1 fail, 1 skipped | Activity date test is fixed to June 2026 |
+| `npm run build` | Pass | Production bundle builds successfully on Node 24 |
+| `npm run lint` | Pass | Rhizome collapse/autocomplete state no longer mutates synchronously in effects |
+| `npm run test:run` | 389/389 pass | Nav badge expectation and date-relative Activity coverage corrected |
+| `npm run test:e2e` | Pass: 32 run, 1 opt-in skipped | Desktop Chromium; live Activity smoke remains opt-in |
 
 Do not copy these counts into other documents. Replace this table when the
 stabilization pass changes the result.

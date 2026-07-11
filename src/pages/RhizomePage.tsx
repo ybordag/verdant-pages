@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   AlertTriangle,
@@ -475,10 +475,11 @@ export default function RhizomePage() {
   const [dismissedComposerContextQuery, setDismissedComposerContextQuery] = useState('')
   const [composerAutocompletePosition, setComposerAutocompletePosition] =
     useState<ComposerAutocompletePosition | null>(null)
-  const [workspaceHeaderCollapsed, setWorkspaceHeaderCollapsed] = useState(false)
+  const [workspaceHeaderState, setWorkspaceHeaderState] = useState({
+    threadId,
+    collapsed: false,
+  })
   const streamControllerRef = useRef<AbortController | null>(null)
-  const workspaceHeaderCollapsedRef = useRef(false)
-  const composerTextAreaWrapRef = useRef<HTMLDivElement | null>(null)
 
   const threadsQuery = useQuery({
     queryKey: ['threads', { limit: THREAD_LIMIT }],
@@ -620,6 +621,8 @@ export default function RhizomePage() {
       : []
   const visibleMessages = [...messages, ...visiblePendingMessages]
   const visibleStreamingText = threadId && threadId === streamThreadId ? streamingText : ''
+  const workspaceHeaderCollapsed =
+    workspaceHeaderState.threadId === threadId ? workspaceHeaderState.collapsed : false
   const hasThreads = threads.length > 0
   const recentThreads = threads.slice(0, RECENT_THREAD_LIMIT)
   const pendingReviewCount = pendingInteraction ? 1 : 0
@@ -663,28 +666,21 @@ export default function RhizomePage() {
     return () => streamControllerRef.current?.abort()
   }, [])
 
-  useEffect(() => {
-    workspaceHeaderCollapsedRef.current = false
-    setWorkspaceHeaderCollapsed(false)
-  }, [threadId])
-
   function updateWorkspaceHeaderCollapse(scrollTop: number) {
-    const isCollapsed = workspaceHeaderCollapsedRef.current
-    const nextCollapsed = isCollapsed ? scrollTop > 8 : scrollTop > 72
-    if (nextCollapsed === isCollapsed) return
-    workspaceHeaderCollapsedRef.current = nextCollapsed
-    setWorkspaceHeaderCollapsed(nextCollapsed)
+    setWorkspaceHeaderState((current) => {
+      const isCollapsed = current.threadId === threadId ? current.collapsed : false
+      const nextCollapsed = isCollapsed ? scrollTop > 8 : scrollTop > 72
+      if (nextCollapsed === isCollapsed && current.threadId === threadId) return current
+      return { threadId, collapsed: nextCollapsed }
+    })
   }
 
-  useLayoutEffect(() => {
-    if (!composerContextTrigger) {
-      setComposerAutocompletePosition(null)
-      return
-    }
-    const textarea = composerTextAreaWrapRef.current?.querySelector('textarea')
-    if (!textarea) return
-    setComposerAutocompletePosition(measureTextareaIndex(textarea, composerContextTrigger.start))
-  }, [composerContextTrigger, draft])
+  function updateComposerSelection(textarea: HTMLTextAreaElement) {
+    const cursor = textarea.selectionStart ?? textarea.value.length
+    const trigger = parseComposerContextTrigger(textarea.value, cursor)
+    setComposerCursor(cursor)
+    setComposerAutocompletePosition(trigger ? measureTextareaIndex(textarea, trigger.start) : null)
+  }
 
   function startSessionEdit() {
     setSessionDraft(sessionDraftFromContext(sessionContext))
@@ -721,12 +717,14 @@ export default function RhizomePage() {
     }
     setDraft(prompts[kind])
     setComposerCursor(prompts[kind].length)
+    setComposerAutocompletePosition(null)
   }
 
   function setTaskStarterDraft(task: TaskSummaryView) {
     const prompt = `Can you help me handle this task today: ${task.title}?`
     setDraft(prompt)
     setComposerCursor(prompt.length)
+    setComposerAutocompletePosition(null)
   }
 
   function startThreadSessionLabels(): Omit<OptimisticSessionContext, 'threadId'> {
@@ -814,6 +812,7 @@ export default function RhizomePage() {
     if (!composerContextTrigger) return
     addMessageContext(contextFromSearchResult(result))
     setDismissedComposerContextQuery('')
+    setComposerAutocompletePosition(null)
     setDraft((current) => {
       const before = current.slice(0, composerContextTrigger.start).trimEnd()
       const after = current.slice(composerContextTrigger.end).replace(/^\s+/, '')
@@ -1134,6 +1133,7 @@ export default function RhizomePage() {
 
       const userMessage: ThreadMessageView = { role: 'user', content: message, type: 'human' }
       setDraft('')
+      setComposerAutocompletePosition(null)
       setStreamThreadId(targetThreadId)
       setPendingMessages((current) =>
         targetThreadId === streamThreadId ? [...current, userMessage] : [userMessage],
@@ -1706,19 +1706,19 @@ export default function RhizomePage() {
                 </div>
               ) : null}
 
-              <div className={s.composerTextAreaWrap} ref={composerTextAreaWrapRef}>
+              <div className={s.composerTextAreaWrap}>
                 <Textarea
                   aria-label="Message Rhizome"
                   placeholder="Ask Rhizome about tasks, plants, projects, weather, or incidents..."
                   value={draft}
                   onChange={(event) => {
                     setDismissedComposerContextQuery('')
-                    setDraft(event.target.value)
-                    setComposerCursor(event.target.selectionStart ?? event.target.value.length)
+                    setDraft(event.currentTarget.value)
+                    updateComposerSelection(event.currentTarget)
                   }}
-                  onClick={(event) => setComposerCursor(event.currentTarget.selectionStart ?? draft.length)}
-                  onKeyUp={(event) => setComposerCursor(event.currentTarget.selectionStart ?? draft.length)}
-                  onSelect={(event) => setComposerCursor(event.currentTarget.selectionStart ?? draft.length)}
+                  onClick={(event) => updateComposerSelection(event.currentTarget)}
+                  onKeyUp={(event) => updateComposerSelection(event.currentTarget)}
+                  onSelect={(event) => updateComposerSelection(event.currentTarget)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' && !event.shiftKey) {
                       event.preventDefault()

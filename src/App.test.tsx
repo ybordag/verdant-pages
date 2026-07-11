@@ -56,11 +56,11 @@ describe('App', () => {
     expect(nav.dataset.collapsed).toBe('false')
   })
 
-  it('marks nav items with pending badges via data-has-badge, even when the badge itself is hidden on collapse', async () => {
+  it('does not mark nav items as pending without real badge data', () => {
     render(<App />)
     const rhizomeLink = screen.getByRole('link', { name: 'Rhizome' })
     const calendarLink = screen.getByRole('link', { name: 'Calendar' })
-    expect(rhizomeLink.dataset.hasBadge).toBe('true')
+    expect(rhizomeLink.dataset.hasBadge).toBe('false')
     expect(calendarLink.dataset.hasBadge).toBe('false')
   })
 })

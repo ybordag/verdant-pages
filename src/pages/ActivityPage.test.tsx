@@ -9,6 +9,33 @@ import { getFilterErrors } from './activityFilters'
 
 vi.mock('@/lib/api/activity', () => ({ listActivity: vi.fn() }))
 
+const dateFormatter = new Intl.DateTimeFormat(undefined, {
+  month: '2-digit',
+  day: '2-digit',
+  year: 'numeric',
+})
+const TEST_TODAY = new Date()
+
+function offsetDate(days: number): Date {
+  const date = new Date(TEST_TODAY)
+  date.setHours(12, 0, 0, 0)
+  date.setDate(date.getDate() + days)
+  return date
+}
+
+function isoDate(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+const FILTER_SINCE = isoDate(offsetDate(-2))
+const FILTER_BEFORE = isoDate(offsetDate(-1))
+const FILTER_SINCE_LABEL = dateFormatter.format(offsetDate(-2))
+const FILTER_BEFORE_LABEL = dateFormatter.format(offsetDate(-1))
+const INVALID_BEFORE_LABEL = dateFormatter.format(offsetDate(-3))
+
 const EVENTS: ActivityEventView[] = [
   {
     id: 'activity-1',
@@ -90,7 +117,11 @@ function mockActivityResponses() {
   vi.mocked(listActivity).mockImplementation(async (params?: ActivityListParams) => {
     if (params?.category === 'incident') return [EVENTS[2]]
     if (params?.event_type === 'task_completed') return [EVENTS[0]]
-    if (params?.subject_type === 'plant' && params.since === '2026-06-20' && params.before_timestamp === '2026-06-21') {
+    if (
+      params?.subject_type === 'plant' &&
+      params.since === FILTER_SINCE &&
+      params.before_timestamp === FILTER_BEFORE
+    ) {
       return [EVENTS[2]]
     }
     return EVENTS
@@ -165,17 +196,17 @@ describe('ActivityPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Subject' }))
     await userEvent.click(screen.getByRole('option', { name: 'plant' }))
     await userEvent.click(screen.getByRole('button', { name: 'Since' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Since 06/20/2026' }))
+    await userEvent.click(screen.getByRole('button', { name: `Since ${FILTER_SINCE_LABEL}` }))
     expect(screen.queryByRole('dialog', { name: 'Since calendar' })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Before' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Before 06/21/2026' }))
+    await userEvent.click(screen.getByRole('button', { name: `Before ${FILTER_BEFORE_LABEL}` }))
     expect(screen.queryByRole('dialog', { name: 'Before calendar' })).not.toBeInTheDocument()
 
     await waitFor(() =>
       expect(listActivity).toHaveBeenLastCalledWith({
         subject_type: 'plant',
-        since: '2026-06-20',
-        before_timestamp: '2026-06-21',
+        since: FILTER_SINCE,
+        before_timestamp: FILTER_BEFORE,
         limit: 20,
       }),
     )
@@ -284,12 +315,12 @@ describe('ActivityPage', () => {
     await screen.findByText('Completed morning watering for container tomatoes.')
 
     await userEvent.click(screen.getByRole('button', { name: 'Since' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Since 06/20/2026' }))
-    await waitFor(() => expect(listActivity).toHaveBeenLastCalledWith({ since: '2026-06-20', limit: 20 }))
+    await userEvent.click(screen.getByRole('button', { name: `Since ${FILTER_SINCE_LABEL}` }))
+    await waitFor(() => expect(listActivity).toHaveBeenLastCalledWith({ since: FILTER_SINCE, limit: 20 }))
     const callsBeforeInvalidRange = vi.mocked(listActivity).mock.calls.length
 
     await userEvent.click(screen.getByRole('button', { name: 'Before' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Before 06/19/2026' }))
+    await userEvent.click(screen.getByRole('button', { name: `Before ${INVALID_BEFORE_LABEL}` }))
 
     expect(await screen.findByText('Before must be after since.')).toBeInTheDocument()
     expect(listActivity).toHaveBeenCalledTimes(callsBeforeInvalidRange)
